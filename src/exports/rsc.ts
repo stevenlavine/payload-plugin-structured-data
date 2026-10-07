@@ -1,1 +1,1 @@
-export {}
+export const StructuredDataPreview = () => null

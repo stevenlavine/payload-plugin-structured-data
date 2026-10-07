@@ -1,9 +1,7 @@
-import { BeforeDashboardClient as BeforeDashboardClient_fc6e7dd366b9e2c8ce77d31252122343 } from '@lavinedev/payload-plugin-structured-data/client'
-import { BeforeDashboardServer as BeforeDashboardServer_c4406fcca100b2553312c5a3d7520a3f } from '@lavinedev/payload-plugin-structured-data/rsc'
+import { StructuredDataPreview as StructuredDataPreview_eddfaa6e48482c567acf581a1a58ee93 } from '@lavinedev/payload-plugin-structured-data/rsc'
+import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 export const importMap = {
-  '@lavinedev/payload-plugin-structured-data/client#BeforeDashboardClient':
-    BeforeDashboardClient_fc6e7dd366b9e2c8ce77d31252122343,
-  '@lavinedev/payload-plugin-structured-data/rsc#BeforeDashboardServer':
-    BeforeDashboardServer_c4406fcca100b2553312c5a3d7520a3f,
+  "@lavinedev/payload-plugin-structured-data/rsc#StructuredDataPreview": StructuredDataPreview_eddfaa6e48482c567acf581a1a58ee93,
+  "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

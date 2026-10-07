@@ -55,7 +55,19 @@ export default buildConfig({
   db: sqliteAdapter({ client: { url: process.env.DATABASE_URL || 'file:./dev/dev.db' } }),
   editor: lexicalEditor(),
   email: testEmailAdapter,
-  plugins: [structuredDataPlugin()],
+  plugins: [
+    structuredDataPlugin({
+      siteUrl: process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000',
+      collections: {
+        posts: { type: 'BlogPosting', path: (doc) => `/blog/${doc.slug}` },
+        pages: {
+          type: 'WebPage',
+          path: (doc) => (doc.slug === 'home' ? '/' : `/${doc.slug}`),
+          faq: { block: 'faq', items: 'faqs', question: 'question', answer: 'answer' },
+        },
+      },
+    }),
+  ],
   secret: process.env.PAYLOAD_SECRET || 'test-secret_key',
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
 })

@@ -91,8 +91,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'structured-data-settings': StructuredDataSetting;
+  };
+  globalsSelect: {
+    'structured-data-settings': StructuredDataSettingsSelect<false> | StructuredDataSettingsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -133,6 +137,13 @@ export interface Post {
   meta?: {
     description?: string | null;
   };
+  structuredData?: {
+    /**
+     * Leave empty to use the default for this collection.
+     */
+    type?: ('Article' | 'BlogPosting' | 'Service' | 'WebPage') | null;
+    disabled?: boolean | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -158,6 +169,13 @@ export interface Page {
         blockType: 'faq';
       }[]
     | null;
+  structuredData?: {
+    /**
+     * Leave empty to use the default for this collection.
+     */
+    type?: ('Article' | 'BlogPosting' | 'Service' | 'WebPage') | null;
+    disabled?: boolean | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -299,6 +317,12 @@ export interface PostsSelect<T extends boolean = true> {
     | {
         description?: T;
       };
+  structuredData?:
+    | T
+    | {
+        type?: T;
+        disabled?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -325,6 +349,12 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+      };
+  structuredData?:
+    | T
+    | {
+        type?: T;
+        disabled?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -407,6 +437,118 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * Business details used for Schema.org structured data on every page.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "structured-data-settings".
+ */
+export interface StructuredDataSetting {
+  id: number;
+  organizationType?: ('Organization' | 'LocalBusiness') | null;
+  name: string;
+  legalName?: string | null;
+  description?: string | null;
+  logo?: (number | null) | Media;
+  email?: string | null;
+  /**
+   * International format, e.g. +441234567890
+   */
+  telephone?: string | null;
+  address?: {
+    streetAddress?: string | null;
+    addressLocality?: string | null;
+    addressRegion?: string | null;
+    postalCode?: string | null;
+    /**
+     * Two-letter code, e.g. GB
+     */
+    addressCountry?: string | null;
+  };
+  sameAs?:
+    | {
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  areaServed?:
+    | {
+        name: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * YYYY or YYYY-MM-DD
+   */
+  foundingDate?: string | null;
+  founder?: {
+    name?: string | null;
+    jobTitle?: string | null;
+  };
+  /**
+   * e.g. Companies House company number
+   */
+  identifiers?:
+    | {
+        propertyID: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "structured-data-settings_select".
+ */
+export interface StructuredDataSettingsSelect<T extends boolean = true> {
+  organizationType?: T;
+  name?: T;
+  legalName?: T;
+  description?: T;
+  logo?: T;
+  email?: T;
+  telephone?: T;
+  address?:
+    | T
+    | {
+        streetAddress?: T;
+        addressLocality?: T;
+        addressRegion?: T;
+        postalCode?: T;
+        addressCountry?: T;
+      };
+  sameAs?:
+    | T
+    | {
+        url?: T;
+        id?: T;
+      };
+  areaServed?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
+  foundingDate?: T;
+  founder?:
+    | T
+    | {
+        name?: T;
+        jobTitle?: T;
+      };
+  identifiers?:
+    | T
+    | {
+        propertyID?: T;
+        value?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
