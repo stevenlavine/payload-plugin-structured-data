@@ -4,12 +4,14 @@ import React from 'react'
 import { buildStructuredData } from '../build/buildStructuredData.js'
 import { serializeJsonLd } from '../build/serialize.js'
 import { getPluginOptions } from '../plugin.js'
+import type { Doc } from '../types.js'
 import { getSettings, logWarnings } from './getSettings.js'
 
 export type StructuredDataProps = {
   config: SanitizedConfig | Promise<SanitizedConfig>
   collection?: CollectionSlug
-  doc?: Record<string, unknown>
+  /** Any Payload document, including generated interfaces such as `Post`. */
+  doc?: object | null
 }
 
 /** Writes one <script type="application/ld+json"> for the page. Never throws. */
@@ -22,7 +24,7 @@ export async function StructuredData({ config, collection, doc }: StructuredData
       return null
     }
     const settings = await getSettings(payload)
-    const { graph, warnings } = buildStructuredData({ options, settings, collection, doc: doc ?? undefined })
+    const { graph, warnings } = buildStructuredData({ options, settings, collection, doc: (doc ?? undefined) as Doc | undefined })
     logWarnings(warnings)
     if (!graph) return null
     return (
