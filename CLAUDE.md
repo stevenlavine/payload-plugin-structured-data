@@ -41,7 +41,9 @@ On Windows, `pnpm build` may need `SWC_NATIVE_BINDING_CACHE` pointing at a direc
 
 ## Publishing
 
-Steve runs `npm publish`; never publish from an agent.
+Steve publishes with `pnpm publish --tag beta` (then plain `pnpm publish` for 0.1.0); never publish from an agent. Do not use `npm publish`: the top-level `exports`/`main`/`types` point at `src/*.ts` and only pnpm swaps in the `publishConfig` dist paths. `prepublishOnly` fails under npm on purpose.
+
+On Windows, set `$env:SWC_NATIVE_BINDING_CACHE="C:\Users\steve\.swc-cache"` in PowerShell first, or the build fails.
 
 ## Things to avoid
 

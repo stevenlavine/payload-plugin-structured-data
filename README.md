@@ -51,6 +51,16 @@ export default buildConfig({
 
 `siteUrl` is required. If it is empty, Payload throws a clear error when the config loads. Trailing slashes are removed.
 
+### Generate the import map
+
+The sidebar preview is an admin component, registered as `@lavinedev/payload-plugin-structured-data/rsc#StructuredDataPreview`. Payload finds it through the import map. After you add the plugin, run:
+
+```bash
+payload generate:importmap
+```
+
+Commit the updated `importMap.js` if your project tracks it. Without this step the preview does not appear in the admin.
+
 ### Plugin options
 
 | Key | Type | What it does |
@@ -59,7 +69,7 @@ export default buildConfig({
 | `collections` | `Record<slug, CollectionOptions>` | The collections that get structured data. Each one gets a sidebar group in the admin. A slug that does not exist in your config throws. |
 | `mediaCollection` | `string` | Upload collection for the logo. Default `media`. |
 | `imageSize` | `string` | Image size name to prefer, such as `og`. Falls back to the original file. |
-| `search` | `{ urlTemplate: string }` | Adds a `SearchAction` to `WebSite`, for example `https://example.com/search?q={search_term_string}`. |
+| `search` | `{ urlTemplate: string }` | Adds a `SearchAction` to `WebSite`, for example `https://example.com/search?q={search_term_string}`. Google retired the sitelinks search box in November 2024, so this no longer changes Google results. It is still valid Schema.org, and other tools and AI assistants can read it. |
 | `disabled` | `boolean` | Keeps the fields so your schema stays stable, but outputs nothing. |
 
 ### Collection options
@@ -69,7 +79,7 @@ export default buildConfig({
 | `type` | `'Article' \| 'BlogPosting' \| 'Service' \| 'WebPage'`, or `(doc) => type \| null` | The collection's default type. A function lets one collection mix types, for example `Service` under `/services/` and `WebPage` elsewhere. Return `null` to output no page node. |
 | `path` | `(doc) => string` | The document's public path, starting with `/`. Use `/` for the home page. The plugin joins it to `siteUrl`. |
 | `fields` | `Partial<Record<PageField, string \| string[]>>` | Maps Schema.org properties to field paths. Dot paths work. A list means the first non-empty value wins, for example `datePublished: ['completedAt', 'publishedAt', 'createdAt']`. |
-| `faq` | `{ block, items, question, answer, blocksField? }` | Builds a `FAQPage` from a blocks field. `block` is the block slug. `items` is the array field inside the block that holds the rows. `question` and `answer` are the field names in each row. `blocksField` is the blocks field on the document and defaults to `layout`. All matching blocks on a page merge into one `FAQPage`. |
+| `faq` | `{ block, items, question, answer, blocksField? }` | Builds a `FAQPage` from a blocks field. `block` is the block slug. `items` is the array field inside the block that holds the rows. `question` and `answer` are the field names in each row. `blocksField` is the blocks field on the document and defaults to `layout`. All matching blocks on a page merge into one `FAQPage`. Answers must be plain text (a text or textarea field). Rich text answers are skipped. Since 2023 Google shows FAQ rich results only for well-known government and health sites. The markup stays valid Schema.org, and other tools and AI assistants still read it. |
 | `breadcrumbs` | `(doc) => { name, path }[]` | Builds the breadcrumb trail yourself, for collections outside nested docs. Include Home as the first item. |
 
 `PageField` is one of `headline`, `description`, `image`, `datePublished`, `dateModified` and `author`.
@@ -124,11 +134,14 @@ import {
   serializeJsonLd,
 } from '@lavinedev/payload-plugin-structured-data'
 
+const options = getPluginOptions(payload.config)
+if (!options) throw new Error('structuredDataPlugin is not configured')
+
 const { graph, warnings } = buildStructuredData({ options, settings, collection: 'posts', doc })
 const json = graph ? serializeJsonLd(graph) : null
 ```
 
-`options` comes from `getPluginOptions(payload.config)`. `settings` is the `structured-data-settings` global, read with `payload.findGlobal`. Put `json` inside a `<script type="application/ld+json">` tag.
+`getPluginOptions` returns `null` when the plugin is not in your config, so check for that. `settings` is the `structured-data-settings` global, read with `payload.findGlobal`. Put `json` inside a `<script type="application/ld+json">` tag.
 
 ## Admin
 
