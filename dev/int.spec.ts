@@ -2,9 +2,13 @@ import type { Payload } from 'payload'
 
 import config from '@payload-config'
 import { getPayload } from 'payload'
+import { mkdtemp, writeFile } from 'fs/promises'
+import { tmpdir } from 'os'
+import path from 'path'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { getPluginOptions } from '../src/plugin.js'
 import { StructuredData } from '../src/render/StructuredData.js'
+import { StructuredDataPreview } from '../src/render/StructuredDataPreview.js'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 let payload: Payload
@@ -71,5 +75,44 @@ describe('StructuredData component', () => {
     expect(element).not.toBeNull()
     const html = renderToStaticMarkup(element!)
     expect(html).toContain('"WebSite"')
+  })
+})
+
+describe('StructuredDataPreview', () => {
+  const baseProps = (data: unknown) =>
+    ({ collectionSlug: 'posts', data, payload }) as unknown as Parameters<typeof StructuredDataPreview>[0]
+
+  test('re-reads the document at depth 1 so uploads become image URLs', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'sd-'))
+    const file = path.join(dir, 'pic.png')
+    // 1x1 transparent PNG
+    await writeFile(
+      file,
+      Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64'),
+    )
+    const media = await payload.create({ collection: 'media', data: {}, filePath: file })
+    const post = await payload.create({
+      collection: 'posts',
+      data: { title: 'With image', slug: 'with-image', meta: { image: media.id } as never },
+    })
+    // depth 0 shape, as the edit view supplies it
+    const flat = await payload.findByID({ collection: 'posts', id: post.id, depth: 0 })
+    expect((flat.meta as { image?: unknown } | undefined)?.image).toBe(media.id)
+
+    const html = renderToStaticMarkup(await StructuredDataPreview(baseProps(flat)))
+    expect(html).toContain('Preview (last saved version)')
+    expect(html).toContain('pic')
+    expect(html).toContain('&quot;image&quot;')
+  })
+
+  test('never throws: a broken payload renders a message', async () => {
+    const broken = { collectionSlug: 'posts', data: { id: 1 }, payload: {} } as never
+    const html = renderToStaticMarkup(await StructuredDataPreview(broken))
+    expect(html).toContain('Preview unavailable')
+  })
+
+  test('unsaved document prompts to save', async () => {
+    const html = renderToStaticMarkup(await StructuredDataPreview(baseProps({})))
+    expect(html).toContain('Save this document')
   })
 })

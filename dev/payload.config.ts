@@ -21,7 +21,14 @@ export default buildConfig({
         { name: 'title', type: 'text' },
         { name: 'slug', type: 'text' },
         { name: 'publishedAt', type: 'date' },
-        { name: 'meta', type: 'group', fields: [{ name: 'description', type: 'textarea' }] },
+        {
+          name: 'meta',
+          type: 'group',
+          fields: [
+            { name: 'description', type: 'textarea' },
+            { name: 'image', type: 'upload', relationTo: 'media' },
+          ],
+        },
       ],
     },
     {
