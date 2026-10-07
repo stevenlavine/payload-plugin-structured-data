@@ -47,7 +47,7 @@ describe('StructuredData component', () => {
     await payload.updateGlobal({ slug: 'structured-data-settings', data: { name: 'Acme' } })
     const post = await payload.create({ collection: 'posts', data: { title: 'A </script> title', slug: 'x' } })
 
-    const element = await StructuredData({ config, collection: 'posts', doc: post })
+    const element = await StructuredData({ config, collection: 'posts', doc: post as unknown as Record<string, unknown> })
     const html = renderToStaticMarkup(element!)
 
     expect(html.match(/<script/g)).toHaveLength(1)
