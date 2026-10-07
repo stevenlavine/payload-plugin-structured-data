@@ -17,7 +17,9 @@ export default defineConfig(() => {
       }),
     ],
     test: {
+      env: { DATABASE_URL: 'file:./dev/test.db' },
       environment: 'node',
+      globalSetup: ['./dev/global-setup.ts'],
       hookTimeout: 30_000,
       testTimeout: 30_000,
     },
