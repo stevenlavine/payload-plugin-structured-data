@@ -21,6 +21,7 @@ export default defineConfig(() => {
       environment: 'node',
       globalSetup: ['./dev/global-setup.ts'],
       hookTimeout: 30_000,
+      include: ['src/**/*.spec.ts', 'dev/**/*.spec.ts'],
       testTimeout: 30_000,
     },
   }
