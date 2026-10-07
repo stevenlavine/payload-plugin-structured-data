@@ -160,7 +160,7 @@ A local business needs an address. Without one, the plugin outputs `Organization
 - **Empty settings:** no `Organization` or `WebSite` node. Page nodes still render, without the `publisher` link.
 - **Unpopulated relationship** (an ID, not an object): skipped. The plugin does not fetch it. Set `depth` high enough when you load the document.
 - **Warnings** are logged to the console in development only, one per skip, such as `posts/123: BlogPosting skipped, no headline (field "title" is empty)`. They are silent in production. The admin preview shows the same warnings.
-- **Escaping.** The serialised JSON escapes every `<` as `<`, so a value containing `</script>` cannot close the tag.
+- **Escaping.** The serialised JSON escapes every `<` as `\u003c`, so a value containing `</script>` cannot close the tag.
 - **Absolute URLs.** Every URL in the output is absolute, including media.
 
 The `@id` values are `<siteUrl>/#organization` and `<siteUrl>/#website` for the site, and `<pageUrl>#webpage`, `#article`, `#service`, `#faq` and `#breadcrumb` for a page.
