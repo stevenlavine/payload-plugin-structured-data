@@ -4,7 +4,7 @@
 
 **Project:** `@lavinedev/payload-plugin-structured-data`
 **Client:** None. Own product of Lavine Web & AI Solutions; public open-source npm plugin, not client work.
-**Repo:** https://github.com/stevenlavine/payload-plugin-structured-data (private until Task 11)
+**Repo:** https://github.com/stevenlavine/payload-plugin-structured-data (public since 0.1.0, 2026-10-23)
 **Description:** Payload CMS 3 plugin that outputs Schema.org JSON-LD (Organization, LocalBusiness, WebSite, Article, BlogPosting, Service, WebPage, FAQPage, BreadcrumbList), editable in the admin.
 
 ## Workspace links
@@ -41,7 +41,7 @@ On Windows, `pnpm build` may need `SWC_NATIVE_BINDING_CACHE` pointing at a direc
 
 ## Publishing
 
-Steve publishes with `pnpm publish --tag beta` (then plain `pnpm publish` for 0.1.0); never publish from an agent. Do not use `npm publish`: the top-level `exports`/`main`/`types` point at `src/*.ts` and only pnpm swaps in the `publishConfig` dist paths. `prepublishOnly` fails under npm on purpose.
+Steve publishes with `pnpm publish`; never publish from an agent. Do not use `npm publish`: the top-level `exports`/`main`/`types` point at `src/*.ts` and only pnpm swaps in the `publishConfig` dist paths. `prepublishOnly` fails under npm on purpose.
 
 On Windows, set `$env:SWC_NATIVE_BINDING_CACHE="C:\Users\steve\.swc-cache"` in PowerShell first, or the build fails.
 

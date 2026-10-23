@@ -6,18 +6,12 @@ It outputs nine types: `Organization`, `LocalBusiness`, `WebSite`, `Article`, `B
 
 Each page gets one `<script type="application/ld+json">` holding a connected `@graph`. Nodes link to each other by `@id`, for example the article's `publisher` points at `<siteUrl>/#organization`.
 
-This is a beta. Requires Payload `^3.82.1`, Next.js 15 or 16, React 19 and Node 20.9 or later.
+Requires Payload `^3.82.1`, Next.js 15 or 16, React 19 and Node 20.9 or later.
 
 ## Install
 
 ```bash
 pnpm add @lavinedev/payload-plugin-structured-data
-```
-
-While we are in beta, install the beta tag:
-
-```bash
-pnpm add @lavinedev/payload-plugin-structured-data@beta
 ```
 
 ## Configure
@@ -159,6 +153,8 @@ const json = graph ? serializeJsonLd(graph) : null
 - Identifiers, such as a Companies House number
 
 A local business needs an address. Without one, the plugin outputs `Organization` and warns.
+
+Settings changes do not revalidate pages that Next.js has already cached. Those pages show the new details after their next revalidation or your next deploy.
 
 **Sidebar group.** Every configured collection gets a Structured data group in the sidebar:
 
