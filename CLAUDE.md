@@ -16,7 +16,7 @@
 ## Commands
 
 ```bash
-pnpm test:int --run   # Vitest over src/**/*.spec.ts and dev/int.spec.ts (SQLite)
+pnpm test:int --run   # Vitest over src/**/*.spec.ts and dev/**/*.spec.ts (SQLite)
 pnpm typecheck        # tsc --noEmit
 pnpm lint             # eslint
 pnpm build            # copyfiles + tsc types + swc into dist/

@@ -143,7 +143,7 @@ const json = graph ? serializeJsonLd(graph) : null
 
 - Business type: Organisation or Local business
 - Name (required), legal name, description and logo
-- Image: a photo of the business. Google lists an image only for restaurant carousels, but it still helps for an organisation and for other tools that read the markup. When empty, the logo is used.
+- Image: a photo of the business. Google lists an image only for restaurant carousels, but it is valid Schema.org for an organisation and other tools read it. When empty, the logo is used.
 - Email and telephone
 - Postal address (street, town or city, county or region, postcode, country code)
 - Social profile links (`sameAs`)
@@ -154,7 +154,7 @@ const json = graph ? serializeJsonLd(graph) : null
 
 A local business needs an address. Without one, the plugin outputs `Organization` and warns.
 
-Saving the settings revalidates every page (`revalidatePath('/', 'layout')`), so cached pages show the new details without a deploy. Revalidation is skipped when the save has `context.disableRevalidate` set. It does nothing harmful outside Next.js, for example in a script or seed: the save still succeeds. If revalidation fails, the plugin logs a warning in development only, so a failure is not logged in production.
+Saving the settings revalidates every page (`revalidatePath('/', 'layout')`), so cached pages show the new details without a deploy. Revalidation is skipped when the save has `context.disableRevalidate` set. It does nothing harmful outside Next.js, for example in a script or seed: the save still succeeds. If revalidation fails, the plugin logs a warning in development only.
 
 **Sidebar group.** Every configured collection gets a Structured data group in the sidebar:
 

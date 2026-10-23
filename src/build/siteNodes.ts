@@ -62,7 +62,8 @@ export function buildOrganization(
     legalName: clean(settings.legalName),
     description: clean(settings.description),
     logo,
-    // Google lists image only for restaurant carousels, but it suits Organization and other consumers; the logo stands in when no photo is set
+    // Google lists image only for restaurant carousels, but it is valid Schema.org
+    // for Organization and other tools read it. The logo stands in when no photo is set.
     image: mediaUrl(options.siteUrl, settings.image, options.imageSize) ?? logo,
     email: clean(settings.email),
     telephone: clean(settings.telephone),
