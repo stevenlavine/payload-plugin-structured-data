@@ -19,6 +19,12 @@ const post = { id: 9, slug: 'hello', title: 'Hello' }
 const types = (r: ReturnType<typeof buildStructuredData>) => r.graph?.['@graph'].map((n) => n['@type'])
 
 describe('buildStructuredData', () => {
+  test('prototype key as collection gives a not-configured warning', () => {
+    const result = buildStructuredData({ options, settings, collection: 'constructor', doc: post })
+    expect(result.warnings).toContain('constructor: not configured in structuredDataPlugin')
+    expect(types(result)).toEqual(['Organization', 'WebSite'])
+  })
+
   test('site only', () => {
     expect(types(buildStructuredData({ options, settings }))).toEqual(['Organization', 'WebSite'])
   })

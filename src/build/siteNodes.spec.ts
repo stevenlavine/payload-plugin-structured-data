@@ -114,3 +114,10 @@ describe('buildWebSite', () => {
     expect(websiteId('https://a.com')).toBe('https://a.com/#website')
   })
 })
+
+describe('buildWebSite search', () => {
+  test('no SearchAction when search is undefined', () => {
+    const node = buildWebSite({ name: 'Acme' }, options, false)
+    expect(node).not.toHaveProperty('potentialAction')
+  })
+})
