@@ -13,7 +13,13 @@ const KEEP = [
 const strip = (id) => id.replace(/^schema:/, '')
 const ids = (v) => (v === undefined ? [] : [].concat(v)).map((x) => strip(x['@id']))
 
-const graph = (await (await fetch(SOURCE)).json())['@graph']
+const get = async (url) => {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Fetch failed: ${url} -> ${res.status}`)
+  return res
+}
+
+const graph = (await (await get(SOURCE)).json())['@graph']
 const parentsOf = new Map()
 const props = []
 for (const n of graph) {
@@ -21,6 +27,10 @@ for (const n of graph) {
   if (kinds.includes('rdfs:Class') && n['@id'].startsWith('schema:')) {
     parentsOf.set(strip(n['@id']), ids(n['rdfs:subClassOf']))
   } else if (kinds.includes('rdf:Property') && n['@id'].startsWith('schema:')) {
+    // Skip superseded terms and terms still in the pending layer.
+    if (n['schema:supersededBy'] || n['schema:isPartOf']?.['@id'] === 'https://pending.schema.org') {
+      continue
+    }
     props.push({ name: strip(n['@id']), domains: ids(n['schema:domainIncludes']), ranges: ids(n['schema:rangeIncludes']) })
   }
 }
@@ -56,11 +66,10 @@ for (const type of [...KEEP].sort()) {
 
 // The JSON-LD file does not carry its release number, so read it from the releases page.
 let version = 'unknown'
-try {
-  const html = await (await fetch('https://schema.org/docs/releases.html')).text()
-  version = html.match(/Version (\d+\.\d+)/)?.[1] ?? version
-} catch {
-  /* keep 'unknown' */
+const html = await (await get('https://schema.org/docs/releases.html')).text()
+version = html.match(/Version (\d+\.\d+)/)?.[1] ?? version
+if (version === 'unknown') {
+  console.error('Warning: could not read the Schema.org version from the releases page')
 }
 
 const out = { source: SOURCE, version, fetched: new Date().toISOString().slice(0, 10), types }

@@ -63,4 +63,36 @@ describe('checkSchemaOrg', () => {
     expect(list).toHaveLength(1)
     expect(list[0]).toContain('itemListElement[0]')
   })
+
+  it('does not treat Object.prototype keys as properties', () => {
+    const inherited = checkSchemaOrg({ '@type': 'Organization', toString: 'x' })
+    expect(inherited).toHaveLength(1)
+    expect(inherited[0]).toContain('Organization.toString')
+    expect(() =>
+      checkSchemaOrg({ '@type': 'Organization', constructor: { '@type': 'Person' } }),
+    ).not.toThrow()
+    expect(
+      checkSchemaOrg({ '@type': 'Organization', constructor: { '@type': 'Person' } }),
+    ).toHaveLength(1)
+  })
+
+  it('does not treat Object.prototype keys as types', () => {
+    expect(() => checkSchemaOrg({ '@type': 'constructor', name: 'x' })).not.toThrow()
+    expect(checkSchemaOrg({ '@type': 'constructor', name: 'x' })).toHaveLength(1)
+    expect(
+      checkSchemaOrg({ '@type': 'Organization', address: { '@type': 'toString' } }),
+    ).toHaveLength(1)
+  })
+
+  it('flags superseded properties', () => {
+    const messages = checkSchemaOrg({ '@type': 'Organization', members: 'x' })
+    expect(messages).toHaveLength(1)
+    expect(messages[0]).toContain('Organization.members')
+  })
+
+  it('skips @ keys on untyped value objects', () => {
+    expect(
+      checkSchemaOrg({ '@type': 'WebPage', name: { '@value': 'x', '@language': 'en' } }),
+    ).toEqual([])
+  })
 })

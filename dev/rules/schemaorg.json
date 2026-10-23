@@ -57,10 +57,6 @@
     "alternativeHeadline": [
      "Text"
     ],
-    "answerExplanation": [
-     "Comment",
-     "WebContent"
-    ],
     "archivedAt": [
      "URL",
      "WebPage"
@@ -85,9 +81,6 @@
      "Person"
     ],
     "award": [
-     "Text"
-    ],
-    "awards": [
      "Text"
     ],
     "character": [
@@ -138,10 +131,6 @@
     "countryOfOrigin": [
      "Country"
     ],
-    "creativeWorkStatus": [
-     "DefinedTerm",
-     "Text"
-    ],
     "creator": [
      "Organization",
      "Person"
@@ -174,9 +163,6 @@
     "discussionUrl": [
      "URL"
     ],
-    "displayLocation": [
-     "Place"
-    ],
     "downvoteCount": [
      "Integer"
     ],
@@ -190,11 +176,6 @@
     "educationalAlignment": [
      "AlignmentObject"
     ],
-    "educationalLevel": [
-     "DefinedTerm",
-     "Text",
-     "URL"
-    ],
     "educationalUse": [
      "DefinedTerm",
      "Text"
@@ -206,19 +187,12 @@
      "Text",
      "URL"
     ],
-    "encodings": [
-     "MediaObject"
-    ],
     "exampleOfWork": [
      "CreativeWork"
     ],
     "expires": [
      "Date",
      "DateTime"
-    ],
-    "fileFormat": [
-     "Text",
-     "URL"
     ],
     "funder": [
      "Organization",
@@ -264,11 +238,6 @@
      "Boolean"
     ],
     "isBasedOn": [
-     "CreativeWork",
-     "Product",
-     "URL"
-    ],
-    "isBasedOnUrl": [
      "CreativeWork",
      "Product",
      "URL"
@@ -374,9 +343,6 @@
      "PublicationEvent"
     ],
     "review": [
-     "Review"
-    ],
-    "reviews": [
      "Review"
     ],
     "sameAs": [
@@ -572,9 +538,6 @@
     "award": [
      "Text"
     ],
-    "awards": [
-     "Text"
-    ],
     "backstory": [
      "CreativeWork",
      "Text"
@@ -627,10 +590,6 @@
     "countryOfOrigin": [
      "Country"
     ],
-    "creativeWorkStatus": [
-     "DefinedTerm",
-     "Text"
-    ],
     "creator": [
      "Organization",
      "Person"
@@ -663,9 +622,6 @@
     "discussionUrl": [
      "URL"
     ],
-    "displayLocation": [
-     "Place"
-    ],
     "editEIDR": [
      "Text",
      "URL"
@@ -675,11 +631,6 @@
     ],
     "educationalAlignment": [
      "AlignmentObject"
-    ],
-    "educationalLevel": [
-     "DefinedTerm",
-     "Text",
-     "URL"
     ],
     "educationalUse": [
      "DefinedTerm",
@@ -692,19 +643,12 @@
      "Text",
      "URL"
     ],
-    "encodings": [
-     "MediaObject"
-    ],
     "exampleOfWork": [
      "CreativeWork"
     ],
     "expires": [
      "Date",
      "DateTime"
-    ],
-    "fileFormat": [
-     "Text",
-     "URL"
     ],
     "funder": [
      "Organization",
@@ -750,11 +694,6 @@
      "Boolean"
     ],
     "isBasedOn": [
-     "CreativeWork",
-     "Product",
-     "URL"
-    ],
-    "isBasedOnUrl": [
      "CreativeWork",
      "Product",
      "URL"
@@ -867,9 +806,6 @@
      "PublicationEvent"
     ],
     "review": [
-     "Review"
-    ],
-    "reviews": [
      "Review"
     ],
     "sameAs": [
@@ -1065,9 +1001,6 @@
     "award": [
      "Text"
     ],
-    "awards": [
-     "Text"
-    ],
     "backstory": [
      "CreativeWork",
      "Text"
@@ -1120,10 +1053,6 @@
     "countryOfOrigin": [
      "Country"
     ],
-    "creativeWorkStatus": [
-     "DefinedTerm",
-     "Text"
-    ],
     "creator": [
      "Organization",
      "Person"
@@ -1156,9 +1085,6 @@
     "discussionUrl": [
      "URL"
     ],
-    "displayLocation": [
-     "Place"
-    ],
     "editEIDR": [
      "Text",
      "URL"
@@ -1168,11 +1094,6 @@
     ],
     "educationalAlignment": [
      "AlignmentObject"
-    ],
-    "educationalLevel": [
-     "DefinedTerm",
-     "Text",
-     "URL"
     ],
     "educationalUse": [
      "DefinedTerm",
@@ -1185,19 +1106,12 @@
      "Text",
      "URL"
     ],
-    "encodings": [
-     "MediaObject"
-    ],
     "exampleOfWork": [
      "CreativeWork"
     ],
     "expires": [
      "Date",
      "DateTime"
-    ],
-    "fileFormat": [
-     "Text",
-     "URL"
     ],
     "funder": [
      "Organization",
@@ -1243,11 +1157,6 @@
      "Boolean"
     ],
     "isBasedOn": [
-     "CreativeWork",
-     "Product",
-     "URL"
-    ],
-    "isBasedOnUrl": [
      "CreativeWork",
      "Product",
      "URL"
@@ -1360,9 +1269,6 @@
      "PublicationEvent"
     ],
     "review": [
-     "Review"
-    ],
-    "reviews": [
      "Review"
     ],
     "sameAs": [
@@ -1485,9 +1391,6 @@
      "Text",
      "URL"
     ],
-    "aggregateElement": [
-     "Thing"
-    ],
     "alternateName": [
      "Text"
     ],
@@ -1565,9 +1468,6 @@
     ],
     "alternateName": [
      "Text"
-    ],
-    "application": [
-     "SoftwareApplication"
     ],
     "contentType": [
      "Text"
@@ -1703,9 +1603,6 @@
     "award": [
      "Text"
     ],
-    "awards": [
-     "Text"
-    ],
     "breadcrumb": [
      "BreadcrumbList",
      "Text"
@@ -1758,10 +1655,6 @@
     "countryOfOrigin": [
      "Country"
     ],
-    "creativeWorkStatus": [
-     "DefinedTerm",
-     "Text"
-    ],
     "creator": [
      "Organization",
      "Person"
@@ -1794,9 +1687,6 @@
     "discussionUrl": [
      "URL"
     ],
-    "displayLocation": [
-     "Place"
-    ],
     "editEIDR": [
      "Text",
      "URL"
@@ -1806,11 +1696,6 @@
     ],
     "educationalAlignment": [
      "AlignmentObject"
-    ],
-    "educationalLevel": [
-     "DefinedTerm",
-     "Text",
-     "URL"
     ],
     "educationalUse": [
      "DefinedTerm",
@@ -1823,19 +1708,12 @@
      "Text",
      "URL"
     ],
-    "encodings": [
-     "MediaObject"
-    ],
     "exampleOfWork": [
      "CreativeWork"
     ],
     "expires": [
      "Date",
      "DateTime"
-    ],
-    "fileFormat": [
-     "Text",
-     "URL"
     ],
     "funder": [
      "Organization",
@@ -1881,11 +1759,6 @@
      "Boolean"
     ],
     "isBasedOn": [
-     "CreativeWork",
-     "Product",
-     "URL"
-    ],
-    "isBasedOnUrl": [
      "CreativeWork",
      "Product",
      "URL"
@@ -2005,9 +1878,6 @@
      "Organization",
      "Person"
     ],
-    "reviews": [
-     "Review"
-    ],
     "sameAs": [
      "URL"
     ],
@@ -2027,9 +1897,6 @@
      "Person"
     ],
     "significantLink": [
-     "URL"
-    ],
-    "significantLinks": [
      "URL"
     ],
     "size": [
@@ -2206,9 +2073,6 @@
     "award": [
      "Text"
     ],
-    "awards": [
-     "Text"
-    ],
     "bitrate": [
      "Text"
     ],
@@ -2270,10 +2134,6 @@
     "countryOfOrigin": [
      "Country"
     ],
-    "creativeWorkStatus": [
-     "DefinedTerm",
-     "Text"
-    ],
     "creator": [
      "Organization",
      "Person"
@@ -2306,9 +2166,6 @@
     "discussionUrl": [
      "URL"
     ],
-    "displayLocation": [
-     "Place"
-    ],
     "duration": [
      "Duration",
      "QuantitativeValue"
@@ -2322,11 +2179,6 @@
     ],
     "educationalAlignment": [
      "AlignmentObject"
-    ],
-    "educationalLevel": [
-     "DefinedTerm",
-     "Text",
-     "URL"
     ],
     "educationalUse": [
      "DefinedTerm",
@@ -2348,9 +2200,6 @@
      "Text",
      "URL"
     ],
-    "encodings": [
-     "MediaObject"
-    ],
     "endTime": [
      "DateTime",
      "Time"
@@ -2365,10 +2214,6 @@
     "expires": [
      "Date",
      "DateTime"
-    ],
-    "fileFormat": [
-     "Text",
-     "URL"
     ],
     "funder": [
      "Organization",
@@ -2423,11 +2268,6 @@
      "Boolean"
     ],
     "isBasedOn": [
-     "CreativeWork",
-     "Product",
-     "URL"
-    ],
-    "isBasedOnUrl": [
      "CreativeWork",
      "Product",
      "URL"
@@ -2545,9 +2385,6 @@
      "MediaSubscription"
     ],
     "review": [
-     "Review"
-    ],
-    "reviews": [
      "Review"
     ],
     "sameAs": [
@@ -2783,21 +2620,11 @@
      "Place",
      "Text"
     ],
-    "authorizedRepresentative": [
-     "Organization",
-     "Person"
-    ],
     "award": [
-     "Text"
-    ],
-    "awards": [
      "Text"
     ],
     "branchCode": [
      "Text"
-    ],
-    "branchOf": [
-     "Organization"
     ],
     "brand": [
      "Brand",
@@ -2808,12 +2635,6 @@
     ],
     "contactPoint": [
      "ContactPoint"
-    ],
-    "contactPoints": [
-     "ContactPoint"
-    ],
-    "containedIn": [
-     "Place"
     ],
     "containedInPlace": [
      "Place"
@@ -2858,17 +2679,11 @@
     "employee": [
      "Person"
     ],
-    "employees": [
-     "Person"
-    ],
     "ethicsPolicy": [
      "CreativeWork",
      "URL"
     ],
     "event": [
-     "Event"
-    ],
-    "events": [
      "Event"
     ],
     "faxNumber": [
@@ -2879,9 +2694,6 @@
     ],
     "founder": [
      "Organization",
-     "Person"
-    ],
-    "founders": [
      "Person"
     ],
     "foundingDate": [
@@ -2972,9 +2784,6 @@
     "hasPOS": [
      "Place"
     ],
-    "hasProductReturnPolicy": [
-     "ProductReturnPolicy"
-    ],
     "hasShippingService": [
      "ShippingService"
     ],
@@ -3050,12 +2859,6 @@
     "makesOffer": [
      "Offer"
     ],
-    "map": [
-     "URL"
-    ],
-    "maps": [
-     "URL"
-    ],
     "maximumAttendeeCapacity": [
      "Integer"
     ],
@@ -3067,10 +2870,6 @@
      "MemberProgramTier",
      "Organization",
      "ProgramMembership"
-    ],
-    "members": [
-     "Organization",
-     "Person"
     ],
     "naics": [
      "Text"
@@ -3113,10 +2912,6 @@
      "ImageObject",
      "Photograph"
     ],
-    "photos": [
-     "ImageObject",
-     "Photograph"
-    ],
     "potentialAction": [
      "Action"
     ],
@@ -3133,19 +2928,11 @@
     "review": [
      "Review"
     ],
-    "reviews": [
-     "Review"
-    ],
     "sameAs": [
      "URL"
     ],
     "seeks": [
      "Demand"
-    ],
-    "serviceArea": [
-     "AdministrativeArea",
-     "GeoShape",
-     "Place"
     ],
     "skills": [
      "DefinedTerm",
@@ -3232,14 +3019,7 @@
      "Place",
      "Text"
     ],
-    "authorizedRepresentative": [
-     "Organization",
-     "Person"
-    ],
     "award": [
-     "Text"
-    ],
-    "awards": [
      "Text"
     ],
     "brand": [
@@ -3250,9 +3030,6 @@
      "Certification"
     ],
     "contactPoint": [
-     "ContactPoint"
-    ],
-    "contactPoints": [
      "ContactPoint"
     ],
     "correctionsPolicy": [
@@ -3289,9 +3066,6 @@
     "employee": [
      "Person"
     ],
-    "employees": [
-     "Person"
-    ],
     "ethicsPolicy": [
      "CreativeWork",
      "URL"
@@ -3299,17 +3073,11 @@
     "event": [
      "Event"
     ],
-    "events": [
-     "Event"
-    ],
     "faxNumber": [
      "Text"
     ],
     "founder": [
      "Organization",
-     "Person"
-    ],
-    "founders": [
      "Person"
     ],
     "foundingDate": [
@@ -3348,9 +3116,6 @@
     ],
     "hasPOS": [
      "Place"
-    ],
-    "hasProductReturnPolicy": [
-     "ProductReturnPolicy"
     ],
     "hasShippingService": [
      "ShippingService"
@@ -3425,10 +3190,6 @@
      "Organization",
      "ProgramMembership"
     ],
-    "members": [
-     "Organization",
-     "Person"
-    ],
     "naics": [
      "Text"
     ],
@@ -3467,19 +3228,11 @@
     "review": [
      "Review"
     ],
-    "reviews": [
-     "Review"
-    ],
     "sameAs": [
      "URL"
     ],
     "seeks": [
      "Demand"
-    ],
-    "serviceArea": [
-     "AdministrativeArea",
-     "GeoShape",
-     "Place"
     ],
     "skills": [
      "DefinedTerm",
@@ -3549,9 +3302,6 @@
     "award": [
      "Text"
     ],
-    "awards": [
-     "Text"
-    ],
     "birthDate": [
      "Date"
     ],
@@ -3572,13 +3322,7 @@
      "Person",
      "URL"
     ],
-    "colleagues": [
-     "Person"
-    ],
     "contactPoint": [
-     "ContactPoint"
-    ],
-    "contactPoints": [
      "ContactPoint"
     ],
     "deathDate": [
@@ -3686,9 +3430,6 @@
      "Language",
      "Text"
     ],
-    "lifeEvent": [
-     "Event"
-    ],
     "mainEntityOfPage": [
      "CreativeWork",
      "URL"
@@ -3724,19 +3465,11 @@
     "parent": [
      "Person"
     ],
-    "parents": [
-     "Person"
-    ],
     "performerIn": [
      "Event"
     ],
     "potentialAction": [
      "Action"
-    ],
-    "pronouns": [
-     "DefinedTerm",
-     "StructuredValue",
-     "Text"
     ],
     "publishingPrinciples": [
      "CreativeWork",
@@ -3752,9 +3485,6 @@
      "Demand"
     ],
     "sibling": [
-     "Person"
-    ],
-    "siblings": [
      "Person"
     ],
     "skills": [
@@ -3894,11 +3624,6 @@
     "sameAs": [
      "URL"
     ],
-    "serviceArea": [
-     "AdministrativeArea",
-     "GeoShape",
-     "Place"
-    ],
     "streetAddress": [
      "Text"
     ],
@@ -4004,9 +3729,6 @@
      "StructuredValue",
      "Text"
     ],
-    "valueGroup": [
-     "Text"
-    ],
     "valueReference": [
      "DefinedTerm",
      "Enumeration",
@@ -4106,9 +3828,6 @@
     "award": [
      "Text"
     ],
-    "awards": [
-     "Text"
-    ],
     "character": [
      "Person"
     ],
@@ -4157,10 +3876,6 @@
     "countryOfOrigin": [
      "Country"
     ],
-    "creativeWorkStatus": [
-     "DefinedTerm",
-     "Text"
-    ],
     "creator": [
      "Organization",
      "Person"
@@ -4193,9 +3908,6 @@
     "discussionUrl": [
      "URL"
     ],
-    "displayLocation": [
-     "Place"
-    ],
     "downvoteCount": [
      "Integer"
     ],
@@ -4208,11 +3920,6 @@
     ],
     "educationalAlignment": [
      "AlignmentObject"
-    ],
-    "educationalLevel": [
-     "DefinedTerm",
-     "Text",
-     "URL"
     ],
     "educationalUse": [
      "DefinedTerm",
@@ -4228,19 +3935,12 @@
      "Text",
      "URL"
     ],
-    "encodings": [
-     "MediaObject"
-    ],
     "exampleOfWork": [
      "CreativeWork"
     ],
     "expires": [
      "Date",
      "DateTime"
-    ],
-    "fileFormat": [
-     "Text",
-     "URL"
     ],
     "funder": [
      "Organization",
@@ -4286,11 +3986,6 @@
      "Boolean"
     ],
     "isBasedOn": [
-     "CreativeWork",
-     "Product",
-     "URL"
-    ],
-    "isBasedOnUrl": [
      "CreativeWork",
      "Product",
      "URL"
@@ -4396,9 +4091,6 @@
      "PublicationEvent"
     ],
     "review": [
-     "Review"
-    ],
-    "reviews": [
      "Review"
     ],
     "sameAs": [
@@ -4720,9 +4412,6 @@
     "potentialAction": [
      "Action"
     ],
-    "produces": [
-     "Thing"
-    ],
     "provider": [
      "Organization",
      "Person"
@@ -4735,14 +4424,6 @@
     ],
     "sameAs": [
      "URL"
-    ],
-    "serviceArea": [
-     "AdministrativeArea",
-     "GeoShape",
-     "Place"
-    ],
-    "serviceAudience": [
-     "Audience"
     ],
     "serviceOutput": [
      "Thing"
@@ -4846,9 +4527,6 @@
     "award": [
      "Text"
     ],
-    "awards": [
-     "Text"
-    ],
     "breadcrumb": [
      "BreadcrumbList",
      "Text"
@@ -4901,10 +4579,6 @@
     "countryOfOrigin": [
      "Country"
     ],
-    "creativeWorkStatus": [
-     "DefinedTerm",
-     "Text"
-    ],
     "creator": [
      "Organization",
      "Person"
@@ -4937,9 +4611,6 @@
     "discussionUrl": [
      "URL"
     ],
-    "displayLocation": [
-     "Place"
-    ],
     "editEIDR": [
      "Text",
      "URL"
@@ -4949,11 +4620,6 @@
     ],
     "educationalAlignment": [
      "AlignmentObject"
-    ],
-    "educationalLevel": [
-     "DefinedTerm",
-     "Text",
-     "URL"
     ],
     "educationalUse": [
      "DefinedTerm",
@@ -4966,19 +4632,12 @@
      "Text",
      "URL"
     ],
-    "encodings": [
-     "MediaObject"
-    ],
     "exampleOfWork": [
      "CreativeWork"
     ],
     "expires": [
      "Date",
      "DateTime"
-    ],
-    "fileFormat": [
-     "Text",
-     "URL"
     ],
     "funder": [
      "Organization",
@@ -5024,11 +4683,6 @@
      "Boolean"
     ],
     "isBasedOn": [
-     "CreativeWork",
-     "Product",
-     "URL"
-    ],
-    "isBasedOnUrl": [
      "CreativeWork",
      "Product",
      "URL"
@@ -5148,9 +4802,6 @@
      "Organization",
      "Person"
     ],
-    "reviews": [
-     "Review"
-    ],
     "sameAs": [
      "URL"
     ],
@@ -5170,9 +4821,6 @@
      "Person"
     ],
     "significantLink": [
-     "URL"
-    ],
-    "significantLinks": [
      "URL"
     ],
     "size": [
@@ -5345,9 +4993,6 @@
     "award": [
      "Text"
     ],
-    "awards": [
-     "Text"
-    ],
     "character": [
      "Person"
     ],
@@ -5396,10 +5041,6 @@
     "countryOfOrigin": [
      "Country"
     ],
-    "creativeWorkStatus": [
-     "DefinedTerm",
-     "Text"
-    ],
     "creator": [
      "Organization",
      "Person"
@@ -5432,9 +5073,6 @@
     "discussionUrl": [
      "URL"
     ],
-    "displayLocation": [
-     "Place"
-    ],
     "editEIDR": [
      "Text",
      "URL"
@@ -5444,11 +5082,6 @@
     ],
     "educationalAlignment": [
      "AlignmentObject"
-    ],
-    "educationalLevel": [
-     "DefinedTerm",
-     "Text",
-     "URL"
     ],
     "educationalUse": [
      "DefinedTerm",
@@ -5461,19 +5094,12 @@
      "Text",
      "URL"
     ],
-    "encodings": [
-     "MediaObject"
-    ],
     "exampleOfWork": [
      "CreativeWork"
     ],
     "expires": [
      "Date",
      "DateTime"
-    ],
-    "fileFormat": [
-     "Text",
-     "URL"
     ],
     "funder": [
      "Organization",
@@ -5519,11 +5145,6 @@
      "Boolean"
     ],
     "isBasedOn": [
-     "CreativeWork",
-     "Product",
-     "URL"
-    ],
-    "isBasedOnUrl": [
      "CreativeWork",
      "Product",
      "URL"
@@ -5628,9 +5249,6 @@
      "PublicationEvent"
     ],
     "review": [
-     "Review"
-    ],
-    "reviews": [
      "Review"
     ],
     "sameAs": [

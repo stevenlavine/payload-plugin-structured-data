@@ -15,6 +15,11 @@ export const ALLOWED_EXTENSIONS: Record<string, string[]> = {
   SearchAction: ['query-input'],
 }
 
+const own = <T>(map: Record<string, T> | undefined, key: string): T | undefined =>
+  map && Object.hasOwn(map, key) ? map[key] : undefined
+
+const typeInfo = (type: string): TypeInfo | undefined => own(vocabulary.types, type)
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
@@ -24,13 +29,13 @@ const typesOf = (node: Record<string, unknown>): string[] => {
 }
 
 const isExtension = (type: string, property: string): boolean => {
-  const lineage = [type, ...(vocabulary.types[type]?.parents ?? [])]
-  return lineage.some((t) => ALLOWED_EXTENSIONS[t]?.includes(property))
+  const lineage = [type, ...(typeInfo(type)?.parents ?? [])]
+  return lineage.some((t) => own(ALLOWED_EXTENSIONS, t)?.includes(property))
 }
 
 /** True when `type` is one of `ranges`, or a descendant of one. */
 const inRange = (type: string, ranges: string[]): boolean => {
-  const lineage = [type, ...(vocabulary.types[type]?.parents ?? [])]
+  const lineage = [type, ...(typeInfo(type)?.parents ?? [])]
   return lineage.some((t) => ranges.includes(t))
 }
 
@@ -43,14 +48,14 @@ export const checkSchemaOrg = (node: Record<string, unknown>, path?: string): st
   const base = path ?? (types[0] || 'node')
   if (types.length === 0) {
     // A bare reference such as { '@id': '...' } is fine; anything else needs a type.
-    const keys = Object.keys(node).filter((k) => k !== '@id')
+    const keys = Object.keys(node).filter((k) => !k.startsWith('@'))
     return keys.length > 0 ? [`${base}: node has properties but no @type`] : []
   }
 
   const messages: string[] = []
-  const known = types.filter((t) => vocabulary.types[t])
+  const known = types.filter((t) => typeInfo(t))
   for (const t of types) {
-    if (!vocabulary.types[t]) {
+    if (!typeInfo(t)) {
       messages.push(`${base}: unknown type "${t}"`)
     }
   }
@@ -63,7 +68,7 @@ export const checkSchemaOrg = (node: Record<string, unknown>, path?: string): st
       continue
     }
     const here = `${base}.${key}`
-    const ranges = known.map((t) => vocabulary.types[t]?.properties[key]).find((r) => r !== undefined)
+    const ranges = known.map((t) => own(typeInfo(t)?.properties, key)).find((r) => r !== undefined)
     if (!ranges) {
       if (!known.some((t) => isExtension(t, key))) {
         messages.push(`${here}: unknown property for ${known.join('/')}`)
