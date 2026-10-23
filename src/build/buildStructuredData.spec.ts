@@ -60,6 +60,23 @@ describe('buildStructuredData', () => {
     expect(types(buildStructuredData({ options, settings, collection: 'pages', doc: service }))).toContain('Service')
   })
 
+  test('type function returning null still outputs FAQ and breadcrumbs', () => {
+    const noType: ResolvedOptions = {
+      ...options,
+      collections: {
+        pages: {
+          type: () => null,
+          path: (doc) => `/${doc.slug}`,
+          faq: { block: 'faq', items: 'faqs', question: 'question', answer: 'answer' },
+        },
+      },
+    }
+    const doc = { id: 3, slug: 'about', title: 'About', layout: [{ blockType: 'faq', faqs: [{ question: 'Q', answer: 'A' }] }] }
+    expect(types(buildStructuredData({ options: noType, settings, collection: 'pages', doc }))).toEqual([
+      'Organization', 'WebSite', 'FAQPage', 'BreadcrumbList',
+    ])
+  })
+
   test('unknown collection warns and keeps site nodes', () => {
     const result = buildStructuredData({ options, settings, collection: 'nope', doc: post })
     expect(types(result)).toEqual(['Organization', 'WebSite'])

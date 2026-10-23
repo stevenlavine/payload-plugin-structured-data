@@ -20,7 +20,10 @@ describe('breadcrumbTrail', () => {
 
   test('custom function wins', () => {
     const custom = () => [{ name: 'Home', path: '/' }, { name: 'Blog', path: '/blog' }]
-    expect(breadcrumbTrail({ breadcrumbs: [{ label: 'x', url: '/x' }] }, '/b', 'B', custom)).toHaveLength(2)
+    expect(breadcrumbTrail({ breadcrumbs: [{ label: 'x', url: '/x' }] }, '/b', 'B', custom)).toEqual([
+      { name: 'Home', path: '/' },
+      { name: 'Blog', path: '/blog' },
+    ])
   })
 })
 

@@ -9,12 +9,25 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { getPluginOptions } from '../src/plugin.js'
 import { StructuredData } from '../src/render/StructuredData.js'
 import { StructuredDataPreview } from '../src/render/StructuredDataPreview.js'
-import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
 
 let payload: Payload
+const created: { collection: 'media' | 'posts'; id: number | string }[] = []
+
+const track = <T extends { id: number | string }>(collection: 'media' | 'posts', doc: T): T => {
+  created.push({ collection, id: doc.id })
+  return doc
+}
 
 beforeAll(async () => {
   payload = await getPayload({ config })
+})
+
+afterEach(async () => {
+  while (created.length) {
+    const { collection, id } = created.pop()!
+    await payload.delete({ collection, id }).catch(() => undefined)
+  }
 })
 
 afterAll(async () => {
@@ -31,10 +44,13 @@ describe('plugin', () => {
   })
 
   test('adds the sidebar group to configured collections only', async () => {
-    const post = await payload.create({
-      collection: 'posts',
-      data: { title: 'Hi', slug: 'hi', structuredData: { type: 'Article', disabled: false } },
-    })
+    const post = track(
+      'posts',
+      await payload.create({
+        collection: 'posts',
+        data: { title: 'Hi', slug: 'hi', structuredData: { type: 'Article', disabled: false } },
+      }),
+    )
     expect(post.structuredData?.type).toBe('Article')
     expect(payload.collections.media.config.fields.some((f) => 'name' in f && f.name === 'structuredData')).toBe(false)
   })
@@ -49,7 +65,7 @@ describe('plugin', () => {
 describe('StructuredData component', () => {
   test('renders one escaped script tag with the full graph', async () => {
     await payload.updateGlobal({ slug: 'structured-data-settings', data: { name: 'Acme' } })
-    const post = await payload.create({ collection: 'posts', data: { title: 'A </script> title', slug: 'x' } })
+    const post = track('posts', await payload.create({ collection: 'posts', data: { title: 'A </script> title', slug: 'x' } }))
 
     const element = await StructuredData({ config, collection: 'posts', doc: post })
     const html = renderToStaticMarkup(element)
@@ -65,12 +81,14 @@ describe('StructuredData component', () => {
   })
 
   test('site-only when no doc is given', async () => {
+    await payload.updateGlobal({ slug: 'structured-data-settings', data: { name: 'Acme' } })
     const html = renderToStaticMarkup(await StructuredData({ config }))
     expect(html).toContain('"WebSite"')
     expect(html).not.toContain('BlogPosting')
   })
 
   test('a null doc does not throw and gives a site-only graph', async () => {
+    await payload.updateGlobal({ slug: 'structured-data-settings', data: { name: 'Acme' } })
     const element = await StructuredData({ config, collection: 'posts', doc: null })
     expect(element).not.toBeNull()
     const html = renderToStaticMarkup(element)
@@ -90,11 +108,14 @@ describe('StructuredDataPreview', () => {
       file,
       Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64'),
     )
-    const media = await payload.create({ collection: 'media', data: {}, filePath: file })
-    const post = await payload.create({
-      collection: 'posts',
-      data: { title: 'With image', slug: 'with-image', meta: { image: media.id } as never },
-    })
+    const media = track('media', await payload.create({ collection: 'media', data: {}, filePath: file }))
+    const post = track(
+      'posts',
+      await payload.create({
+        collection: 'posts',
+        data: { title: 'With image', slug: 'with-image', meta: { image: media.id } as never },
+      }),
+    )
     // depth 0 shape, as the edit view supplies it
     const flat = await payload.findByID({ collection: 'posts', id: post.id, depth: 0 })
     expect((flat.meta as { image?: unknown } | undefined)?.image).toBe(media.id)
