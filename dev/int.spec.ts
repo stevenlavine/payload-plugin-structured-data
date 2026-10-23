@@ -43,6 +43,14 @@ describe('plugin', () => {
     expect(saved.name).toBe('Acme')
   })
 
+  test('saving settings outside Next.js still succeeds', async () => {
+    const saved = await payload.updateGlobal({
+      slug: 'structured-data-settings',
+      data: { name: 'Outside Next', organizationType: 'Organization' },
+    })
+    expect(saved.name).toBe('Outside Next')
+  })
+
   test('adds the sidebar group to configured collections only', async () => {
     const post = track(
       'posts',
