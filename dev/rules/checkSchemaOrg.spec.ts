@@ -1,0 +1,66 @@
+import { describe, expect, it } from 'vitest'
+
+import { checkSchemaOrg } from './checkSchemaOrg.js'
+
+describe('checkSchemaOrg', () => {
+  it('accepts a valid node', () => {
+    expect(
+      checkSchemaOrg({ '@type': 'Organization', '@id': 'x', name: 'A', url: 'https://a.com' }),
+    ).toEqual([])
+  })
+
+  it('flags an unknown property', () => {
+    const messages = checkSchemaOrg({ '@type': 'Organization', nmae: 'A' })
+    expect(messages).toHaveLength(1)
+    expect(messages[0]).toContain('Organization.nmae')
+  })
+
+  it('flags a nested object of the wrong type', () => {
+    const messages = checkSchemaOrg({ '@type': 'BlogPosting', author: { '@type': 'PostalAddress' } })
+    expect(messages).toHaveLength(1)
+    expect(messages[0]).toContain('BlogPosting.author')
+  })
+
+  it('accepts a subtype in range', () => {
+    expect(
+      checkSchemaOrg({ '@type': 'BlogPosting', publisher: { '@type': 'LocalBusiness', name: 'A' } }),
+    ).toEqual([])
+  })
+
+  it('accepts strings for object ranges', () => {
+    expect(
+      checkSchemaOrg({ '@type': 'WebPage', primaryImageOfPage: 'https://a.com/i.png' }),
+    ).toEqual([])
+  })
+
+  it('accepts @id references', () => {
+    expect(
+      checkSchemaOrg({ '@type': 'BlogPosting', publisher: { '@id': 'https://a.com/#organization' } }),
+    ).toEqual([])
+  })
+
+  it('allows the documented extension', () => {
+    expect(
+      checkSchemaOrg({ '@type': 'SearchAction', 'query-input': 'required name=search_term_string' }),
+    ).toEqual([])
+  })
+
+  it('flags an unknown type', () => {
+    expect(checkSchemaOrg({ '@type': 'Organisation' })).toHaveLength(1)
+  })
+
+  it('walks arrays and nested objects, prefixing the path', () => {
+    const messages = checkSchemaOrg(
+      { '@type': 'Organization', address: { '@type': 'PostalAddress', stret: 'x' } },
+      'root',
+    )
+    expect(messages).toHaveLength(1)
+    expect(messages[0]).toContain('root.address.stret')
+    const list = checkSchemaOrg({
+      '@type': 'BreadcrumbList',
+      itemListElement: [{ '@type': 'ListItem', position: 1, bogus: true }],
+    })
+    expect(list).toHaveLength(1)
+    expect(list[0]).toContain('itemListElement[0]')
+  })
+})
