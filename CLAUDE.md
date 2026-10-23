@@ -18,9 +18,12 @@
 ```bash
 pnpm test:int --run   # Vitest over src/**/*.spec.ts and dev/int.spec.ts (SQLite)
 pnpm typecheck        # tsc --noEmit
+pnpm lint             # eslint
 pnpm build            # copyfiles + tsc types + swc into dist/
 pnpm dev              # Next dev app in dev/
 ```
+
+Rules data (Schema.org vocabulary subset, Google rules, checkers) lives in `dev/rules/`. Regenerate the Schema.org subset with `node dev/rules/generate-schemaorg.mjs`.
 
 On Windows, `pnpm build` may need `SWC_NATIVE_BINDING_CACHE` pointing at a directory whose ancestors have no broad write ACLs (e.g. `C:\Users\steve\.swc-cache`).
 

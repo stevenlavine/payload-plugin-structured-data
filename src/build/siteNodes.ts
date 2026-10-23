@@ -62,7 +62,7 @@ export function buildOrganization(
     legalName: clean(settings.legalName),
     description: clean(settings.description),
     logo,
-    // Google asks for an image on LocalBusiness; the logo stands in when no photo is set
+    // Google lists image only for restaurant carousels, but it suits Organization and other consumers; the logo stands in when no photo is set
     image: mediaUrl(options.siteUrl, settings.image, options.imageSize) ?? logo,
     email: clean(settings.email),
     telephone: clean(settings.telephone),
