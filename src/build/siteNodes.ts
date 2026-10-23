@@ -53,13 +53,17 @@ export function buildOrganization(
     .filter((i) => i.propertyID && i.value)
     .map((i) => ({ '@type': 'PropertyValue' as const, ...i }))
 
+  const logo = mediaUrl(options.siteUrl, settings.logo, options.imageSize)
+
   // Typed object literal: a misspelt property name fails typecheck (excess property check)
   const props: Omit<Partial<OrganizationLeaf>, '@type' | '@id'> = {
     name,
     url: home(options.siteUrl),
     legalName: clean(settings.legalName),
     description: clean(settings.description),
-    logo: mediaUrl(options.siteUrl, settings.logo, options.imageSize),
+    logo,
+    // Google asks for an image on LocalBusiness; the logo stands in when no photo is set
+    image: mediaUrl(options.siteUrl, settings.image, options.imageSize) ?? logo,
     email: clean(settings.email),
     telephone: clean(settings.telephone),
     address: postal,

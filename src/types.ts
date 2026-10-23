@@ -29,7 +29,7 @@ export type CollectionOptions = {
 export type StructuredDataPluginOptions = {
   siteUrl: string | undefined
   collections: Partial<Record<CollectionSlug, CollectionOptions>>
-  /** Upload collection for the logo. Default 'media' */
+  /** Upload collection for the logo and image. Default 'media' */
   mediaCollection?: CollectionSlug
   /** Image size name to prefer, e.g. 'og'. Falls back to the original */
   imageSize?: string
@@ -48,6 +48,7 @@ export type Settings = {
   legalName?: string | null
   description?: string | null
   logo?: unknown
+  image?: unknown
   email?: string | null
   telephone?: string | null
   address?: {

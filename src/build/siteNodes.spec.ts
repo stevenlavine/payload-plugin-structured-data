@@ -31,6 +31,7 @@ describe('buildOrganization', () => {
       legalName: 'Acme Studio Ltd',
       description: 'We build things.',
       logo: 'https://a.com/media/logo.png',
+      image: 'https://a.com/media/logo.png',
       email: 'hi@a.com',
       telephone: '+441234567890',
       address: { '@type': 'PostalAddress', addressLocality: 'Ashford', addressRegion: 'Kent', addressCountry: 'GB' },
@@ -41,6 +42,23 @@ describe('buildOrganization', () => {
       identifier: [{ '@type': 'PropertyValue', propertyID: 'Companies House company number', value: '12345678' }],
     })
     expect(warnings).toEqual([])
+  })
+
+  test('image uses its own upload, preferring the image size', () => {
+    const node = buildOrganization(
+      { ...full, image: { url: '/media/shop.jpg', sizes: { og: { url: '/media/shop-og.jpg' } } } },
+      options,
+      [],
+    )
+    expect(node?.image).toBe('https://a.com/media/shop-og.jpg')
+    expect(node?.logo).toBe('https://a.com/media/logo.png')
+  })
+
+  test('image falls back to the logo, and is left out when neither is set', () => {
+    expect(buildOrganization({ name: 'Acme', logo: { url: '/media/logo.png' } }, options, [])?.image).toBe(
+      'https://a.com/media/logo.png',
+    )
+    expect(buildOrganization({ name: 'Acme', image: 7 }, options, [])).not.toHaveProperty('image')
   })
 
   test('leaves out empty optional properties', () => {

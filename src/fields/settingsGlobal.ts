@@ -24,6 +24,12 @@ export function settingsGlobal(options: ResolvedOptions): GlobalConfig {
       { name: 'legalName', type: 'text' },
       { name: 'description', type: 'textarea' },
       { name: 'logo', type: 'upload', relationTo: options.mediaCollection ?? 'media' },
+      {
+        name: 'image',
+        type: 'upload',
+        relationTo: options.mediaCollection ?? 'media',
+        admin: { description: 'A photo of the business, e.g. the premises or team. Leave empty to use the logo.' },
+      },
       { name: 'email', type: 'email' },
       { name: 'telephone', type: 'text', admin: { description: 'International format, e.g. +441234567890' } },
       {

@@ -455,6 +455,10 @@ export interface StructuredDataSetting {
   legalName?: string | null;
   description?: string | null;
   logo?: (number | null) | Media;
+  /**
+   * A photo of the business, e.g. the premises or team. Leave empty to use the logo.
+   */
+  image?: (number | null) | Media;
   email?: string | null;
   /**
    * International format, e.g. +441234567890
@@ -513,6 +517,7 @@ export interface StructuredDataSettingsSelect<T extends boolean = true> {
   legalName?: T;
   description?: T;
   logo?: T;
+  image?: T;
   email?: T;
   telephone?: T;
   address?:

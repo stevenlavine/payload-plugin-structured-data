@@ -67,7 +67,7 @@ Commit the updated `importMap.js` if your project tracks it. Without this step t
 | --- | --- | --- |
 | `siteUrl` | `string` | Required. The public origin, such as `https://example.com`. Every URL in the output is built from it. |
 | `collections` | `Record<slug, CollectionOptions>` | The collections that get structured data. Each one gets a sidebar group in the admin. A slug that does not exist in your config throws. |
-| `mediaCollection` | `string` | Upload collection for the logo. Default `media`. |
+| `mediaCollection` | `string` | Upload collection for the logo and image. Default `media`. |
 | `imageSize` | `string` | Image size name to prefer, such as `og`. Falls back to the original file. |
 | `search` | `{ urlTemplate: string }` | Adds a `SearchAction` to `WebSite`, for example `https://example.com/search?q={search_term_string}`. Google retired the sitelinks search box in November 2024, so this no longer changes Google results. It is still valid Schema.org, and other tools and AI assistants can read it. |
 | `disabled` | `boolean` | Keeps the fields so your schema stays stable, but outputs nothing. |
@@ -149,6 +149,7 @@ const json = graph ? serializeJsonLd(graph) : null
 
 - Business type: Organisation or Local business
 - Name (required), legal name, description and logo
+- Image: a photo of the business. Google asks for one on a local business. When empty, the logo is used.
 - Email and telephone
 - Postal address (street, town or city, county or region, postcode, country code)
 - Social profile links (`sameAs`)
