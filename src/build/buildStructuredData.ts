@@ -30,7 +30,7 @@ export function buildStructuredData({ options, settings, collection, doc }: Buil
 
     if (collection && doc) {
       ref = `${collection}/${doc.id ?? '?'}`
-      const config = options.collections[collection as keyof typeof options.collections]
+      const config = options.collections[collection]
       const overrides = (doc[GROUP_NAME] ?? {}) as { type?: unknown; disabled?: unknown }
 
       if (!config) {

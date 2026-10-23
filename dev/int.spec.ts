@@ -52,7 +52,7 @@ describe('StructuredData component', () => {
     const post = await payload.create({ collection: 'posts', data: { title: 'A </script> title', slug: 'x' } })
 
     const element = await StructuredData({ config, collection: 'posts', doc: post })
-    const html = renderToStaticMarkup(element!)
+    const html = renderToStaticMarkup(element)
 
     expect(html.match(/<script/g)).toHaveLength(1)
     expect(html).toContain('type="application/ld+json"')
@@ -65,7 +65,7 @@ describe('StructuredData component', () => {
   })
 
   test('site-only when no doc is given', async () => {
-    const html = renderToStaticMarkup((await StructuredData({ config }))!)
+    const html = renderToStaticMarkup(await StructuredData({ config }))
     expect(html).toContain('"WebSite"')
     expect(html).not.toContain('BlogPosting')
   })
@@ -73,7 +73,7 @@ describe('StructuredData component', () => {
   test('a null doc does not throw and gives a site-only graph', async () => {
     const element = await StructuredData({ config, collection: 'posts', doc: null })
     expect(element).not.toBeNull()
-    const html = renderToStaticMarkup(element!)
+    const html = renderToStaticMarkup(element)
     expect(html).toContain('"WebSite"')
   })
 })
