@@ -90,6 +90,29 @@ describe('checkSchemaOrg', () => {
     expect(messages[0]).toContain('Organization.members')
   })
 
+  it('accepts a string or a number for a numeric range', () => {
+    expect(checkSchemaOrg({ '@type': 'ListItem', position: '1' })).toEqual([])
+    expect(checkSchemaOrg({ '@type': 'ListItem', position: 1 })).toEqual([])
+  })
+
+  it('flags a number where the range has no numeric type', () => {
+    const messages = checkSchemaOrg({ '@type': 'BlogPosting', author: 42 })
+    expect(messages).toHaveLength(1)
+    expect(messages[0]).toContain('BlogPosting.author')
+  })
+
+  it('flags a boolean where the range has no Boolean', () => {
+    const messages = checkSchemaOrg({ '@type': 'Organization', address: true })
+    expect(messages).toHaveLength(1)
+    expect(messages[0]).toContain('Organization.address')
+  })
+
+  it('checks scalar types inside arrays', () => {
+    const messages = checkSchemaOrg({ '@type': 'BlogPosting', author: ['A', 7] })
+    expect(messages).toHaveLength(1)
+    expect(messages[0]).toContain('BlogPosting.author[1]')
+  })
+
   it('skips @ keys on untyped value objects', () => {
     expect(
       checkSchemaOrg({ '@type': 'WebPage', name: { '@value': 'x', '@language': 'en' } }),

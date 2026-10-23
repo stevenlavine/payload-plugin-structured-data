@@ -179,7 +179,7 @@ The `@id` values are `<siteUrl>/#organization` and `<siteUrl>/#website` for the 
 
 Every node the plugin outputs is tested against two things:
 
-- **Schema.org.** The vocabulary (version 30.1, read on 2026-10-23) in `dev/rules/schemaorg.json`. A misspelt property or a value of the wrong type fails the tests. Superseded and pending-layer terms are left out.
+- **Schema.org.** The vocabulary (version 30.1, read on 2026-10-23) in `dev/rules/schemaorg.json`. A misspelt property fails the tests, as does a value of the wrong type: a nested node of a type the property does not accept, a number where the property takes no number, or true/false where it takes no Boolean. Text is accepted for any property, as Schema.org allows. Superseded and pending-layer terms are left out.
 - **Google's documented rules.** The required and recommended properties on Google Search Central, read on 2026-10-23, in `dev/rules/google.ts`. FAQPage is checked against Schema.org only, because Google retired that rich result.
 
 These checks run in our test suite, not in your site. The `dev/` folder is not part of the published package.

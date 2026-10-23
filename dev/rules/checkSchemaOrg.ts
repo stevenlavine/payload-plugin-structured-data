@@ -40,6 +40,27 @@ const inRange = (type: string, ranges: string[]): boolean => {
 }
 
 /**
+ * Schema.org's numeric data types: Number and its subtypes Integer and Float. The data
+ * types are not in schemaorg.json's `types`, so their lineage is written out here.
+ */
+const NUMERIC = ['Number', 'Integer', 'Float']
+
+/**
+ * Checks a scalar against a property's ranges. Strings are accepted for any range
+ * (Schema.org "expects" a type but does not require it); a number needs a numeric
+ * range, a boolean needs Boolean.
+ */
+const scalarError = (item: unknown, ranges: string[]): string | undefined => {
+  if (typeof item === 'number' && !ranges.some((r) => NUMERIC.includes(r))) {
+    return `number is not in range (${ranges.join(', ')})`
+  }
+  if (typeof item === 'boolean' && !ranges.includes('Boolean')) {
+    return `boolean is not in range (${ranges.join(', ')})`
+  }
+  return undefined
+}
+
+/**
  * Checks a JSON-LD node against the trimmed Schema.org vocabulary, walking nested
  * objects and arrays. Returns one message per problem; an empty array means valid.
  */
@@ -77,10 +98,14 @@ export const checkSchemaOrg = (node: Record<string, unknown>, path?: string): st
     }
     const values = Array.isArray(value) ? value : [value]
     values.forEach((item, index) => {
-      if (!isRecord(item)) {
-        return // strings, numbers and booleans are accepted for any range
-      }
       const itemPath = Array.isArray(value) ? `${here}[${index}]` : here
+      if (!isRecord(item)) {
+        const error = scalarError(item, ranges)
+        if (error) {
+          messages.push(`${itemPath}: ${error}`)
+        }
+        return
+      }
       const itemTypes = typesOf(item)
       if (itemTypes.length === 0) {
         messages.push(...checkSchemaOrg(item, itemPath))
