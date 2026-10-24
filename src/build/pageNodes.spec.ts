@@ -80,6 +80,29 @@ describe('buildPageNode', () => {
     })
   })
 
+  test('string author becomes a Person', () => {
+    const doc = { ...post, byline: 'Sam Smith' }
+    const node = buildPageNode({ ...base, type: 'Article', doc, fields: { author: 'byline' } }, [])
+    expect(node?.author).toEqual({ '@type': 'Person', name: 'Sam Smith' })
+  })
+
+  test('Service without areaServed leaves the key out', () => {
+    const node = buildPageNode(
+      { ...base, url: 'https://a.com/services/web', type: 'Service', doc: post, settings: { name: 'Acme' } },
+      [],
+    )
+    expect(node).not.toHaveProperty('areaServed')
+  })
+
+  test('WebPage without settings name has no publisher', () => {
+    const node = buildPageNode(
+      { ...base, url: 'https://a.com/about', type: 'WebPage', doc: post, settings: {}, hasOrganization: false },
+      [],
+    )
+    expect(node).not.toHaveProperty('publisher')
+    expect(node).not.toHaveProperty('isPartOf')
+  })
+
   test('unpopulated image relation is skipped, not fetched', () => {
     const node = buildPageNode({ ...base, type: 'Article', doc: { ...post, meta: { image: 7 } } }, [])
     expect(node).not.toHaveProperty('image')

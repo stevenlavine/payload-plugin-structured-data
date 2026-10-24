@@ -17,16 +17,24 @@ export const defaultESLintIgnores = [
   '**/payload-types.ts',
   '**/dist/',
   '**/.yarn/',
-  '**/build/',
+  'build/',
   '**/node_modules/',
   '**/temp/',
 ]
 
 export default [
+  { ignores: defaultESLintIgnores },
   ...payloadEsLintConfig,
   {
     rules: {
       'no-restricted-exports': 'off',
+      // The codebase orders by meaning, not alphabet.
+      'perfectionist/sort-imports': 'off',
+      'perfectionist/sort-jsx-props': 'off',
+      'perfectionist/sort-intersection-types': 'off',
+      'perfectionist/sort-object-types': 'off',
+      'perfectionist/sort-objects': 'off',
+      'perfectionist/sort-union-types': 'off',
     },
   },
   {

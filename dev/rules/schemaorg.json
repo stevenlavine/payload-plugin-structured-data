@@ -1,0 +1,5357 @@
+{
+ "source": "https://schema.org/version/latest/schemaorg-current-https.jsonld",
+ "version": "30.1",
+ "fetched": "2026-10-23",
+ "types": {
+  "Answer": {
+   "parents": [
+    "Comment",
+    "CreativeWork",
+    "Thing"
+   ],
+   "properties": {
+    "about": [
+     "Thing"
+    ],
+    "abstract": [
+     "Text"
+    ],
+    "accessibilityAPI": [
+     "Text"
+    ],
+    "accessibilityControl": [
+     "Text"
+    ],
+    "accessibilityFeature": [
+     "Text"
+    ],
+    "accessibilityHazard": [
+     "Text"
+    ],
+    "accessibilitySummary": [
+     "Text"
+    ],
+    "accessMode": [
+     "Text"
+    ],
+    "accessModeSufficient": [
+     "ItemList"
+    ],
+    "accountablePerson": [
+     "Person"
+    ],
+    "acquireLicensePage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "alternativeHeadline": [
+     "Text"
+    ],
+    "archivedAt": [
+     "URL",
+     "WebPage"
+    ],
+    "assesses": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "associatedMedia": [
+     "MediaObject"
+    ],
+    "audience": [
+     "Audience"
+    ],
+    "audio": [
+     "AudioObject",
+     "Clip",
+     "MusicRecording"
+    ],
+    "author": [
+     "Organization",
+     "Person"
+    ],
+    "award": [
+     "Text"
+    ],
+    "character": [
+     "Person"
+    ],
+    "citation": [
+     "CreativeWork",
+     "Text"
+    ],
+    "comment": [
+     "Comment"
+    ],
+    "commentCount": [
+     "Integer"
+    ],
+    "conditionsOfAccess": [
+     "Text"
+    ],
+    "contentLocation": [
+     "Place"
+    ],
+    "contentRating": [
+     "Rating",
+     "Text"
+    ],
+    "contentReferenceTime": [
+     "DateTime"
+    ],
+    "contributor": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightHolder": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightNotice": [
+     "Text"
+    ],
+    "copyrightYear": [
+     "Number"
+    ],
+    "correction": [
+     "CorrectionComment",
+     "Text",
+     "URL"
+    ],
+    "countryOfOrigin": [
+     "Country"
+    ],
+    "creator": [
+     "Organization",
+     "Person"
+    ],
+    "creditText": [
+     "Text"
+    ],
+    "dateCreated": [
+     "Date",
+     "DateTime"
+    ],
+    "dateModified": [
+     "Date",
+     "DateTime"
+    ],
+    "datePublished": [
+     "Date",
+     "DateTime"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "digitalSourceType": [
+     "IPTCDigitalSourceEnumeration"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "discussionUrl": [
+     "URL"
+    ],
+    "downvoteCount": [
+     "Integer"
+    ],
+    "editEIDR": [
+     "Text",
+     "URL"
+    ],
+    "editor": [
+     "Person"
+    ],
+    "educationalAlignment": [
+     "AlignmentObject"
+    ],
+    "educationalUse": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "encoding": [
+     "MediaObject"
+    ],
+    "encodingFormat": [
+     "Text",
+     "URL"
+    ],
+    "exampleOfWork": [
+     "CreativeWork"
+    ],
+    "expires": [
+     "Date",
+     "DateTime"
+    ],
+    "funder": [
+     "Organization",
+     "Person"
+    ],
+    "funding": [
+     "Grant"
+    ],
+    "genre": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "hasPart": [
+     "CreativeWork"
+    ],
+    "headline": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "inLanguage": [
+     "Language",
+     "Text"
+    ],
+    "interactionStatistic": [
+     "InteractionCounter"
+    ],
+    "interactivityType": [
+     "Text"
+    ],
+    "interpretedAsClaim": [
+     "Claim"
+    ],
+    "isAccessibleForFree": [
+     "Boolean"
+    ],
+    "isBasedOn": [
+     "CreativeWork",
+     "Product",
+     "URL"
+    ],
+    "isFamilyFriendly": [
+     "Boolean"
+    ],
+    "isPartOf": [
+     "CreativeWork",
+     "URL"
+    ],
+    "keywords": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "learningResourceType": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "license": [
+     "CreativeWork",
+     "URL"
+    ],
+    "locationCreated": [
+     "Place"
+    ],
+    "mainEntity": [
+     "Thing"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "maintainer": [
+     "Organization",
+     "Person"
+    ],
+    "material": [
+     "Product",
+     "Text",
+     "URL"
+    ],
+    "materialExtent": [
+     "QuantitativeValue",
+     "Text"
+    ],
+    "mentions": [
+     "Thing"
+    ],
+    "name": [
+     "Text"
+    ],
+    "offers": [
+     "Demand",
+     "Offer"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "parentItem": [
+     "Comment",
+     "CreativeWork"
+    ],
+    "pattern": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "position": [
+     "Integer",
+     "Text"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "producer": [
+     "Organization",
+     "Person"
+    ],
+    "provider": [
+     "Organization",
+     "Person"
+    ],
+    "publication": [
+     "PublicationEvent"
+    ],
+    "publisher": [
+     "Organization",
+     "Person"
+    ],
+    "publisherImprint": [
+     "Organization"
+    ],
+    "publishingPrinciples": [
+     "CreativeWork",
+     "URL"
+    ],
+    "recordedAt": [
+     "Event"
+    ],
+    "releasedEvent": [
+     "PublicationEvent"
+    ],
+    "review": [
+     "Review"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "schemaVersion": [
+     "Text",
+     "URL"
+    ],
+    "sdDatePublished": [
+     "Date"
+    ],
+    "sdLicense": [
+     "CreativeWork",
+     "URL"
+    ],
+    "sdPublisher": [
+     "Organization",
+     "Person"
+    ],
+    "sharedContent": [
+     "CreativeWork"
+    ],
+    "size": [
+     "DefinedTerm",
+     "QuantitativeValue",
+     "SizeSpecification",
+     "Text"
+    ],
+    "sourceOrganization": [
+     "Organization"
+    ],
+    "spatial": [
+     "Place"
+    ],
+    "spatialCoverage": [
+     "Place"
+    ],
+    "sponsor": [
+     "Organization",
+     "Person"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "teaches": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "temporal": [
+     "DateTime",
+     "Text"
+    ],
+    "temporalCoverage": [
+     "DateTime",
+     "Text",
+     "URL"
+    ],
+    "text": [
+     "Text"
+    ],
+    "thumbnail": [
+     "ImageObject"
+    ],
+    "thumbnailUrl": [
+     "URL"
+    ],
+    "timeRequired": [
+     "Duration"
+    ],
+    "translationOfWork": [
+     "CreativeWork"
+    ],
+    "translator": [
+     "Organization",
+     "Person"
+    ],
+    "typicalAgeRange": [
+     "Text"
+    ],
+    "upvoteCount": [
+     "Integer"
+    ],
+    "url": [
+     "URL"
+    ],
+    "usageInfo": [
+     "CreativeWork",
+     "URL"
+    ],
+    "version": [
+     "Number",
+     "Text"
+    ],
+    "video": [
+     "Clip",
+     "VideoObject"
+    ],
+    "wordCount": [
+     "Integer"
+    ],
+    "workExample": [
+     "CreativeWork"
+    ],
+    "workTranslation": [
+     "CreativeWork"
+    ]
+   }
+  },
+  "Article": {
+   "parents": [
+    "CreativeWork",
+    "Thing"
+   ],
+   "properties": {
+    "about": [
+     "Thing"
+    ],
+    "abstract": [
+     "Text"
+    ],
+    "accessibilityAPI": [
+     "Text"
+    ],
+    "accessibilityControl": [
+     "Text"
+    ],
+    "accessibilityFeature": [
+     "Text"
+    ],
+    "accessibilityHazard": [
+     "Text"
+    ],
+    "accessibilitySummary": [
+     "Text"
+    ],
+    "accessMode": [
+     "Text"
+    ],
+    "accessModeSufficient": [
+     "ItemList"
+    ],
+    "accountablePerson": [
+     "Person"
+    ],
+    "acquireLicensePage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "alternativeHeadline": [
+     "Text"
+    ],
+    "archivedAt": [
+     "URL",
+     "WebPage"
+    ],
+    "articleBody": [
+     "Text"
+    ],
+    "articleSection": [
+     "Text"
+    ],
+    "assesses": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "associatedMedia": [
+     "MediaObject"
+    ],
+    "audience": [
+     "Audience"
+    ],
+    "audio": [
+     "AudioObject",
+     "Clip",
+     "MusicRecording"
+    ],
+    "author": [
+     "Organization",
+     "Person"
+    ],
+    "award": [
+     "Text"
+    ],
+    "backstory": [
+     "CreativeWork",
+     "Text"
+    ],
+    "character": [
+     "Person"
+    ],
+    "citation": [
+     "CreativeWork",
+     "Text"
+    ],
+    "comment": [
+     "Comment"
+    ],
+    "commentCount": [
+     "Integer"
+    ],
+    "conditionsOfAccess": [
+     "Text"
+    ],
+    "contentLocation": [
+     "Place"
+    ],
+    "contentRating": [
+     "Rating",
+     "Text"
+    ],
+    "contentReferenceTime": [
+     "DateTime"
+    ],
+    "contributor": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightHolder": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightNotice": [
+     "Text"
+    ],
+    "copyrightYear": [
+     "Number"
+    ],
+    "correction": [
+     "CorrectionComment",
+     "Text",
+     "URL"
+    ],
+    "countryOfOrigin": [
+     "Country"
+    ],
+    "creator": [
+     "Organization",
+     "Person"
+    ],
+    "creditText": [
+     "Text"
+    ],
+    "dateCreated": [
+     "Date",
+     "DateTime"
+    ],
+    "dateModified": [
+     "Date",
+     "DateTime"
+    ],
+    "datePublished": [
+     "Date",
+     "DateTime"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "digitalSourceType": [
+     "IPTCDigitalSourceEnumeration"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "discussionUrl": [
+     "URL"
+    ],
+    "editEIDR": [
+     "Text",
+     "URL"
+    ],
+    "editor": [
+     "Person"
+    ],
+    "educationalAlignment": [
+     "AlignmentObject"
+    ],
+    "educationalUse": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "encoding": [
+     "MediaObject"
+    ],
+    "encodingFormat": [
+     "Text",
+     "URL"
+    ],
+    "exampleOfWork": [
+     "CreativeWork"
+    ],
+    "expires": [
+     "Date",
+     "DateTime"
+    ],
+    "funder": [
+     "Organization",
+     "Person"
+    ],
+    "funding": [
+     "Grant"
+    ],
+    "genre": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "hasPart": [
+     "CreativeWork"
+    ],
+    "headline": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "inLanguage": [
+     "Language",
+     "Text"
+    ],
+    "interactionStatistic": [
+     "InteractionCounter"
+    ],
+    "interactivityType": [
+     "Text"
+    ],
+    "interpretedAsClaim": [
+     "Claim"
+    ],
+    "isAccessibleForFree": [
+     "Boolean"
+    ],
+    "isBasedOn": [
+     "CreativeWork",
+     "Product",
+     "URL"
+    ],
+    "isFamilyFriendly": [
+     "Boolean"
+    ],
+    "isPartOf": [
+     "CreativeWork",
+     "URL"
+    ],
+    "keywords": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "learningResourceType": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "license": [
+     "CreativeWork",
+     "URL"
+    ],
+    "locationCreated": [
+     "Place"
+    ],
+    "mainEntity": [
+     "Thing"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "maintainer": [
+     "Organization",
+     "Person"
+    ],
+    "material": [
+     "Product",
+     "Text",
+     "URL"
+    ],
+    "materialExtent": [
+     "QuantitativeValue",
+     "Text"
+    ],
+    "mentions": [
+     "Thing"
+    ],
+    "name": [
+     "Text"
+    ],
+    "offers": [
+     "Demand",
+     "Offer"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "pageEnd": [
+     "Integer",
+     "Text"
+    ],
+    "pageStart": [
+     "Integer",
+     "Text"
+    ],
+    "pagination": [
+     "Text"
+    ],
+    "pattern": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "position": [
+     "Integer",
+     "Text"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "producer": [
+     "Organization",
+     "Person"
+    ],
+    "provider": [
+     "Organization",
+     "Person"
+    ],
+    "publication": [
+     "PublicationEvent"
+    ],
+    "publisher": [
+     "Organization",
+     "Person"
+    ],
+    "publisherImprint": [
+     "Organization"
+    ],
+    "publishingPrinciples": [
+     "CreativeWork",
+     "URL"
+    ],
+    "recordedAt": [
+     "Event"
+    ],
+    "releasedEvent": [
+     "PublicationEvent"
+    ],
+    "review": [
+     "Review"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "schemaVersion": [
+     "Text",
+     "URL"
+    ],
+    "sdDatePublished": [
+     "Date"
+    ],
+    "sdLicense": [
+     "CreativeWork",
+     "URL"
+    ],
+    "sdPublisher": [
+     "Organization",
+     "Person"
+    ],
+    "size": [
+     "DefinedTerm",
+     "QuantitativeValue",
+     "SizeSpecification",
+     "Text"
+    ],
+    "sourceOrganization": [
+     "Organization"
+    ],
+    "spatial": [
+     "Place"
+    ],
+    "spatialCoverage": [
+     "Place"
+    ],
+    "speakable": [
+     "SpeakableSpecification",
+     "URL"
+    ],
+    "sponsor": [
+     "Organization",
+     "Person"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "teaches": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "temporal": [
+     "DateTime",
+     "Text"
+    ],
+    "temporalCoverage": [
+     "DateTime",
+     "Text",
+     "URL"
+    ],
+    "text": [
+     "Text"
+    ],
+    "thumbnail": [
+     "ImageObject"
+    ],
+    "thumbnailUrl": [
+     "URL"
+    ],
+    "timeRequired": [
+     "Duration"
+    ],
+    "translationOfWork": [
+     "CreativeWork"
+    ],
+    "translator": [
+     "Organization",
+     "Person"
+    ],
+    "typicalAgeRange": [
+     "Text"
+    ],
+    "url": [
+     "URL"
+    ],
+    "usageInfo": [
+     "CreativeWork",
+     "URL"
+    ],
+    "version": [
+     "Number",
+     "Text"
+    ],
+    "video": [
+     "Clip",
+     "VideoObject"
+    ],
+    "wordCount": [
+     "Integer"
+    ],
+    "workExample": [
+     "CreativeWork"
+    ],
+    "workTranslation": [
+     "CreativeWork"
+    ]
+   }
+  },
+  "BlogPosting": {
+   "parents": [
+    "SocialMediaPosting",
+    "Article",
+    "CreativeWork",
+    "Thing"
+   ],
+   "properties": {
+    "about": [
+     "Thing"
+    ],
+    "abstract": [
+     "Text"
+    ],
+    "accessibilityAPI": [
+     "Text"
+    ],
+    "accessibilityControl": [
+     "Text"
+    ],
+    "accessibilityFeature": [
+     "Text"
+    ],
+    "accessibilityHazard": [
+     "Text"
+    ],
+    "accessibilitySummary": [
+     "Text"
+    ],
+    "accessMode": [
+     "Text"
+    ],
+    "accessModeSufficient": [
+     "ItemList"
+    ],
+    "accountablePerson": [
+     "Person"
+    ],
+    "acquireLicensePage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "alternativeHeadline": [
+     "Text"
+    ],
+    "archivedAt": [
+     "URL",
+     "WebPage"
+    ],
+    "articleBody": [
+     "Text"
+    ],
+    "articleSection": [
+     "Text"
+    ],
+    "assesses": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "associatedMedia": [
+     "MediaObject"
+    ],
+    "audience": [
+     "Audience"
+    ],
+    "audio": [
+     "AudioObject",
+     "Clip",
+     "MusicRecording"
+    ],
+    "author": [
+     "Organization",
+     "Person"
+    ],
+    "award": [
+     "Text"
+    ],
+    "backstory": [
+     "CreativeWork",
+     "Text"
+    ],
+    "character": [
+     "Person"
+    ],
+    "citation": [
+     "CreativeWork",
+     "Text"
+    ],
+    "comment": [
+     "Comment"
+    ],
+    "commentCount": [
+     "Integer"
+    ],
+    "conditionsOfAccess": [
+     "Text"
+    ],
+    "contentLocation": [
+     "Place"
+    ],
+    "contentRating": [
+     "Rating",
+     "Text"
+    ],
+    "contentReferenceTime": [
+     "DateTime"
+    ],
+    "contributor": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightHolder": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightNotice": [
+     "Text"
+    ],
+    "copyrightYear": [
+     "Number"
+    ],
+    "correction": [
+     "CorrectionComment",
+     "Text",
+     "URL"
+    ],
+    "countryOfOrigin": [
+     "Country"
+    ],
+    "creator": [
+     "Organization",
+     "Person"
+    ],
+    "creditText": [
+     "Text"
+    ],
+    "dateCreated": [
+     "Date",
+     "DateTime"
+    ],
+    "dateModified": [
+     "Date",
+     "DateTime"
+    ],
+    "datePublished": [
+     "Date",
+     "DateTime"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "digitalSourceType": [
+     "IPTCDigitalSourceEnumeration"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "discussionUrl": [
+     "URL"
+    ],
+    "editEIDR": [
+     "Text",
+     "URL"
+    ],
+    "editor": [
+     "Person"
+    ],
+    "educationalAlignment": [
+     "AlignmentObject"
+    ],
+    "educationalUse": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "encoding": [
+     "MediaObject"
+    ],
+    "encodingFormat": [
+     "Text",
+     "URL"
+    ],
+    "exampleOfWork": [
+     "CreativeWork"
+    ],
+    "expires": [
+     "Date",
+     "DateTime"
+    ],
+    "funder": [
+     "Organization",
+     "Person"
+    ],
+    "funding": [
+     "Grant"
+    ],
+    "genre": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "hasPart": [
+     "CreativeWork"
+    ],
+    "headline": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "inLanguage": [
+     "Language",
+     "Text"
+    ],
+    "interactionStatistic": [
+     "InteractionCounter"
+    ],
+    "interactivityType": [
+     "Text"
+    ],
+    "interpretedAsClaim": [
+     "Claim"
+    ],
+    "isAccessibleForFree": [
+     "Boolean"
+    ],
+    "isBasedOn": [
+     "CreativeWork",
+     "Product",
+     "URL"
+    ],
+    "isFamilyFriendly": [
+     "Boolean"
+    ],
+    "isPartOf": [
+     "CreativeWork",
+     "URL"
+    ],
+    "keywords": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "learningResourceType": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "license": [
+     "CreativeWork",
+     "URL"
+    ],
+    "locationCreated": [
+     "Place"
+    ],
+    "mainEntity": [
+     "Thing"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "maintainer": [
+     "Organization",
+     "Person"
+    ],
+    "material": [
+     "Product",
+     "Text",
+     "URL"
+    ],
+    "materialExtent": [
+     "QuantitativeValue",
+     "Text"
+    ],
+    "mentions": [
+     "Thing"
+    ],
+    "name": [
+     "Text"
+    ],
+    "offers": [
+     "Demand",
+     "Offer"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "pageEnd": [
+     "Integer",
+     "Text"
+    ],
+    "pageStart": [
+     "Integer",
+     "Text"
+    ],
+    "pagination": [
+     "Text"
+    ],
+    "pattern": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "position": [
+     "Integer",
+     "Text"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "producer": [
+     "Organization",
+     "Person"
+    ],
+    "provider": [
+     "Organization",
+     "Person"
+    ],
+    "publication": [
+     "PublicationEvent"
+    ],
+    "publisher": [
+     "Organization",
+     "Person"
+    ],
+    "publisherImprint": [
+     "Organization"
+    ],
+    "publishingPrinciples": [
+     "CreativeWork",
+     "URL"
+    ],
+    "recordedAt": [
+     "Event"
+    ],
+    "releasedEvent": [
+     "PublicationEvent"
+    ],
+    "review": [
+     "Review"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "schemaVersion": [
+     "Text",
+     "URL"
+    ],
+    "sdDatePublished": [
+     "Date"
+    ],
+    "sdLicense": [
+     "CreativeWork",
+     "URL"
+    ],
+    "sdPublisher": [
+     "Organization",
+     "Person"
+    ],
+    "sharedContent": [
+     "CreativeWork"
+    ],
+    "size": [
+     "DefinedTerm",
+     "QuantitativeValue",
+     "SizeSpecification",
+     "Text"
+    ],
+    "sourceOrganization": [
+     "Organization"
+    ],
+    "spatial": [
+     "Place"
+    ],
+    "spatialCoverage": [
+     "Place"
+    ],
+    "speakable": [
+     "SpeakableSpecification",
+     "URL"
+    ],
+    "sponsor": [
+     "Organization",
+     "Person"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "teaches": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "temporal": [
+     "DateTime",
+     "Text"
+    ],
+    "temporalCoverage": [
+     "DateTime",
+     "Text",
+     "URL"
+    ],
+    "text": [
+     "Text"
+    ],
+    "thumbnail": [
+     "ImageObject"
+    ],
+    "thumbnailUrl": [
+     "URL"
+    ],
+    "timeRequired": [
+     "Duration"
+    ],
+    "translationOfWork": [
+     "CreativeWork"
+    ],
+    "translator": [
+     "Organization",
+     "Person"
+    ],
+    "typicalAgeRange": [
+     "Text"
+    ],
+    "url": [
+     "URL"
+    ],
+    "usageInfo": [
+     "CreativeWork",
+     "URL"
+    ],
+    "version": [
+     "Number",
+     "Text"
+    ],
+    "video": [
+     "Clip",
+     "VideoObject"
+    ],
+    "wordCount": [
+     "Integer"
+    ],
+    "workExample": [
+     "CreativeWork"
+    ],
+    "workTranslation": [
+     "CreativeWork"
+    ]
+   }
+  },
+  "BreadcrumbList": {
+   "parents": [
+    "ItemList",
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "itemListElement": [
+     "ListItem",
+     "Text",
+     "Thing"
+    ],
+    "itemListOrder": [
+     "ItemListOrderType",
+     "Text"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "numberOfItems": [
+     "Integer"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "url": [
+     "URL"
+    ]
+   }
+  },
+  "EntryPoint": {
+   "parents": [
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "actionApplication": [
+     "SoftwareApplication"
+    ],
+    "actionPlatform": [
+     "DigitalPlatformEnumeration",
+     "Text",
+     "URL"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "contentType": [
+     "Text"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "encodingType": [
+     "Text"
+    ],
+    "httpMethod": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "url": [
+     "URL"
+    ],
+    "urlTemplate": [
+     "Text"
+    ]
+   }
+  },
+  "FAQPage": {
+   "parents": [
+    "WebPage",
+    "CreativeWork",
+    "Thing"
+   ],
+   "properties": {
+    "about": [
+     "Thing"
+    ],
+    "abstract": [
+     "Text"
+    ],
+    "accessibilityAPI": [
+     "Text"
+    ],
+    "accessibilityControl": [
+     "Text"
+    ],
+    "accessibilityFeature": [
+     "Text"
+    ],
+    "accessibilityHazard": [
+     "Text"
+    ],
+    "accessibilitySummary": [
+     "Text"
+    ],
+    "accessMode": [
+     "Text"
+    ],
+    "accessModeSufficient": [
+     "ItemList"
+    ],
+    "accountablePerson": [
+     "Person"
+    ],
+    "acquireLicensePage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "alternativeHeadline": [
+     "Text"
+    ],
+    "archivedAt": [
+     "URL",
+     "WebPage"
+    ],
+    "assesses": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "associatedMedia": [
+     "MediaObject"
+    ],
+    "audience": [
+     "Audience"
+    ],
+    "audio": [
+     "AudioObject",
+     "Clip",
+     "MusicRecording"
+    ],
+    "author": [
+     "Organization",
+     "Person"
+    ],
+    "award": [
+     "Text"
+    ],
+    "breadcrumb": [
+     "BreadcrumbList",
+     "Text"
+    ],
+    "character": [
+     "Person"
+    ],
+    "citation": [
+     "CreativeWork",
+     "Text"
+    ],
+    "comment": [
+     "Comment"
+    ],
+    "commentCount": [
+     "Integer"
+    ],
+    "conditionsOfAccess": [
+     "Text"
+    ],
+    "contentLocation": [
+     "Place"
+    ],
+    "contentRating": [
+     "Rating",
+     "Text"
+    ],
+    "contentReferenceTime": [
+     "DateTime"
+    ],
+    "contributor": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightHolder": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightNotice": [
+     "Text"
+    ],
+    "copyrightYear": [
+     "Number"
+    ],
+    "correction": [
+     "CorrectionComment",
+     "Text",
+     "URL"
+    ],
+    "countryOfOrigin": [
+     "Country"
+    ],
+    "creator": [
+     "Organization",
+     "Person"
+    ],
+    "creditText": [
+     "Text"
+    ],
+    "dateCreated": [
+     "Date",
+     "DateTime"
+    ],
+    "dateModified": [
+     "Date",
+     "DateTime"
+    ],
+    "datePublished": [
+     "Date",
+     "DateTime"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "digitalSourceType": [
+     "IPTCDigitalSourceEnumeration"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "discussionUrl": [
+     "URL"
+    ],
+    "editEIDR": [
+     "Text",
+     "URL"
+    ],
+    "editor": [
+     "Person"
+    ],
+    "educationalAlignment": [
+     "AlignmentObject"
+    ],
+    "educationalUse": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "encoding": [
+     "MediaObject"
+    ],
+    "encodingFormat": [
+     "Text",
+     "URL"
+    ],
+    "exampleOfWork": [
+     "CreativeWork"
+    ],
+    "expires": [
+     "Date",
+     "DateTime"
+    ],
+    "funder": [
+     "Organization",
+     "Person"
+    ],
+    "funding": [
+     "Grant"
+    ],
+    "genre": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "hasPart": [
+     "CreativeWork"
+    ],
+    "headline": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "inLanguage": [
+     "Language",
+     "Text"
+    ],
+    "interactionStatistic": [
+     "InteractionCounter"
+    ],
+    "interactivityType": [
+     "Text"
+    ],
+    "interpretedAsClaim": [
+     "Claim"
+    ],
+    "isAccessibleForFree": [
+     "Boolean"
+    ],
+    "isBasedOn": [
+     "CreativeWork",
+     "Product",
+     "URL"
+    ],
+    "isFamilyFriendly": [
+     "Boolean"
+    ],
+    "isPartOf": [
+     "CreativeWork",
+     "URL"
+    ],
+    "keywords": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "lastReviewed": [
+     "Date"
+    ],
+    "learningResourceType": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "license": [
+     "CreativeWork",
+     "URL"
+    ],
+    "locationCreated": [
+     "Place"
+    ],
+    "mainContentOfPage": [
+     "WebPageElement"
+    ],
+    "mainEntity": [
+     "Thing"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "maintainer": [
+     "Organization",
+     "Person"
+    ],
+    "material": [
+     "Product",
+     "Text",
+     "URL"
+    ],
+    "materialExtent": [
+     "QuantitativeValue",
+     "Text"
+    ],
+    "mentions": [
+     "Thing"
+    ],
+    "name": [
+     "Text"
+    ],
+    "offers": [
+     "Demand",
+     "Offer"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "pattern": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "position": [
+     "Integer",
+     "Text"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "primaryImageOfPage": [
+     "ImageObject"
+    ],
+    "producer": [
+     "Organization",
+     "Person"
+    ],
+    "provider": [
+     "Organization",
+     "Person"
+    ],
+    "publication": [
+     "PublicationEvent"
+    ],
+    "publisher": [
+     "Organization",
+     "Person"
+    ],
+    "publisherImprint": [
+     "Organization"
+    ],
+    "publishingPrinciples": [
+     "CreativeWork",
+     "URL"
+    ],
+    "recordedAt": [
+     "Event"
+    ],
+    "relatedLink": [
+     "URL"
+    ],
+    "releasedEvent": [
+     "PublicationEvent"
+    ],
+    "review": [
+     "Review"
+    ],
+    "reviewedBy": [
+     "Organization",
+     "Person"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "schemaVersion": [
+     "Text",
+     "URL"
+    ],
+    "sdDatePublished": [
+     "Date"
+    ],
+    "sdLicense": [
+     "CreativeWork",
+     "URL"
+    ],
+    "sdPublisher": [
+     "Organization",
+     "Person"
+    ],
+    "significantLink": [
+     "URL"
+    ],
+    "size": [
+     "DefinedTerm",
+     "QuantitativeValue",
+     "SizeSpecification",
+     "Text"
+    ],
+    "sourceOrganization": [
+     "Organization"
+    ],
+    "spatial": [
+     "Place"
+    ],
+    "spatialCoverage": [
+     "Place"
+    ],
+    "speakable": [
+     "SpeakableSpecification",
+     "URL"
+    ],
+    "specialty": [
+     "Specialty"
+    ],
+    "sponsor": [
+     "Organization",
+     "Person"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "teaches": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "temporal": [
+     "DateTime",
+     "Text"
+    ],
+    "temporalCoverage": [
+     "DateTime",
+     "Text",
+     "URL"
+    ],
+    "text": [
+     "Text"
+    ],
+    "thumbnail": [
+     "ImageObject"
+    ],
+    "thumbnailUrl": [
+     "URL"
+    ],
+    "timeRequired": [
+     "Duration"
+    ],
+    "translationOfWork": [
+     "CreativeWork"
+    ],
+    "translator": [
+     "Organization",
+     "Person"
+    ],
+    "typicalAgeRange": [
+     "Text"
+    ],
+    "url": [
+     "URL"
+    ],
+    "usageInfo": [
+     "CreativeWork",
+     "URL"
+    ],
+    "version": [
+     "Number",
+     "Text"
+    ],
+    "video": [
+     "Clip",
+     "VideoObject"
+    ],
+    "wordCount": [
+     "Integer"
+    ],
+    "workExample": [
+     "CreativeWork"
+    ],
+    "workTranslation": [
+     "CreativeWork"
+    ]
+   }
+  },
+  "ImageObject": {
+   "parents": [
+    "MediaObject",
+    "CreativeWork",
+    "Thing"
+   ],
+   "properties": {
+    "about": [
+     "Thing"
+    ],
+    "abstract": [
+     "Text"
+    ],
+    "accessibilityAPI": [
+     "Text"
+    ],
+    "accessibilityControl": [
+     "Text"
+    ],
+    "accessibilityFeature": [
+     "Text"
+    ],
+    "accessibilityHazard": [
+     "Text"
+    ],
+    "accessibilitySummary": [
+     "Text"
+    ],
+    "accessMode": [
+     "Text"
+    ],
+    "accessModeSufficient": [
+     "ItemList"
+    ],
+    "accountablePerson": [
+     "Person"
+    ],
+    "acquireLicensePage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "alternativeHeadline": [
+     "Text"
+    ],
+    "archivedAt": [
+     "URL",
+     "WebPage"
+    ],
+    "assesses": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "associatedArticle": [
+     "NewsArticle"
+    ],
+    "associatedMedia": [
+     "MediaObject"
+    ],
+    "audience": [
+     "Audience"
+    ],
+    "audio": [
+     "AudioObject",
+     "Clip",
+     "MusicRecording"
+    ],
+    "author": [
+     "Organization",
+     "Person"
+    ],
+    "award": [
+     "Text"
+    ],
+    "bitrate": [
+     "Text"
+    ],
+    "caption": [
+     "MediaObject",
+     "Text"
+    ],
+    "character": [
+     "Person"
+    ],
+    "citation": [
+     "CreativeWork",
+     "Text"
+    ],
+    "comment": [
+     "Comment"
+    ],
+    "commentCount": [
+     "Integer"
+    ],
+    "conditionsOfAccess": [
+     "Text"
+    ],
+    "contentLocation": [
+     "Place"
+    ],
+    "contentRating": [
+     "Rating",
+     "Text"
+    ],
+    "contentReferenceTime": [
+     "DateTime"
+    ],
+    "contentSize": [
+     "Text"
+    ],
+    "contentUrl": [
+     "URL"
+    ],
+    "contributor": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightHolder": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightNotice": [
+     "Text"
+    ],
+    "copyrightYear": [
+     "Number"
+    ],
+    "correction": [
+     "CorrectionComment",
+     "Text",
+     "URL"
+    ],
+    "countryOfOrigin": [
+     "Country"
+    ],
+    "creator": [
+     "Organization",
+     "Person"
+    ],
+    "creditText": [
+     "Text"
+    ],
+    "dateCreated": [
+     "Date",
+     "DateTime"
+    ],
+    "dateModified": [
+     "Date",
+     "DateTime"
+    ],
+    "datePublished": [
+     "Date",
+     "DateTime"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "digitalSourceType": [
+     "IPTCDigitalSourceEnumeration"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "discussionUrl": [
+     "URL"
+    ],
+    "duration": [
+     "Duration",
+     "QuantitativeValue"
+    ],
+    "editEIDR": [
+     "Text",
+     "URL"
+    ],
+    "editor": [
+     "Person"
+    ],
+    "educationalAlignment": [
+     "AlignmentObject"
+    ],
+    "educationalUse": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "embeddedTextCaption": [
+     "Text"
+    ],
+    "embedUrl": [
+     "URL"
+    ],
+    "encodesCreativeWork": [
+     "CreativeWork"
+    ],
+    "encoding": [
+     "MediaObject"
+    ],
+    "encodingFormat": [
+     "Text",
+     "URL"
+    ],
+    "endTime": [
+     "DateTime",
+     "Time"
+    ],
+    "exampleOfWork": [
+     "CreativeWork"
+    ],
+    "exifData": [
+     "PropertyValue",
+     "Text"
+    ],
+    "expires": [
+     "Date",
+     "DateTime"
+    ],
+    "funder": [
+     "Organization",
+     "Person"
+    ],
+    "funding": [
+     "Grant"
+    ],
+    "genre": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "hasPart": [
+     "CreativeWork"
+    ],
+    "headline": [
+     "Text"
+    ],
+    "height": [
+     "Distance",
+     "QuantitativeValue"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "ineligibleRegion": [
+     "GeoShape",
+     "Place",
+     "Text"
+    ],
+    "inLanguage": [
+     "Language",
+     "Text"
+    ],
+    "interactionStatistic": [
+     "InteractionCounter"
+    ],
+    "interactivityType": [
+     "Text"
+    ],
+    "interpretedAsClaim": [
+     "Claim"
+    ],
+    "isAccessibleForFree": [
+     "Boolean"
+    ],
+    "isBasedOn": [
+     "CreativeWork",
+     "Product",
+     "URL"
+    ],
+    "isFamilyFriendly": [
+     "Boolean"
+    ],
+    "isPartOf": [
+     "CreativeWork",
+     "URL"
+    ],
+    "keywords": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "learningResourceType": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "license": [
+     "CreativeWork",
+     "URL"
+    ],
+    "locationCreated": [
+     "Place"
+    ],
+    "mainEntity": [
+     "Thing"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "maintainer": [
+     "Organization",
+     "Person"
+    ],
+    "material": [
+     "Product",
+     "Text",
+     "URL"
+    ],
+    "materialExtent": [
+     "QuantitativeValue",
+     "Text"
+    ],
+    "mentions": [
+     "Thing"
+    ],
+    "name": [
+     "Text"
+    ],
+    "offers": [
+     "Demand",
+     "Offer"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "pattern": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "playerType": [
+     "Text"
+    ],
+    "position": [
+     "Integer",
+     "Text"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "producer": [
+     "Organization",
+     "Person"
+    ],
+    "productionCompany": [
+     "Organization"
+    ],
+    "provider": [
+     "Organization",
+     "Person"
+    ],
+    "publication": [
+     "PublicationEvent"
+    ],
+    "publisher": [
+     "Organization",
+     "Person"
+    ],
+    "publisherImprint": [
+     "Organization"
+    ],
+    "publishingPrinciples": [
+     "CreativeWork",
+     "URL"
+    ],
+    "recordedAt": [
+     "Event"
+    ],
+    "regionsAllowed": [
+     "Place"
+    ],
+    "releasedEvent": [
+     "PublicationEvent"
+    ],
+    "representativeOfPage": [
+     "Boolean"
+    ],
+    "requiresSubscription": [
+     "Boolean",
+     "MediaSubscription"
+    ],
+    "review": [
+     "Review"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "schemaVersion": [
+     "Text",
+     "URL"
+    ],
+    "sdDatePublished": [
+     "Date"
+    ],
+    "sdLicense": [
+     "CreativeWork",
+     "URL"
+    ],
+    "sdPublisher": [
+     "Organization",
+     "Person"
+    ],
+    "sha256": [
+     "Text"
+    ],
+    "size": [
+     "DefinedTerm",
+     "QuantitativeValue",
+     "SizeSpecification",
+     "Text"
+    ],
+    "sourceOrganization": [
+     "Organization"
+    ],
+    "spatial": [
+     "Place"
+    ],
+    "spatialCoverage": [
+     "Place"
+    ],
+    "sponsor": [
+     "Organization",
+     "Person"
+    ],
+    "startTime": [
+     "DateTime",
+     "Time"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "teaches": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "temporal": [
+     "DateTime",
+     "Text"
+    ],
+    "temporalCoverage": [
+     "DateTime",
+     "Text",
+     "URL"
+    ],
+    "text": [
+     "Text"
+    ],
+    "thumbnail": [
+     "ImageObject"
+    ],
+    "thumbnailUrl": [
+     "URL"
+    ],
+    "timeRequired": [
+     "Duration"
+    ],
+    "translationOfWork": [
+     "CreativeWork"
+    ],
+    "translator": [
+     "Organization",
+     "Person"
+    ],
+    "typicalAgeRange": [
+     "Text"
+    ],
+    "uploadDate": [
+     "Date",
+     "DateTime"
+    ],
+    "url": [
+     "URL"
+    ],
+    "usageInfo": [
+     "CreativeWork",
+     "URL"
+    ],
+    "version": [
+     "Number",
+     "Text"
+    ],
+    "video": [
+     "Clip",
+     "VideoObject"
+    ],
+    "width": [
+     "Distance",
+     "QuantitativeValue"
+    ],
+    "wordCount": [
+     "Integer"
+    ],
+    "workExample": [
+     "CreativeWork"
+    ],
+    "workTranslation": [
+     "CreativeWork"
+    ]
+   }
+  },
+  "ListItem": {
+   "parents": [
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "item": [
+     "Thing"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "nextItem": [
+     "ListItem"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "position": [
+     "Integer",
+     "Text"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "previousItem": [
+     "ListItem"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "url": [
+     "URL"
+    ]
+   }
+  },
+  "LocalBusiness": {
+   "parents": [
+    "Organization",
+    "Place",
+    "Thing"
+   ],
+   "properties": {
+    "acceptedPaymentMethod": [
+     "LoanOrCredit",
+     "PaymentMethod",
+     "Text"
+    ],
+    "actionableFeedbackPolicy": [
+     "CreativeWork",
+     "URL"
+    ],
+    "additionalProperty": [
+     "PropertyValue"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "address": [
+     "PostalAddress",
+     "Text"
+    ],
+    "agentInteractionStatistic": [
+     "InteractionCounter"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "alumni": [
+     "Person"
+    ],
+    "amenityFeature": [
+     "LocationFeatureSpecification"
+    ],
+    "areaServed": [
+     "AdministrativeArea",
+     "GeoShape",
+     "Place",
+     "Text"
+    ],
+    "award": [
+     "Text"
+    ],
+    "branchCode": [
+     "Text"
+    ],
+    "brand": [
+     "Brand",
+     "Organization"
+    ],
+    "companyRegistration": [
+     "Certification"
+    ],
+    "contactPoint": [
+     "ContactPoint"
+    ],
+    "containedInPlace": [
+     "Place"
+    ],
+    "containsPlace": [
+     "Place"
+    ],
+    "correctionsPolicy": [
+     "CreativeWork",
+     "URL"
+    ],
+    "currenciesAccepted": [
+     "Text"
+    ],
+    "department": [
+     "Organization"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "dissolutionDate": [
+     "Date"
+    ],
+    "diversityPolicy": [
+     "CreativeWork",
+     "URL"
+    ],
+    "diversityStaffingReport": [
+     "Article",
+     "URL"
+    ],
+    "duns": [
+     "Text"
+    ],
+    "email": [
+     "Text"
+    ],
+    "employee": [
+     "Person"
+    ],
+    "ethicsPolicy": [
+     "CreativeWork",
+     "URL"
+    ],
+    "event": [
+     "Event"
+    ],
+    "faxNumber": [
+     "Text"
+    ],
+    "floorLevel": [
+     "Text"
+    ],
+    "founder": [
+     "Organization",
+     "Person"
+    ],
+    "foundingDate": [
+     "Date"
+    ],
+    "foundingLocation": [
+     "Place"
+    ],
+    "funder": [
+     "Organization",
+     "Person"
+    ],
+    "funding": [
+     "Grant"
+    ],
+    "geo": [
+     "GeoCoordinates",
+     "GeoShape"
+    ],
+    "geoContains": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoCoveredBy": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoCovers": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoCrosses": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoDisjoint": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoEquals": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoIntersects": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoOverlaps": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoTouches": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoWithin": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "globalLocationNumber": [
+     "Text"
+    ],
+    "hasCertification": [
+     "Certification"
+    ],
+    "hasCredential": [
+     "Credential"
+    ],
+    "hasDriveThroughService": [
+     "Boolean"
+    ],
+    "hasGS1DigitalLink": [
+     "URL"
+    ],
+    "hasMap": [
+     "Map",
+     "URL"
+    ],
+    "hasMemberProgram": [
+     "MemberProgram"
+    ],
+    "hasMerchantReturnPolicy": [
+     "MerchantReturnPolicy"
+    ],
+    "hasOfferCatalog": [
+     "OfferCatalog"
+    ],
+    "hasPOS": [
+     "Place"
+    ],
+    "hasShippingService": [
+     "ShippingService"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "interactionStatistic": [
+     "InteractionCounter"
+    ],
+    "isAccessibleForFree": [
+     "Boolean"
+    ],
+    "isicV4": [
+     "Text"
+    ],
+    "iso6523Code": [
+     "Text"
+    ],
+    "keywords": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "knowsAbout": [
+     "Text",
+     "Thing",
+     "URL"
+    ],
+    "knowsLanguage": [
+     "Language",
+     "Text"
+    ],
+    "latitude": [
+     "Number",
+     "Text"
+    ],
+    "legalAddress": [
+     "PostalAddress"
+    ],
+    "legalName": [
+     "Text"
+    ],
+    "legalRepresentative": [
+     "Person"
+    ],
+    "leiCode": [
+     "Text"
+    ],
+    "location": [
+     "Place",
+     "PostalAddress",
+     "Text",
+     "VirtualLocation"
+    ],
+    "logo": [
+     "ImageObject",
+     "URL"
+    ],
+    "longitude": [
+     "Number",
+     "Text"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "makesOffer": [
+     "Offer"
+    ],
+    "maximumAttendeeCapacity": [
+     "Integer"
+    ],
+    "member": [
+     "Organization",
+     "Person"
+    ],
+    "memberOf": [
+     "MemberProgramTier",
+     "Organization",
+     "ProgramMembership"
+    ],
+    "naics": [
+     "Text"
+    ],
+    "name": [
+     "Text"
+    ],
+    "nonprofitStatus": [
+     "NonprofitType"
+    ],
+    "numberOfEmployees": [
+     "QuantitativeValue"
+    ],
+    "openingHours": [
+     "Text"
+    ],
+    "openingHoursSpecification": [
+     "OpeningHoursSpecification"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "ownershipFundingInfo": [
+     "AboutPage",
+     "CreativeWork",
+     "Text",
+     "URL"
+    ],
+    "owns": [
+     "Thing"
+    ],
+    "parentOrganization": [
+     "Organization"
+    ],
+    "paymentAccepted": [
+     "Text"
+    ],
+    "photo": [
+     "ImageObject",
+     "Photograph"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "priceRange": [
+     "Text"
+    ],
+    "publicAccess": [
+     "Boolean"
+    ],
+    "publishingPrinciples": [
+     "CreativeWork",
+     "URL"
+    ],
+    "review": [
+     "Review"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "seeks": [
+     "Demand"
+    ],
+    "skills": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "slogan": [
+     "Text"
+    ],
+    "smokingAllowed": [
+     "Boolean"
+    ],
+    "specialOpeningHoursSpecification": [
+     "OpeningHoursSpecification"
+    ],
+    "sponsor": [
+     "Organization",
+     "Person"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "subOrganization": [
+     "Organization"
+    ],
+    "taxID": [
+     "Text"
+    ],
+    "telephone": [
+     "Text"
+    ],
+    "tourBookingPage": [
+     "URL"
+    ],
+    "unnamedSourcesPolicy": [
+     "CreativeWork",
+     "URL"
+    ],
+    "url": [
+     "URL"
+    ],
+    "vatID": [
+     "Text"
+    ]
+   }
+  },
+  "Organization": {
+   "parents": [
+    "Thing"
+   ],
+   "properties": {
+    "acceptedPaymentMethod": [
+     "LoanOrCredit",
+     "PaymentMethod",
+     "Text"
+    ],
+    "actionableFeedbackPolicy": [
+     "CreativeWork",
+     "URL"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "address": [
+     "PostalAddress",
+     "Text"
+    ],
+    "agentInteractionStatistic": [
+     "InteractionCounter"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "alumni": [
+     "Person"
+    ],
+    "areaServed": [
+     "AdministrativeArea",
+     "GeoShape",
+     "Place",
+     "Text"
+    ],
+    "award": [
+     "Text"
+    ],
+    "brand": [
+     "Brand",
+     "Organization"
+    ],
+    "companyRegistration": [
+     "Certification"
+    ],
+    "contactPoint": [
+     "ContactPoint"
+    ],
+    "correctionsPolicy": [
+     "CreativeWork",
+     "URL"
+    ],
+    "department": [
+     "Organization"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "dissolutionDate": [
+     "Date"
+    ],
+    "diversityPolicy": [
+     "CreativeWork",
+     "URL"
+    ],
+    "diversityStaffingReport": [
+     "Article",
+     "URL"
+    ],
+    "duns": [
+     "Text"
+    ],
+    "email": [
+     "Text"
+    ],
+    "employee": [
+     "Person"
+    ],
+    "ethicsPolicy": [
+     "CreativeWork",
+     "URL"
+    ],
+    "event": [
+     "Event"
+    ],
+    "faxNumber": [
+     "Text"
+    ],
+    "founder": [
+     "Organization",
+     "Person"
+    ],
+    "foundingDate": [
+     "Date"
+    ],
+    "foundingLocation": [
+     "Place"
+    ],
+    "funder": [
+     "Organization",
+     "Person"
+    ],
+    "funding": [
+     "Grant"
+    ],
+    "globalLocationNumber": [
+     "Text"
+    ],
+    "hasCertification": [
+     "Certification"
+    ],
+    "hasCredential": [
+     "Credential"
+    ],
+    "hasGS1DigitalLink": [
+     "URL"
+    ],
+    "hasMemberProgram": [
+     "MemberProgram"
+    ],
+    "hasMerchantReturnPolicy": [
+     "MerchantReturnPolicy"
+    ],
+    "hasOfferCatalog": [
+     "OfferCatalog"
+    ],
+    "hasPOS": [
+     "Place"
+    ],
+    "hasShippingService": [
+     "ShippingService"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "interactionStatistic": [
+     "InteractionCounter"
+    ],
+    "isicV4": [
+     "Text"
+    ],
+    "iso6523Code": [
+     "Text"
+    ],
+    "keywords": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "knowsAbout": [
+     "Text",
+     "Thing",
+     "URL"
+    ],
+    "knowsLanguage": [
+     "Language",
+     "Text"
+    ],
+    "legalAddress": [
+     "PostalAddress"
+    ],
+    "legalName": [
+     "Text"
+    ],
+    "legalRepresentative": [
+     "Person"
+    ],
+    "leiCode": [
+     "Text"
+    ],
+    "location": [
+     "Place",
+     "PostalAddress",
+     "Text",
+     "VirtualLocation"
+    ],
+    "logo": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "makesOffer": [
+     "Offer"
+    ],
+    "member": [
+     "Organization",
+     "Person"
+    ],
+    "memberOf": [
+     "MemberProgramTier",
+     "Organization",
+     "ProgramMembership"
+    ],
+    "naics": [
+     "Text"
+    ],
+    "name": [
+     "Text"
+    ],
+    "nonprofitStatus": [
+     "NonprofitType"
+    ],
+    "numberOfEmployees": [
+     "QuantitativeValue"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "ownershipFundingInfo": [
+     "AboutPage",
+     "CreativeWork",
+     "Text",
+     "URL"
+    ],
+    "owns": [
+     "Thing"
+    ],
+    "parentOrganization": [
+     "Organization"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "publishingPrinciples": [
+     "CreativeWork",
+     "URL"
+    ],
+    "review": [
+     "Review"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "seeks": [
+     "Demand"
+    ],
+    "skills": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "slogan": [
+     "Text"
+    ],
+    "sponsor": [
+     "Organization",
+     "Person"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "subOrganization": [
+     "Organization"
+    ],
+    "taxID": [
+     "Text"
+    ],
+    "telephone": [
+     "Text"
+    ],
+    "unnamedSourcesPolicy": [
+     "CreativeWork",
+     "URL"
+    ],
+    "url": [
+     "URL"
+    ],
+    "vatID": [
+     "Text"
+    ]
+   }
+  },
+  "Person": {
+   "parents": [
+    "Thing"
+   ],
+   "properties": {
+    "additionalName": [
+     "Text"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "address": [
+     "PostalAddress",
+     "Text"
+    ],
+    "affiliation": [
+     "Organization"
+    ],
+    "agentInteractionStatistic": [
+     "InteractionCounter"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "alumniOf": [
+     "EducationalOrganization",
+     "Organization"
+    ],
+    "award": [
+     "Text"
+    ],
+    "birthDate": [
+     "Date"
+    ],
+    "birthPlace": [
+     "Place"
+    ],
+    "brand": [
+     "Brand",
+     "Organization"
+    ],
+    "callSign": [
+     "Text"
+    ],
+    "children": [
+     "Person"
+    ],
+    "colleague": [
+     "Person",
+     "URL"
+    ],
+    "contactPoint": [
+     "ContactPoint"
+    ],
+    "deathDate": [
+     "Date"
+    ],
+    "deathPlace": [
+     "Place"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "duns": [
+     "Text"
+    ],
+    "email": [
+     "Text"
+    ],
+    "familyName": [
+     "Text"
+    ],
+    "faxNumber": [
+     "Text"
+    ],
+    "follows": [
+     "Person"
+    ],
+    "funder": [
+     "Organization",
+     "Person"
+    ],
+    "funding": [
+     "Grant"
+    ],
+    "gender": [
+     "GenderType",
+     "Text"
+    ],
+    "givenName": [
+     "Text"
+    ],
+    "globalLocationNumber": [
+     "Text"
+    ],
+    "hasCertification": [
+     "Certification"
+    ],
+    "hasCredential": [
+     "Credential"
+    ],
+    "hasOccupation": [
+     "Occupation"
+    ],
+    "hasOfferCatalog": [
+     "OfferCatalog"
+    ],
+    "hasPOS": [
+     "Place"
+    ],
+    "height": [
+     "Distance",
+     "QuantitativeValue"
+    ],
+    "homeLocation": [
+     "ContactPoint",
+     "Place"
+    ],
+    "honorificPrefix": [
+     "Text"
+    ],
+    "honorificSuffix": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "interactionStatistic": [
+     "InteractionCounter"
+    ],
+    "isicV4": [
+     "Text"
+    ],
+    "jobTitle": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "knows": [
+     "Person"
+    ],
+    "knowsAbout": [
+     "Text",
+     "Thing",
+     "URL"
+    ],
+    "knowsLanguage": [
+     "Language",
+     "Text"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "makesOffer": [
+     "Offer"
+    ],
+    "memberOf": [
+     "MemberProgramTier",
+     "Organization",
+     "ProgramMembership"
+    ],
+    "naics": [
+     "Text"
+    ],
+    "name": [
+     "Text"
+    ],
+    "nationality": [
+     "Country"
+    ],
+    "netWorth": [
+     "MonetaryAmount",
+     "PriceSpecification"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "owns": [
+     "Thing"
+    ],
+    "parent": [
+     "Person"
+    ],
+    "performerIn": [
+     "Event"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "publishingPrinciples": [
+     "CreativeWork",
+     "URL"
+    ],
+    "relatedTo": [
+     "Person"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "seeks": [
+     "Demand"
+    ],
+    "sibling": [
+     "Person"
+    ],
+    "skills": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "sponsor": [
+     "Organization",
+     "Person"
+    ],
+    "spouse": [
+     "Person"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "taxID": [
+     "Text"
+    ],
+    "telephone": [
+     "Text"
+    ],
+    "url": [
+     "URL"
+    ],
+    "vatID": [
+     "Text"
+    ],
+    "weight": [
+     "Mass",
+     "QuantitativeValue"
+    ],
+    "workLocation": [
+     "ContactPoint",
+     "Place"
+    ],
+    "worksFor": [
+     "Organization"
+    ]
+   }
+  },
+  "PostalAddress": {
+   "parents": [
+    "ContactPoint",
+    "StructuredValue",
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "addressCountry": [
+     "Country",
+     "Text"
+    ],
+    "addressLocality": [
+     "Text"
+    ],
+    "addressRegion": [
+     "AdministrativeArea",
+     "Text"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "areaServed": [
+     "AdministrativeArea",
+     "GeoShape",
+     "Place",
+     "Text"
+    ],
+    "availableLanguage": [
+     "Language",
+     "Text"
+    ],
+    "contactOption": [
+     "ContactPointOption"
+    ],
+    "contactType": [
+     "Text"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "email": [
+     "Text"
+    ],
+    "extendedAddress": [
+     "Text"
+    ],
+    "faxNumber": [
+     "Text"
+    ],
+    "hoursAvailable": [
+     "OpeningHoursSpecification"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "postalCode": [
+     "Text"
+    ],
+    "postOfficeBoxNumber": [
+     "Text"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "productSupported": [
+     "Product",
+     "Text"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "streetAddress": [
+     "Text"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "telephone": [
+     "Text"
+    ],
+    "url": [
+     "URL"
+    ]
+   }
+  },
+  "PropertyValue": {
+   "parents": [
+    "StructuredValue",
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "maxValue": [
+     "Number"
+    ],
+    "measurementMethod": [
+     "DefinedTerm",
+     "MeasurementMethodEnum",
+     "Text",
+     "URL"
+    ],
+    "measurementTechnique": [
+     "DefinedTerm",
+     "MeasurementMethodEnum",
+     "Text",
+     "URL"
+    ],
+    "minValue": [
+     "Number"
+    ],
+    "name": [
+     "Text"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "propertyID": [
+     "Text",
+     "URL"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "unitCode": [
+     "Text",
+     "URL"
+    ],
+    "unitText": [
+     "Text"
+    ],
+    "url": [
+     "URL"
+    ],
+    "value": [
+     "Boolean",
+     "Number",
+     "QualitativeValue",
+     "StructuredValue",
+     "Text"
+    ],
+    "valueReference": [
+     "DefinedTerm",
+     "Enumeration",
+     "MeasurementTypeEnumeration",
+     "PropertyValue",
+     "QualitativeValue",
+     "QuantitativeValue",
+     "StructuredValue",
+     "Text"
+    ]
+   }
+  },
+  "Question": {
+   "parents": [
+    "Comment",
+    "CreativeWork",
+    "Thing"
+   ],
+   "properties": {
+    "about": [
+     "Thing"
+    ],
+    "abstract": [
+     "Text"
+    ],
+    "acceptedAnswer": [
+     "Answer",
+     "ItemList"
+    ],
+    "accessibilityAPI": [
+     "Text"
+    ],
+    "accessibilityControl": [
+     "Text"
+    ],
+    "accessibilityFeature": [
+     "Text"
+    ],
+    "accessibilityHazard": [
+     "Text"
+    ],
+    "accessibilitySummary": [
+     "Text"
+    ],
+    "accessMode": [
+     "Text"
+    ],
+    "accessModeSufficient": [
+     "ItemList"
+    ],
+    "accountablePerson": [
+     "Person"
+    ],
+    "acquireLicensePage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "alternativeHeadline": [
+     "Text"
+    ],
+    "answerCount": [
+     "Integer"
+    ],
+    "archivedAt": [
+     "URL",
+     "WebPage"
+    ],
+    "assesses": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "associatedMedia": [
+     "MediaObject"
+    ],
+    "audience": [
+     "Audience"
+    ],
+    "audio": [
+     "AudioObject",
+     "Clip",
+     "MusicRecording"
+    ],
+    "author": [
+     "Organization",
+     "Person"
+    ],
+    "award": [
+     "Text"
+    ],
+    "character": [
+     "Person"
+    ],
+    "citation": [
+     "CreativeWork",
+     "Text"
+    ],
+    "comment": [
+     "Comment"
+    ],
+    "commentCount": [
+     "Integer"
+    ],
+    "conditionsOfAccess": [
+     "Text"
+    ],
+    "contentLocation": [
+     "Place"
+    ],
+    "contentRating": [
+     "Rating",
+     "Text"
+    ],
+    "contentReferenceTime": [
+     "DateTime"
+    ],
+    "contributor": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightHolder": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightNotice": [
+     "Text"
+    ],
+    "copyrightYear": [
+     "Number"
+    ],
+    "correction": [
+     "CorrectionComment",
+     "Text",
+     "URL"
+    ],
+    "countryOfOrigin": [
+     "Country"
+    ],
+    "creator": [
+     "Organization",
+     "Person"
+    ],
+    "creditText": [
+     "Text"
+    ],
+    "dateCreated": [
+     "Date",
+     "DateTime"
+    ],
+    "dateModified": [
+     "Date",
+     "DateTime"
+    ],
+    "datePublished": [
+     "Date",
+     "DateTime"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "digitalSourceType": [
+     "IPTCDigitalSourceEnumeration"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "discussionUrl": [
+     "URL"
+    ],
+    "downvoteCount": [
+     "Integer"
+    ],
+    "editEIDR": [
+     "Text",
+     "URL"
+    ],
+    "editor": [
+     "Person"
+    ],
+    "educationalAlignment": [
+     "AlignmentObject"
+    ],
+    "educationalUse": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "eduQuestionType": [
+     "Text"
+    ],
+    "encoding": [
+     "MediaObject"
+    ],
+    "encodingFormat": [
+     "Text",
+     "URL"
+    ],
+    "exampleOfWork": [
+     "CreativeWork"
+    ],
+    "expires": [
+     "Date",
+     "DateTime"
+    ],
+    "funder": [
+     "Organization",
+     "Person"
+    ],
+    "funding": [
+     "Grant"
+    ],
+    "genre": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "hasPart": [
+     "CreativeWork"
+    ],
+    "headline": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "inLanguage": [
+     "Language",
+     "Text"
+    ],
+    "interactionStatistic": [
+     "InteractionCounter"
+    ],
+    "interactivityType": [
+     "Text"
+    ],
+    "interpretedAsClaim": [
+     "Claim"
+    ],
+    "isAccessibleForFree": [
+     "Boolean"
+    ],
+    "isBasedOn": [
+     "CreativeWork",
+     "Product",
+     "URL"
+    ],
+    "isFamilyFriendly": [
+     "Boolean"
+    ],
+    "isPartOf": [
+     "CreativeWork",
+     "URL"
+    ],
+    "keywords": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "learningResourceType": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "license": [
+     "CreativeWork",
+     "URL"
+    ],
+    "locationCreated": [
+     "Place"
+    ],
+    "mainEntity": [
+     "Thing"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "maintainer": [
+     "Organization",
+     "Person"
+    ],
+    "material": [
+     "Product",
+     "Text",
+     "URL"
+    ],
+    "materialExtent": [
+     "QuantitativeValue",
+     "Text"
+    ],
+    "mentions": [
+     "Thing"
+    ],
+    "name": [
+     "Text"
+    ],
+    "offers": [
+     "Demand",
+     "Offer"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "parentItem": [
+     "Comment",
+     "CreativeWork"
+    ],
+    "pattern": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "position": [
+     "Integer",
+     "Text"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "producer": [
+     "Organization",
+     "Person"
+    ],
+    "provider": [
+     "Organization",
+     "Person"
+    ],
+    "publication": [
+     "PublicationEvent"
+    ],
+    "publisher": [
+     "Organization",
+     "Person"
+    ],
+    "publisherImprint": [
+     "Organization"
+    ],
+    "publishingPrinciples": [
+     "CreativeWork",
+     "URL"
+    ],
+    "recordedAt": [
+     "Event"
+    ],
+    "releasedEvent": [
+     "PublicationEvent"
+    ],
+    "review": [
+     "Review"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "schemaVersion": [
+     "Text",
+     "URL"
+    ],
+    "sdDatePublished": [
+     "Date"
+    ],
+    "sdLicense": [
+     "CreativeWork",
+     "URL"
+    ],
+    "sdPublisher": [
+     "Organization",
+     "Person"
+    ],
+    "sharedContent": [
+     "CreativeWork"
+    ],
+    "size": [
+     "DefinedTerm",
+     "QuantitativeValue",
+     "SizeSpecification",
+     "Text"
+    ],
+    "sourceOrganization": [
+     "Organization"
+    ],
+    "spatial": [
+     "Place"
+    ],
+    "spatialCoverage": [
+     "Place"
+    ],
+    "sponsor": [
+     "Organization",
+     "Person"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "suggestedAnswer": [
+     "Answer",
+     "ItemList"
+    ],
+    "teaches": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "temporal": [
+     "DateTime",
+     "Text"
+    ],
+    "temporalCoverage": [
+     "DateTime",
+     "Text",
+     "URL"
+    ],
+    "text": [
+     "Text"
+    ],
+    "thumbnail": [
+     "ImageObject"
+    ],
+    "thumbnailUrl": [
+     "URL"
+    ],
+    "timeRequired": [
+     "Duration"
+    ],
+    "translationOfWork": [
+     "CreativeWork"
+    ],
+    "translator": [
+     "Organization",
+     "Person"
+    ],
+    "typicalAgeRange": [
+     "Text"
+    ],
+    "upvoteCount": [
+     "Integer"
+    ],
+    "url": [
+     "URL"
+    ],
+    "usageInfo": [
+     "CreativeWork",
+     "URL"
+    ],
+    "version": [
+     "Number",
+     "Text"
+    ],
+    "video": [
+     "Clip",
+     "VideoObject"
+    ],
+    "wordCount": [
+     "Integer"
+    ],
+    "workExample": [
+     "CreativeWork"
+    ],
+    "workTranslation": [
+     "CreativeWork"
+    ]
+   }
+  },
+  "SearchAction": {
+   "parents": [
+    "Action",
+    "Thing"
+   ],
+   "properties": {
+    "actionProcess": [
+     "HowTo"
+    ],
+    "actionStatus": [
+     "ActionStatusType"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "agent": [
+     "Organization",
+     "Person"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "endTime": [
+     "DateTime",
+     "Time"
+    ],
+    "error": [
+     "Thing"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "instrument": [
+     "Thing"
+    ],
+    "location": [
+     "Place",
+     "PostalAddress",
+     "Text",
+     "VirtualLocation"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "object": [
+     "Thing"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "participant": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "provider": [
+     "Organization",
+     "Person"
+    ],
+    "query": [
+     "Text"
+    ],
+    "result": [
+     "Thing"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "startTime": [
+     "DateTime",
+     "Time"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "target": [
+     "EntryPoint",
+     "URL"
+    ],
+    "url": [
+     "URL"
+    ]
+   }
+  },
+  "Service": {
+   "parents": [
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "areaServed": [
+     "AdministrativeArea",
+     "GeoShape",
+     "Place",
+     "Text"
+    ],
+    "audience": [
+     "Audience"
+    ],
+    "availableChannel": [
+     "ServiceChannel"
+    ],
+    "award": [
+     "Text"
+    ],
+    "brand": [
+     "Brand",
+     "Organization"
+    ],
+    "broker": [
+     "Organization",
+     "Person"
+    ],
+    "category": [
+     "CategoryCode",
+     "PhysicalActivityCategory",
+     "Text",
+     "Thing",
+     "URL"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "hasCertification": [
+     "Certification"
+    ],
+    "hasOfferCatalog": [
+     "OfferCatalog"
+    ],
+    "hoursAvailable": [
+     "OpeningHoursSpecification"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "isRelatedTo": [
+     "Product",
+     "Service"
+    ],
+    "isSimilarTo": [
+     "Product",
+     "Service"
+    ],
+    "logo": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "offers": [
+     "Demand",
+     "Offer"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "provider": [
+     "Organization",
+     "Person"
+    ],
+    "providerMobility": [
+     "Text"
+    ],
+    "review": [
+     "Review"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "serviceOutput": [
+     "Thing"
+    ],
+    "serviceType": [
+     "GovernmentBenefitsType",
+     "Text"
+    ],
+    "slogan": [
+     "Text"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "termsOfService": [
+     "Text",
+     "URL"
+    ],
+    "url": [
+     "URL"
+    ]
+   }
+  },
+  "WebPage": {
+   "parents": [
+    "CreativeWork",
+    "Thing"
+   ],
+   "properties": {
+    "about": [
+     "Thing"
+    ],
+    "abstract": [
+     "Text"
+    ],
+    "accessibilityAPI": [
+     "Text"
+    ],
+    "accessibilityControl": [
+     "Text"
+    ],
+    "accessibilityFeature": [
+     "Text"
+    ],
+    "accessibilityHazard": [
+     "Text"
+    ],
+    "accessibilitySummary": [
+     "Text"
+    ],
+    "accessMode": [
+     "Text"
+    ],
+    "accessModeSufficient": [
+     "ItemList"
+    ],
+    "accountablePerson": [
+     "Person"
+    ],
+    "acquireLicensePage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "alternativeHeadline": [
+     "Text"
+    ],
+    "archivedAt": [
+     "URL",
+     "WebPage"
+    ],
+    "assesses": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "associatedMedia": [
+     "MediaObject"
+    ],
+    "audience": [
+     "Audience"
+    ],
+    "audio": [
+     "AudioObject",
+     "Clip",
+     "MusicRecording"
+    ],
+    "author": [
+     "Organization",
+     "Person"
+    ],
+    "award": [
+     "Text"
+    ],
+    "breadcrumb": [
+     "BreadcrumbList",
+     "Text"
+    ],
+    "character": [
+     "Person"
+    ],
+    "citation": [
+     "CreativeWork",
+     "Text"
+    ],
+    "comment": [
+     "Comment"
+    ],
+    "commentCount": [
+     "Integer"
+    ],
+    "conditionsOfAccess": [
+     "Text"
+    ],
+    "contentLocation": [
+     "Place"
+    ],
+    "contentRating": [
+     "Rating",
+     "Text"
+    ],
+    "contentReferenceTime": [
+     "DateTime"
+    ],
+    "contributor": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightHolder": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightNotice": [
+     "Text"
+    ],
+    "copyrightYear": [
+     "Number"
+    ],
+    "correction": [
+     "CorrectionComment",
+     "Text",
+     "URL"
+    ],
+    "countryOfOrigin": [
+     "Country"
+    ],
+    "creator": [
+     "Organization",
+     "Person"
+    ],
+    "creditText": [
+     "Text"
+    ],
+    "dateCreated": [
+     "Date",
+     "DateTime"
+    ],
+    "dateModified": [
+     "Date",
+     "DateTime"
+    ],
+    "datePublished": [
+     "Date",
+     "DateTime"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "digitalSourceType": [
+     "IPTCDigitalSourceEnumeration"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "discussionUrl": [
+     "URL"
+    ],
+    "editEIDR": [
+     "Text",
+     "URL"
+    ],
+    "editor": [
+     "Person"
+    ],
+    "educationalAlignment": [
+     "AlignmentObject"
+    ],
+    "educationalUse": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "encoding": [
+     "MediaObject"
+    ],
+    "encodingFormat": [
+     "Text",
+     "URL"
+    ],
+    "exampleOfWork": [
+     "CreativeWork"
+    ],
+    "expires": [
+     "Date",
+     "DateTime"
+    ],
+    "funder": [
+     "Organization",
+     "Person"
+    ],
+    "funding": [
+     "Grant"
+    ],
+    "genre": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "hasPart": [
+     "CreativeWork"
+    ],
+    "headline": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "inLanguage": [
+     "Language",
+     "Text"
+    ],
+    "interactionStatistic": [
+     "InteractionCounter"
+    ],
+    "interactivityType": [
+     "Text"
+    ],
+    "interpretedAsClaim": [
+     "Claim"
+    ],
+    "isAccessibleForFree": [
+     "Boolean"
+    ],
+    "isBasedOn": [
+     "CreativeWork",
+     "Product",
+     "URL"
+    ],
+    "isFamilyFriendly": [
+     "Boolean"
+    ],
+    "isPartOf": [
+     "CreativeWork",
+     "URL"
+    ],
+    "keywords": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "lastReviewed": [
+     "Date"
+    ],
+    "learningResourceType": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "license": [
+     "CreativeWork",
+     "URL"
+    ],
+    "locationCreated": [
+     "Place"
+    ],
+    "mainContentOfPage": [
+     "WebPageElement"
+    ],
+    "mainEntity": [
+     "Thing"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "maintainer": [
+     "Organization",
+     "Person"
+    ],
+    "material": [
+     "Product",
+     "Text",
+     "URL"
+    ],
+    "materialExtent": [
+     "QuantitativeValue",
+     "Text"
+    ],
+    "mentions": [
+     "Thing"
+    ],
+    "name": [
+     "Text"
+    ],
+    "offers": [
+     "Demand",
+     "Offer"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "pattern": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "position": [
+     "Integer",
+     "Text"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "primaryImageOfPage": [
+     "ImageObject"
+    ],
+    "producer": [
+     "Organization",
+     "Person"
+    ],
+    "provider": [
+     "Organization",
+     "Person"
+    ],
+    "publication": [
+     "PublicationEvent"
+    ],
+    "publisher": [
+     "Organization",
+     "Person"
+    ],
+    "publisherImprint": [
+     "Organization"
+    ],
+    "publishingPrinciples": [
+     "CreativeWork",
+     "URL"
+    ],
+    "recordedAt": [
+     "Event"
+    ],
+    "relatedLink": [
+     "URL"
+    ],
+    "releasedEvent": [
+     "PublicationEvent"
+    ],
+    "review": [
+     "Review"
+    ],
+    "reviewedBy": [
+     "Organization",
+     "Person"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "schemaVersion": [
+     "Text",
+     "URL"
+    ],
+    "sdDatePublished": [
+     "Date"
+    ],
+    "sdLicense": [
+     "CreativeWork",
+     "URL"
+    ],
+    "sdPublisher": [
+     "Organization",
+     "Person"
+    ],
+    "significantLink": [
+     "URL"
+    ],
+    "size": [
+     "DefinedTerm",
+     "QuantitativeValue",
+     "SizeSpecification",
+     "Text"
+    ],
+    "sourceOrganization": [
+     "Organization"
+    ],
+    "spatial": [
+     "Place"
+    ],
+    "spatialCoverage": [
+     "Place"
+    ],
+    "speakable": [
+     "SpeakableSpecification",
+     "URL"
+    ],
+    "specialty": [
+     "Specialty"
+    ],
+    "sponsor": [
+     "Organization",
+     "Person"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "teaches": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "temporal": [
+     "DateTime",
+     "Text"
+    ],
+    "temporalCoverage": [
+     "DateTime",
+     "Text",
+     "URL"
+    ],
+    "text": [
+     "Text"
+    ],
+    "thumbnail": [
+     "ImageObject"
+    ],
+    "thumbnailUrl": [
+     "URL"
+    ],
+    "timeRequired": [
+     "Duration"
+    ],
+    "translationOfWork": [
+     "CreativeWork"
+    ],
+    "translator": [
+     "Organization",
+     "Person"
+    ],
+    "typicalAgeRange": [
+     "Text"
+    ],
+    "url": [
+     "URL"
+    ],
+    "usageInfo": [
+     "CreativeWork",
+     "URL"
+    ],
+    "version": [
+     "Number",
+     "Text"
+    ],
+    "video": [
+     "Clip",
+     "VideoObject"
+    ],
+    "wordCount": [
+     "Integer"
+    ],
+    "workExample": [
+     "CreativeWork"
+    ],
+    "workTranslation": [
+     "CreativeWork"
+    ]
+   }
+  },
+  "WebSite": {
+   "parents": [
+    "CreativeWork",
+    "Thing"
+   ],
+   "properties": {
+    "about": [
+     "Thing"
+    ],
+    "abstract": [
+     "Text"
+    ],
+    "accessibilityAPI": [
+     "Text"
+    ],
+    "accessibilityControl": [
+     "Text"
+    ],
+    "accessibilityFeature": [
+     "Text"
+    ],
+    "accessibilityHazard": [
+     "Text"
+    ],
+    "accessibilitySummary": [
+     "Text"
+    ],
+    "accessMode": [
+     "Text"
+    ],
+    "accessModeSufficient": [
+     "ItemList"
+    ],
+    "accountablePerson": [
+     "Person"
+    ],
+    "acquireLicensePage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "alternativeHeadline": [
+     "Text"
+    ],
+    "archivedAt": [
+     "URL",
+     "WebPage"
+    ],
+    "assesses": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "associatedMedia": [
+     "MediaObject"
+    ],
+    "audience": [
+     "Audience"
+    ],
+    "audio": [
+     "AudioObject",
+     "Clip",
+     "MusicRecording"
+    ],
+    "author": [
+     "Organization",
+     "Person"
+    ],
+    "award": [
+     "Text"
+    ],
+    "character": [
+     "Person"
+    ],
+    "citation": [
+     "CreativeWork",
+     "Text"
+    ],
+    "comment": [
+     "Comment"
+    ],
+    "commentCount": [
+     "Integer"
+    ],
+    "conditionsOfAccess": [
+     "Text"
+    ],
+    "contentLocation": [
+     "Place"
+    ],
+    "contentRating": [
+     "Rating",
+     "Text"
+    ],
+    "contentReferenceTime": [
+     "DateTime"
+    ],
+    "contributor": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightHolder": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightNotice": [
+     "Text"
+    ],
+    "copyrightYear": [
+     "Number"
+    ],
+    "correction": [
+     "CorrectionComment",
+     "Text",
+     "URL"
+    ],
+    "countryOfOrigin": [
+     "Country"
+    ],
+    "creator": [
+     "Organization",
+     "Person"
+    ],
+    "creditText": [
+     "Text"
+    ],
+    "dateCreated": [
+     "Date",
+     "DateTime"
+    ],
+    "dateModified": [
+     "Date",
+     "DateTime"
+    ],
+    "datePublished": [
+     "Date",
+     "DateTime"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "digitalSourceType": [
+     "IPTCDigitalSourceEnumeration"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "discussionUrl": [
+     "URL"
+    ],
+    "editEIDR": [
+     "Text",
+     "URL"
+    ],
+    "editor": [
+     "Person"
+    ],
+    "educationalAlignment": [
+     "AlignmentObject"
+    ],
+    "educationalUse": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "encoding": [
+     "MediaObject"
+    ],
+    "encodingFormat": [
+     "Text",
+     "URL"
+    ],
+    "exampleOfWork": [
+     "CreativeWork"
+    ],
+    "expires": [
+     "Date",
+     "DateTime"
+    ],
+    "funder": [
+     "Organization",
+     "Person"
+    ],
+    "funding": [
+     "Grant"
+    ],
+    "genre": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "hasPart": [
+     "CreativeWork"
+    ],
+    "headline": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "inLanguage": [
+     "Language",
+     "Text"
+    ],
+    "interactionStatistic": [
+     "InteractionCounter"
+    ],
+    "interactivityType": [
+     "Text"
+    ],
+    "interpretedAsClaim": [
+     "Claim"
+    ],
+    "isAccessibleForFree": [
+     "Boolean"
+    ],
+    "isBasedOn": [
+     "CreativeWork",
+     "Product",
+     "URL"
+    ],
+    "isFamilyFriendly": [
+     "Boolean"
+    ],
+    "isPartOf": [
+     "CreativeWork",
+     "URL"
+    ],
+    "issn": [
+     "Text"
+    ],
+    "keywords": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "learningResourceType": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "license": [
+     "CreativeWork",
+     "URL"
+    ],
+    "locationCreated": [
+     "Place"
+    ],
+    "mainEntity": [
+     "Thing"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "maintainer": [
+     "Organization",
+     "Person"
+    ],
+    "material": [
+     "Product",
+     "Text",
+     "URL"
+    ],
+    "materialExtent": [
+     "QuantitativeValue",
+     "Text"
+    ],
+    "mentions": [
+     "Thing"
+    ],
+    "name": [
+     "Text"
+    ],
+    "offers": [
+     "Demand",
+     "Offer"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "pattern": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "position": [
+     "Integer",
+     "Text"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "producer": [
+     "Organization",
+     "Person"
+    ],
+    "provider": [
+     "Organization",
+     "Person"
+    ],
+    "publication": [
+     "PublicationEvent"
+    ],
+    "publisher": [
+     "Organization",
+     "Person"
+    ],
+    "publisherImprint": [
+     "Organization"
+    ],
+    "publishingPrinciples": [
+     "CreativeWork",
+     "URL"
+    ],
+    "recordedAt": [
+     "Event"
+    ],
+    "releasedEvent": [
+     "PublicationEvent"
+    ],
+    "review": [
+     "Review"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "schemaVersion": [
+     "Text",
+     "URL"
+    ],
+    "sdDatePublished": [
+     "Date"
+    ],
+    "sdLicense": [
+     "CreativeWork",
+     "URL"
+    ],
+    "sdPublisher": [
+     "Organization",
+     "Person"
+    ],
+    "size": [
+     "DefinedTerm",
+     "QuantitativeValue",
+     "SizeSpecification",
+     "Text"
+    ],
+    "sourceOrganization": [
+     "Organization"
+    ],
+    "spatial": [
+     "Place"
+    ],
+    "spatialCoverage": [
+     "Place"
+    ],
+    "sponsor": [
+     "Organization",
+     "Person"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "teaches": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "temporal": [
+     "DateTime",
+     "Text"
+    ],
+    "temporalCoverage": [
+     "DateTime",
+     "Text",
+     "URL"
+    ],
+    "text": [
+     "Text"
+    ],
+    "thumbnail": [
+     "ImageObject"
+    ],
+    "thumbnailUrl": [
+     "URL"
+    ],
+    "timeRequired": [
+     "Duration"
+    ],
+    "translationOfWork": [
+     "CreativeWork"
+    ],
+    "translator": [
+     "Organization",
+     "Person"
+    ],
+    "typicalAgeRange": [
+     "Text"
+    ],
+    "url": [
+     "URL"
+    ],
+    "usageInfo": [
+     "CreativeWork",
+     "URL"
+    ],
+    "version": [
+     "Number",
+     "Text"
+    ],
+    "video": [
+     "Clip",
+     "VideoObject"
+    ],
+    "wordCount": [
+     "Integer"
+    ],
+    "workExample": [
+     "CreativeWork"
+    ],
+    "workTranslation": [
+     "CreativeWork"
+    ]
+   }
+  }
+ }
+}

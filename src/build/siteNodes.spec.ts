@@ -44,6 +44,22 @@ describe('buildOrganization', () => {
     expect(warnings).toEqual([])
   })
 
+  test('blank array entries are dropped', () => {
+    const node = buildOrganization(
+      {
+        name: 'Acme',
+        identifiers: [{ propertyID: 'Companies House company number', value: '  ' }],
+        areaServed: [{ name: '  ' }],
+        founder: { name: '  ', jobTitle: 'Founder' },
+      },
+      options,
+      [],
+    )
+    expect(node).not.toHaveProperty('identifier')
+    expect(node).not.toHaveProperty('areaServed')
+    expect(node).not.toHaveProperty('founder')
+  })
+
   test('image uses its own upload, preferring the image size', () => {
     const node = buildOrganization(
       { ...full, image: { url: '/media/shop.jpg', sizes: { og: { url: '/media/shop-og.jpg' } } } },
@@ -112,5 +128,12 @@ describe('buildWebSite', () => {
   test('ids', () => {
     expect(organizationId('https://a.com/')).toBe('https://a.com/#organization')
     expect(websiteId('https://a.com')).toBe('https://a.com/#website')
+  })
+})
+
+describe('buildWebSite search', () => {
+  test('no SearchAction when search is undefined', () => {
+    const node = buildWebSite({ name: 'Acme' }, options, false)
+    expect(node).not.toHaveProperty('potentialAction')
   })
 })

@@ -1,6 +1,7 @@
 import type { Payload } from 'payload'
 import { cache } from 'react'
 import { SETTINGS_SLUG } from '../constants.js'
+import { logWarnings } from '../log.js'
 import type { Settings } from '../types.js'
 
 /** One read per request; depth 1 so the logo upload is populated. */
@@ -12,8 +13,3 @@ export const getSettings = cache(async (payload: Payload): Promise<Settings | nu
     return null
   }
 })
-
-export function logWarnings(warnings: string[]): void {
-  if (process.env.NODE_ENV === 'production') return
-  for (const warning of warnings) console.warn(`[structured-data] ${warning}`)
-}

@@ -5,7 +5,8 @@ import { buildStructuredData } from '../build/buildStructuredData.js'
 import { serializeJsonLd } from '../build/serialize.js'
 import { getPluginOptions } from '../plugin.js'
 import type { Doc } from '../types.js'
-import { getSettings, logWarnings } from './getSettings.js'
+import { logWarnings } from '../log.js'
+import { getSettings } from './getSettings.js'
 
 export type StructuredDataProps = {
   config: SanitizedConfig | Promise<SanitizedConfig>

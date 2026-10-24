@@ -1,5 +1,6 @@
 import type { GlobalConfig } from 'payload'
 import { SETTINGS_SLUG } from '../constants.js'
+import { revalidateSettings } from '../hooks/revalidateSettings.js'
 import type { ResolvedOptions } from '../types.js'
 
 export function settingsGlobal(options: ResolvedOptions): GlobalConfig {
@@ -10,6 +11,7 @@ export function settingsGlobal(options: ResolvedOptions): GlobalConfig {
       group: 'Settings',
       description: 'Business details used for Schema.org structured data on every page.',
     },
+    hooks: { afterChange: [revalidateSettings] },
     fields: [
       {
         name: 'organizationType',

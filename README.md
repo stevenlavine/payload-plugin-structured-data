@@ -73,7 +73,7 @@ Commit the updated `importMap.js` if your project tracks it. Without this step t
 | `type` | `'Article' \| 'BlogPosting' \| 'Service' \| 'WebPage'`, or `(doc) => type \| null` | The collection's default type. A function lets one collection mix types, for example `Service` under `/services/` and `WebPage` elsewhere. Return `null` to output no page node. |
 | `path` | `(doc) => string` | The document's public path, starting with `/`. Use `/` for the home page. The plugin joins it to `siteUrl`. |
 | `fields` | `Partial<Record<PageField, string \| string[]>>` | Maps Schema.org properties to field paths. Dot paths work. A list means the first non-empty value wins, for example `datePublished: ['completedAt', 'publishedAt', 'createdAt']`. |
-| `faq` | `{ block, items, question, answer, blocksField? }` | Builds a `FAQPage` from a blocks field. `block` is the block slug. `items` is the array field inside the block that holds the rows. `question` and `answer` are the field names in each row. `blocksField` is the blocks field on the document and defaults to `layout`. All matching blocks on a page merge into one `FAQPage`. Answers must be plain text (a text or textarea field). Rich text answers are skipped. Since 2023 Google shows FAQ rich results only for well-known government and health sites. The markup stays valid Schema.org, and other tools and AI assistants still read it. |
+| `faq` | `{ block, items, question, answer, blocksField? }` | Builds a `FAQPage` from a blocks field. `block` is the block slug. `items` is the array field inside the block that holds the rows. `question` and `answer` are the field names in each row. `blocksField` is the blocks field on the document and defaults to `layout`. All matching blocks on a page merge into one `FAQPage`. Answers must be plain text (a text or textarea field). Rich text answers are skipped. Google retired the FAQ rich result (not shown from 7 May 2026, documentation removed 15 June 2026), so this no longer changes Google results. The markup stays valid Schema.org, and other tools and AI assistants still read it. We check it against Schema.org only. |
 | `breadcrumbs` | `(doc) => { name, path }[]` | Builds the breadcrumb trail yourself, for collections outside nested docs. Include Home as the first item. |
 
 `PageField` is one of `headline`, `description`, `image`, `datePublished`, `dateModified` and `author`.
@@ -143,7 +143,7 @@ const json = graph ? serializeJsonLd(graph) : null
 
 - Business type: Organisation or Local business
 - Name (required), legal name, description and logo
-- Image: a photo of the business. Google asks for one on a local business. When empty, the logo is used.
+- Image: a photo of the business. Google lists an image only for restaurant carousels, but it is valid Schema.org for an organisation and other tools read it. When empty, the logo is used.
 - Email and telephone
 - Postal address (street, town or city, county or region, postcode, country code)
 - Social profile links (`sameAs`)
@@ -154,7 +154,7 @@ const json = graph ? serializeJsonLd(graph) : null
 
 A local business needs an address. Without one, the plugin outputs `Organization` and warns.
 
-Settings changes do not revalidate pages that Next.js has already cached. Those pages show the new details after their next revalidation or your next deploy.
+Saving the settings revalidates every page (`revalidatePath('/', 'layout')`), so cached pages show the new details without a deploy. Revalidation is skipped when the save has `context.disableRevalidate` set. It does nothing harmful outside Next.js, for example in a script or seed: the save still succeeds. If revalidation fails, the plugin logs a warning in development only.
 
 **Sidebar group.** Every configured collection gets a Structured data group in the sidebar:
 
@@ -175,6 +175,22 @@ Settings changes do not revalidate pages that Next.js has already cached. Those 
 
 The `@id` values are `<siteUrl>/#organization` and `<siteUrl>/#website` for the site, and `<pageUrl>#webpage`, `#article`, `#service`, `#faq` and `#breadcrumb` for a page.
 
+## Validation
+
+Every node the plugin outputs is tested against two things:
+
+- **Schema.org.** The vocabulary (version 30.1, read on 2026-10-23) in `dev/rules/schemaorg.json`. A misspelt property fails the tests, as does a value of the wrong type: a nested node of a type the property does not accept, a number where the property takes no number, or true/false where it takes no Boolean. Text is accepted for any property, as Schema.org allows. Superseded and pending-layer terms are left out.
+- **Google's documented rules.** The required and recommended properties on Google Search Central, read on 2026-10-23, in `dev/rules/google.ts`. FAQPage is checked against Schema.org only, because Google retired that rich result.
+
+These checks run in our test suite, not in your site. The `dev/` folder is not part of the published package.
+
+Google recommends some properties the plugin does not output yet:
+
+- **Organization:** alternate name and number of employees (no settings field). Contact point (settings hold one email and telephone, output at the top level without a contact type). DUNS, GLN, ISO 6523, LEI, NAICS, tax ID and VAT ID (no dedicated field; add them under identifiers and they output as a `PropertyValue`). Return policy, member programme and shipping service (merchant data, out of scope).
+- **LocalBusiness:** geo coordinates, opening hours, price range, department, menu, cuisine, reviews and ratings (no settings fields or data).
+- **Article and BlogPosting:** the author's profile URL (authors are read from populated users, which have no URL field).
+- **WebSite:** alternate site name (no settings field).
+
 ## Database note
 
 The plugin adds a global and a sidebar group to your collections. On Postgres or SQLite, create and run a migration before you deploy:
@@ -190,7 +206,7 @@ MongoDB needs no migration.
 
 - `Product`, `Event`, `Recipe` and `Review`. Google's rules for these are strict and mistakes can cost you rich results. We will add them on demand.
 - Multi-tenant setups. Version 1 has one settings record and one `siteUrl` per install. Multi-tenant support (`@payloadcms/plugin-multi-tenant`) is planned.
-- Validation against Google's live tools. Check your pages with the Rich Results Test.
+- Validation against Google's live tools. The tests use Google's published rules, not its tools. Check your pages with the Rich Results Test.
 
 ## Licence
 

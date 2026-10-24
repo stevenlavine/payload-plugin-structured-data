@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import { logWarnings } from './getSettings.js'
+import { logWarnings } from '../log.js'
 
 afterEach(() => vi.unstubAllEnvs())
 
