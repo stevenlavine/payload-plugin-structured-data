@@ -2,7 +2,7 @@
 
 A Payload CMS 3 plugin that outputs Schema.org structured data (JSON-LD) for your pages. Business details live in a settings screen in the admin. You choose a default type per collection in config. Editors can override it or switch it off per document.
 
-It outputs nine types: `Organization`, `LocalBusiness`, `WebSite`, `Article`, `BlogPosting`, `Service`, `WebPage`, `FAQPage` and `BreadcrumbList`.
+It outputs eleven types: `Organization`, `LocalBusiness`, `WebSite`, `Article`, `BlogPosting`, `Service`, `WebPage`, `FAQPage`, `BreadcrumbList`, `Event` and `ItemList`.
 
 Each page gets one `<script type="application/ld+json">` holding a connected `@graph`. Nodes link to each other by `@id`, for example the article's `publisher` points at `<siteUrl>/#organization`.
 
@@ -64,17 +64,19 @@ Commit the updated `importMap.js` if your project tracks it. Without this step t
 | `mediaCollection` | `string` | Upload collection for the logo and image. Default `media`. |
 | `imageSize` | `string` | Image size name to prefer, such as `og`. Falls back to the original file. |
 | `search` | `{ urlTemplate: string }` | Adds a `SearchAction` to `WebSite`, for example `https://example.com/search?q={search_term_string}`. Google retired the sitelinks search box in November 2024, so this no longer changes Google results. It is still valid Schema.org, and other tools and AI assistants can read it. |
+| `timeZone` | `string` | IANA time zone for event dates, such as `Europe/London`. A zone stored on the document wins. See [Events](#events). |
 | `disabled` | `boolean` | Keeps the fields so your schema stays stable, but outputs nothing. |
 
 ### Collection options
 
 | Key | Type | What it does |
 | --- | --- | --- |
-| `type` | `'Article' \| 'BlogPosting' \| 'Service' \| 'WebPage'`, or `(doc) => type \| null` | The collection's default type. A function lets one collection mix types, for example `Service` under `/services/` and `WebPage` elsewhere. Return `null` to output no page node. |
+| `type` | `'Article' \| 'BlogPosting' \| 'Service' \| 'WebPage' \| 'Event'`, or `(doc) => type \| null` | The collection's default type. A function lets one collection mix types, for example `Service` under `/services/` and `WebPage` elsewhere. Return `null` to output no page node. |
 | `path` | `(doc) => string` | The document's public path, starting with `/`. Use `/` for the home page. The plugin joins it to `siteUrl`. |
 | `fields` | `Partial<Record<PageField, string \| string[]>>` | Maps Schema.org properties to field paths. Dot paths work. A list means the first non-empty value wins, for example `datePublished: ['completedAt', 'publishedAt', 'createdAt']`. |
 | `faq` | `{ block, items, question, answer, blocksField? }` | Builds a `FAQPage` from a blocks field. `block` is the block slug. `items` is the array field inside the block that holds the rows. `question` and `answer` are the field names in each row. `blocksField` is the blocks field on the document and defaults to `layout`. All matching blocks on a page merge into one `FAQPage`. Answers must be plain text (a text or textarea field). Rich text answers are skipped. Google retired the FAQ rich result (not shown from 7 May 2026, documentation removed 15 June 2026), so this no longer changes Google results. The markup stays valid Schema.org, and other tools and AI assistants still read it. We check it against Schema.org only. |
 | `breadcrumbs` | `(doc) => { name, path }[]` | Builds the breadcrumb trail yourself, for collections outside nested docs. Include Home as the first item. |
+| `event` | `EventOptions` | Maps the document's fields to an `Event`. Setting it also offers Event in the editor's type select. See [Events](#events). |
 
 `PageField` is one of `headline`, `description`, `image`, `datePublished`, `dateModified` and `author`.
 
@@ -137,6 +139,136 @@ const json = graph ? serializeJsonLd(graph) : null
 
 `getPluginOptions` returns `null` when the plugin is not in your config, so check for that. `settings` is the `structured-data-settings` global, read with `payload.findGlobal`. Put `json` inside a `<script type="application/ld+json">` tag.
 
+## Events
+
+Set `type: 'Event'` on a collection, or set `event` on it so editors can pick Event per document. A page gets one `Event` node. A page with several dates gets one per date.
+
+The event fields belong to your site. The plugin adds no event fields to your database, so there is nothing to migrate. You map your own fields to the Schema.org properties.
+
+```ts
+structuredDataPlugin({
+  siteUrl: process.env.NEXT_PUBLIC_SERVER_URL,
+  timeZone: 'Europe/London',
+  collections: {
+    events: {
+      type: 'Event',
+      path: (doc) => `/events/${doc.slug}`,
+      fields: { headline: 'title', description: 'summary' },
+      event: {
+        startDate: 'startsAt',
+        endDate: 'endsAt',
+        status: 'status',
+        location: {
+          name: 'venue.name',
+          streetAddress: 'venue.street',
+          addressLocality: 'venue.town',
+          postalCode: 'venue.postcode',
+          addressCountry: 'venue.country',
+        },
+        offers: { path: 'tickets', name: 'label', priceCurrency: 'currency', url: 'link', defaultCurrency: 'GBP' },
+        performers: { path: 'artists' },
+      },
+    },
+  },
+})
+```
+
+The name comes from `fields.headline`, the description from `fields.description` and the image from `fields.image`, as on any other page. Every key in `event` is optional. Where a key is left out, the plugin reads the field with that key's name: `startDate`, `endDate`, `eventStatus`, `previousStartDate`, `location.name` and so on.
+
+### Event options
+
+| Key | What it does |
+| --- | --- |
+| `startDate`, `endDate` | Date fields. Defaults `startDate` and `endDate`. A start date is required. An end date before the start is dropped with a warning. |
+| `dateOnly` | `true`, a field path, or `(doc) => boolean`. Outputs `YYYY-MM-DD` in the event's time zone, for events with no known hour. |
+| `location` | A field path for each part of the place (`name`, `streetAddress`, `addressLocality`, `addressRegion`, `postalCode`, `addressCountry`, `onlineUrl`), or `(doc) => place \| null` for a fixed venue. Defaults are `location.<key>`. |
+| `status` | Field holding `scheduled`, `cancelled`, `postponed`, `rescheduled` or `movedOnline`. The Schema.org names also work. Default `eventStatus`. |
+| `previousStartDate` | Date field read only with a `rescheduled` status. Default `previousStartDate`. |
+| `offers` | Ticket offers. `path` (default `offers`), then `price`, `priceCurrency`, `availability`, `validFrom`, `url` and `name` as paths inside one row, plus `defaultCurrency`. An offer with a price and no currency is dropped with a warning. A price of 0 is a free ticket. An offer with no price is kept if it has a link or an availability. |
+| `organizer` | `{ name, url, type? }`. With no mapping, or nothing at the mapped paths, the event points at your site's organisation by `@id`. |
+| `performers` | `{ path, name, type? }`. Defaults `performers` and `name`. A row can be an object or a plain string. `type` is `Person` or `PerformingGroup`. |
+| `performances` | Several dates on one page. See below. |
+| `superEvent` | The festival or series the event belongs to. See below. |
+
+A place needs a postal address, an online link, or both. With neither, the event is skipped with a warning. An address and a link together output as a mixed event.
+
+### Depth
+
+Relationship fields are not fetched, as with every other type. If your event stores its venue, performers or festival as a relationship, load the document with enough `depth` for those paths to hold objects. An ID is skipped.
+
+### Several dates
+
+For a page with a run of dates, give `performances` the array field that holds one row per date:
+
+```ts
+event: {
+  location: { /* ... */ },
+  offers: { path: 'tickets', defaultCurrency: 'GBP' },
+  performances: { path: 'dates', startDate: 'startsAt', endDate: 'endsAt', status: 'status' },
+}
+```
+
+Each row gives one `Event`, with the id `<pageUrl>#event-<start>`. The place, name, image and performers are shared. Inside a row, `startDate`, `endDate`, `status` and `previousStartDate` default to those names. A row's status key defaults to `status`, while the document's status key defaults to `eventStatus`. A row's `offers` replace the document's. A row with none uses the document's. Rows with no valid start date are skipped, as are rows that repeat another row's start. If no row gives an event, the plugin falls back to the document's own date.
+
+### Festival link
+
+Use `superEvent` when a session belongs to a festival that has its own page:
+
+```ts
+superEvent: (doc) => {
+  const festival = doc.festival
+  if (!festival || typeof festival !== 'object') return null
+  const { title, slug, startsAt, endsAt, venue } = festival as Record<string, any>
+  return {
+    name: title,
+    path: `/events/${slug}`,
+    startDate: startsAt,
+    endDate: endsAt,
+    location: { name: venue?.name, streetAddress: venue?.street, addressLocality: venue?.town, postalCode: venue?.postcode },
+  }
+},
+```
+
+It returns `{ name, path, startDate, endDate?, dateOnly?, location }`, or `null` for no festival. The festival needs its own page, one date range and no `performances`, so that its `@id` (`<festivalUrl>#event`) matches the `Event` that page outputs. Its `path` must differ from the session's page.
+
+The link needs a valid start date and a physical address. Without both, the plugin drops the link and warns, because Google's Rich Results Test reads any `superEvent` with no date and place as an invalid event (tested on 2026-10-30). The session's own `Event` is still output. That is the test's result, and Google may still show only the page's main event.
+
+### Time zones
+
+The plugin picks a time zone for each date in this order:
+
+1. The zone Payload stores beside the date field, read from `<field>_tz`. This applies when the field has time zones switched on.
+2. The `timeZone` plugin option.
+3. UTC, with a development warning.
+
+An invalid name never throws. It warns and the next source is used. Offsets come from the built-in `Intl` API, so a July and a January event in `Europe/London` get the right offsets.
+
+The plugin reads each date value by its shape:
+
+| Value | Treated as | Output |
+| --- | --- | --- |
+| Has `Z` or an offset, such as Payload's stored dates | An exact moment | Converted to the event's time zone. With no zone known: UTC, and a warning |
+| Date and time, no offset (`2027-07-14T19:30`) | Local time at the event | With a zone known: that time and its offset. With none: as written, with no offset |
+| Date only (`2027-07-14`) | A day with no known hour | As written |
+| Anything else | Not a date | Skipped with a warning |
+
+### Listings pages
+
+For a page that lists events, pass `list` to `StructuredData`. The site fetches the rows and passes them in. The plugin runs no queries.
+
+```tsx
+<StructuredData
+  config={config}
+  list={{ path: '/events', name: 'What is on', items: events.map((e) => ({ name: e.title, path: `/events/${e.slug}` })) }}
+/>
+```
+
+This outputs one `ItemList` with the id `<listUrl>#itemlist` and one `ListItem` per row. A row without a name and a path is skipped with a warning.
+
+### What Google shows
+
+Google shows no event result for online-only events or for listing pages. The plugin still outputs the markup for both. It is valid Schema.org that other tools can read. `movedOnline` is not on Google's list of statuses either. It is valid Schema.org, and Google may ignore it.
+
 ## Admin
 
 **Settings.** The plugin adds a global with the slug `structured-data-settings`. In the admin it sits under Settings, then Structured data. It holds:
@@ -173,7 +305,7 @@ Saving the settings revalidates every page (`revalidatePath('/', 'layout')`), so
 - **Escaping.** The serialised JSON escapes every `<` as `\u003c`, so a value containing `</script>` cannot close the tag.
 - **Absolute URLs.** Every URL in the output is absolute, including media.
 
-The `@id` values are `<siteUrl>/#organization` and `<siteUrl>/#website` for the site, and `<pageUrl>#webpage`, `#article`, `#service`, `#faq` and `#breadcrumb` for a page.
+The `@id` values are `<siteUrl>/#organization` and `<siteUrl>/#website` for the site, and `<pageUrl>#webpage`, `#article`, `#service`, `#faq` and `#breadcrumb` for a page. Events use `<pageUrl>#event`, or `<pageUrl>#event-<start>` for each date of a page with several. A listings page uses `<listUrl>#itemlist`.
 
 ## Validation
 
@@ -204,7 +336,7 @@ MongoDB needs no migration.
 
 ## Not in version 1
 
-- `Product`, `Event`, `Recipe` and `Review`. Google's rules for these are strict and mistakes can cost you rich results. We will add them on demand.
+- `Product`, `Recipe` and `Review`. Google's rules for these are strict and mistakes can cost you rich results. We will add them on demand.
 - Multi-tenant setups. Version 1 has one settings record and one `siteUrl` per install. Multi-tenant support (`@payloadcms/plugin-multi-tenant`) is planned.
 - Validation against Google's live tools. The tests use Google's published rules, not its tools. Check your pages with the Rich Results Test.
 

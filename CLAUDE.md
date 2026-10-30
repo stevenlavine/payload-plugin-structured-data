@@ -5,7 +5,7 @@
 **Project:** `@lavinedev/payload-plugin-structured-data`
 **Client:** None. Own product of Lavine Web & AI Solutions; public open-source npm plugin, not client work.
 **Repo:** https://github.com/stevenlavine/payload-plugin-structured-data (public since 0.1.0, 2026-10-23)
-**Description:** Payload CMS 3 plugin that outputs Schema.org JSON-LD (Organization, LocalBusiness, WebSite, Article, BlogPosting, Service, WebPage, FAQPage, BreadcrumbList), editable in the admin.
+**Description:** Payload CMS 3 plugin that outputs Schema.org JSON-LD (Organization, LocalBusiness, WebSite, Article, BlogPosting, Service, WebPage, FAQPage, BreadcrumbList, Event, ItemList), editable in the admin.
 
 ## Workspace links
 
@@ -35,8 +35,8 @@ On Windows, `pnpm build` may need `SWC_NATIVE_BINDING_CACHE` pointing at a direc
 - Output is one `<script type="application/ld+json">` per call, holding `{ "@context": "https://schema.org", "@graph": [...] }`.
 - Serialised JSON escapes every `<` as `\u003c` (six ASCII characters, not a literal `<`; verify bytes).
 - Every URL in the output is absolute.
-- v1 types only: Organization, LocalBusiness, WebSite, Article, BlogPosting, Service, WebPage, FAQPage, BreadcrumbList.
-- `@id` values: `<siteUrl>/#organization`, `<siteUrl>/#website`, `<pageUrl>#webpage` / `#article` / `#service` / `#faq` / `#breadcrumb`.
+- Types: Organization, LocalBusiness, WebSite, Article, BlogPosting, Service, WebPage, FAQPage, BreadcrumbList, Event, ItemList.
+- `@id` values: `<siteUrl>/#organization`, `<siteUrl>/#website`, `<pageUrl>#webpage` / `#article` / `#service` / `#faq` / `#breadcrumb`, plus `<pageUrl>#event`, `#event-<start>` (one per date) and `<listUrl>#itemlist`.
 - UK English in README and admin labels.
 - Single site only in v1. Keep every settings read inside `getSettings` and every `siteUrl` use behind `ResolvedOptions.siteUrl` so multi-tenant (v2) can swap both.
 - Dev/test database is SQLite. No Playwright e2e.
