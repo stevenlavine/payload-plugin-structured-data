@@ -42,7 +42,7 @@ export function buildStructuredData({ options, settings, collection, doc, list }
         const path = config.path(doc)
         const url = absoluteUrl(options.siteUrl, path)
 
-        if (type && !allowed.includes(type)) {
+        if (type === EVENT_TYPE && !allowed.includes(type)) {
           warnings.push(`${ref}: ${type} skipped, this collection does not allow it (set type: '${type}' or an event block)`)
         } else if (type === EVENT_TYPE) {
           nodes.push(...buildEventNodes({ doc, url, ref, config, options, hasOrganization: Boolean(organization) }, warnings))

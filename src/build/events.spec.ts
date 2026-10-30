@@ -700,3 +700,181 @@ describe('Event performances', () => {
     expect(nodes.every((n) => (n.superEvent as JsonLdNode)['@id'] === 'https://example.com/events/festival#event')).toBe(true)
   })
 })
+
+describe('Event place values', () => {
+  const festivalBase = { name: 'Festival 2027', path: '/events/festival-2027', startDate: '2027-07-10T09:00:00.000Z' }
+  const withLocation = (location: Doc) => run({ ...baseDoc, location })
+  const withFestivalLocation = (location: Record<string, unknown>) =>
+    run(baseDoc, optionsFor({ ...eventsConfig, event: { superEvent: () => ({ ...festivalBase, location }) } }))
+
+  test('null address parts give no place and a warning', () => {
+    const result = withLocation({ name: 'Hall', streetAddress: null, postalCode: null })
+    expect(eventOf(result)).toBeUndefined()
+    expect(result.warnings.some((w) => w.includes('Event skipped') && w.includes('no place'))).toBe(true)
+  })
+
+  test('blank address parts give no place', () => {
+    const result = withLocation({ streetAddress: '', addressLocality: '   ' })
+    expect(eventOf(result)).toBeUndefined()
+  })
+
+  test('blank parts are dropped and the rest are trimmed', () => {
+    const result = withLocation({ name: '  Hall  ', streetAddress: ' 1 High St ', addressLocality: '  ', postalCode: null })
+    expect(eventOf(result)?.location).toEqual({
+      '@type': 'Place',
+      name: 'Hall',
+      address: { '@type': 'PostalAddress', streetAddress: '1 High St' },
+    })
+  })
+
+  test('a location function with blank values gives no place', () => {
+    const config = { ...eventsConfig, event: { location: () => ({ streetAddress: '', addressLocality: '  ' }) } }
+    expect(eventOf(run(baseDoc, optionsFor(config)))).toBeUndefined()
+  })
+
+  test('a numeric onlineUrl does not throw and counts as no link', () => {
+    const config = { ...eventsConfig, event: { location: () => ({ onlineUrl: 42 as unknown as string }) } }
+    const result = run(baseDoc, optionsFor(config))
+    expect(eventOf(result)).toBeUndefined()
+    expect(result.warnings.some((w) => w.includes('Event skipped'))).toBe(true)
+  })
+
+  test('a festival with null venue parts drops the link', () => {
+    const result = withFestivalLocation({ name: 'Showground', streetAddress: null, postalCode: null })
+    expect(eventOf(result)?.name).toBe('Opening night')
+    expect(eventOf(result)).not.toHaveProperty('superEvent')
+    expect(result.warnings.some((w) => w.includes('superEvent') && w.includes('physical address'))).toBe(true)
+  })
+
+  test('a festival with blank venue parts drops the link', () => {
+    const result = withFestivalLocation({ streetAddress: '', addressLocality: '   ' })
+    expect(eventOf(result)).not.toHaveProperty('superEvent')
+  })
+
+  test('a festival with an all-empty location drops the link', () => {
+    const result = withFestivalLocation({ name: '   ', streetAddress: null })
+    expect(eventOf(result)).not.toHaveProperty('superEvent')
+  })
+})
+
+describe('Event run status and previous start fall back to the document', () => {
+  const config = (event: NonNullable<CollectionOptions['event']> = {}): CollectionOptions => ({
+    ...eventsConfig,
+    event: { performances: { path: 'dates' }, ...event },
+  })
+  const docWith = (dates: unknown, extra: Doc = {}): Doc => {
+    const { startDate: _s, endDate: _e, ...rest } = baseDoc
+    return { ...rest, dates, ...extra }
+  }
+  const events = (result: ReturnType<typeof run>) => (result.graph?.['@graph'] ?? []).filter((n) => n['@type'] === 'Event')
+  const rows = [{ startDate: '2027-07-14T18:30:00.000Z' }, { startDate: '2027-07-15T18:30:00.000Z', status: 'postponed' }]
+
+  test('a cancelled run with no row status outputs as cancelled; a row status wins', () => {
+    const nodes = events(run(docWith(rows, { eventStatus: 'cancelled' }), optionsFor(config())))
+    expect(nodes[0].eventStatus).toBe('https://schema.org/EventCancelled')
+    expect(nodes[1].eventStatus).toBe('https://schema.org/EventPostponed')
+  })
+
+  test('a rescheduled run takes the document previousStartDate', () => {
+    const result = run(
+      docWith([rows[0]], { eventStatus: 'rescheduled', previousStartDate: '2027-07-01T18:30:00.000Z' }),
+      optionsFor(config()),
+    )
+    const node = events(result)[0]
+    expect(node.eventStatus).toBe('https://schema.org/EventRescheduled')
+    expect(node.previousStartDate).toBe('2027-07-01T19:30:00+01:00')
+    expect(result.warnings).toEqual([])
+  })
+
+  test('a row status that is not rescheduled ignores the document previousStartDate without a warning', () => {
+    const result = run(
+      docWith([rows[1]], { eventStatus: 'rescheduled', previousStartDate: '2027-07-01T18:30:00.000Z' }),
+      optionsFor(config()),
+    )
+    expect(events(result)[0]).not.toHaveProperty('previousStartDate')
+    expect(result.warnings).toEqual([])
+  })
+})
+
+describe('Event row offers', () => {
+  const config = (event: NonNullable<CollectionOptions['event']>): CollectionOptions => ({ ...eventsConfig, event })
+  const docWith = (dates: unknown, extra: Doc = {}): Doc => {
+    const { startDate: _s, endDate: _e, ...rest } = baseDoc
+    return { ...rest, dates, ...extra }
+  }
+  const events = (result: ReturnType<typeof run>) => (result.graph?.['@graph'] ?? []).filter((n) => n['@type'] === 'Event')
+  const start = '2027-07-14T18:30:00.000Z'
+
+  test('a row whose offers were all dropped does not get the price from the document', () => {
+    const result = run(
+      docWith([{ startDate: start, offers: [{ price: 5 }] }], { offers: [{ price: 20, priceCurrency: 'GBP' }] }),
+      optionsFor(config({ performances: { path: 'dates' } })),
+    )
+    const node = events(result)[0]
+    expect(node).not.toHaveProperty('offers')
+    expect(result.warnings.some((w) => w.includes('no currency'))).toBe(true)
+  })
+
+  test('an empty row offers array falls back to the document offers', () => {
+    const result = run(
+      docWith([{ startDate: start, offers: [] }], { offers: [{ price: 20, priceCurrency: 'GBP' }] }),
+      optionsFor(config({ performances: { path: 'dates' } })),
+    )
+    expect(events(result)[0].offers).toEqual([{ '@type': 'Offer', price: 20, priceCurrency: 'GBP' }])
+  })
+
+  test('performances.offers inherits defaultCurrency from event.offers', () => {
+    const result = run(
+      docWith([{ startDate: start, tickets: [{ price: 5 }] }]),
+      optionsFor(config({ offers: { defaultCurrency: 'GBP' }, performances: { path: 'dates', offers: { path: 'tickets' } } })),
+    )
+    expect(events(result)[0].offers).toEqual([{ '@type': 'Offer', price: 5, priceCurrency: 'GBP' }])
+    expect(result.warnings).toEqual([])
+  })
+
+  test('the own defaultCurrency of performances.offers wins', () => {
+    const result = run(
+      docWith([{ startDate: start, tickets: [{ price: 5 }] }]),
+      optionsFor(
+        config({ offers: { defaultCurrency: 'GBP' }, performances: { path: 'dates', offers: { path: 'tickets', defaultCurrency: 'EUR' } } }),
+      ),
+    )
+    expect(events(result)[0].offers).toEqual([{ '@type': 'Offer', price: 5, priceCurrency: 'EUR' }])
+  })
+})
+
+describe('Event currency', () => {
+  const withOffer = (offer: Doc, event: NonNullable<CollectionOptions['event']> = {}) =>
+    run({ ...baseDoc, offers: [offer] }, optionsFor({ ...eventsConfig, event }))
+
+  test('lower case and padded codes are normalised', () => {
+    expect(eventOf(withOffer({ price: 5, priceCurrency: ' gbp ' }))?.offers).toEqual([{ '@type': 'Offer', price: 5, priceCurrency: 'GBP' }])
+  })
+
+  test('a symbol is no currency, so the offer is dropped with a warning', () => {
+    const result = withOffer({ price: 5, priceCurrency: '£' })
+    expect(eventOf(result)).not.toHaveProperty('offers')
+    expect(result.warnings.some((w) => w.includes('no currency'))).toBe(true)
+  })
+
+  test('defaultCurrency is normalised, and a bad one is no currency', () => {
+    expect(eventOf(withOffer({ price: 5 }, { offers: { defaultCurrency: ' eur' } }))?.offers).toEqual([
+      { '@type': 'Offer', price: 5, priceCurrency: 'EUR' },
+    ])
+    const bad = withOffer({ price: 5 }, { offers: { defaultCurrency: 'pounds' } })
+    expect(eventOf(bad)).not.toHaveProperty('offers')
+  })
+})
+
+describe('Event date-only end against a timed start', () => {
+  test('a date-only end on the same day keeps the end date', () => {
+    const node = eventOf(run({ ...baseDoc, endDate: '2027-07-14' }))
+    expect(node?.endDate).toBe('2027-07-14')
+  })
+
+  test('a date-only end the day before drops the end date with a warning', () => {
+    const result = run({ ...baseDoc, endDate: '2027-07-13' })
+    expect(eventOf(result)).not.toHaveProperty('endDate')
+    expect(result.warnings.some((w) => w.includes('endDate') && w.includes('before'))).toBe(true)
+  })
+})

@@ -143,7 +143,7 @@ const json = graph ? serializeJsonLd(graph) : null
 
 Set `type: 'Event'` on a collection, or set `event` on it so editors can pick Event per document. A page gets one `Event` node. A page with several dates gets one per date.
 
-The event fields belong to your site. The plugin adds no event fields to your database, so there is nothing to migrate. You map your own fields to the Schema.org properties.
+The event fields belong to your site. The plugin adds no event columns, and you map your own fields to the Schema.org properties. Turning on events for a collection does add `Event` to that collection's type select, so on Postgres and SQLite run `payload migrate:create` and `payload migrate`. MongoDB needs nothing. Collections with no event config are unaffected.
 
 ```ts
 structuredDataPlugin({
@@ -184,7 +184,7 @@ The name comes from `fields.headline`, the description from `fields.description`
 | `location` | A field path for each part of the place (`name`, `streetAddress`, `addressLocality`, `addressRegion`, `postalCode`, `addressCountry`, `onlineUrl`), or `(doc) => place \| null` for a fixed venue. Defaults are `location.<key>`. |
 | `status` | Field holding `scheduled`, `cancelled`, `postponed`, `rescheduled` or `movedOnline`. The Schema.org names also work. Default `eventStatus`. |
 | `previousStartDate` | Date field read only with a `rescheduled` status. Default `previousStartDate`. |
-| `offers` | Ticket offers. `path` (default `offers`), then `price`, `priceCurrency`, `availability`, `validFrom`, `url` and `name` as paths inside one row, plus `defaultCurrency`. An offer with a price and no currency is dropped with a warning. A price of 0 is a free ticket. An offer with no price is kept if it has a link or an availability. |
+| `offers` | Ticket offers. `path` (default `offers`), then `price`, `priceCurrency`, `availability`, `validFrom`, `url` and `name` as paths inside one row, plus `defaultCurrency`. Currency codes are trimmed and upper-cased, so `gbp` outputs as `GBP`. Anything that is not three letters counts as no currency. An offer with a price and no currency is dropped with a warning. A price of 0 is a free ticket. An offer with no price is kept if it has a link or an availability. |
 | `organizer` | `{ name, url, type? }`. With no mapping, or nothing at the mapped paths, the event points at your site's organisation by `@id`. |
 | `performers` | `{ path, name, type? }`. Defaults `performers` and `name`. A row can be an object or a plain string. `type` is `Person` or `PerformingGroup`. |
 | `performances` | Several dates on one page. See below. |
@@ -194,7 +194,7 @@ A place needs a postal address, an online link, or both. With neither, the event
 
 ### Depth
 
-Relationship fields are not fetched, as with every other type. If your event stores its venue, performers or festival as a relationship, load the document with enough `depth` for those paths to hold objects. An ID is skipped.
+Relationship fields are not fetched, as with every other type. If your event stores its venue, performers or festival as a relationship, load the document with enough `depth` for those paths to hold objects. An ID is skipped. The admin preview loads the document at depth 1, so a deeper festival field may show a warning there when the live page is fine.
 
 ### Several dates
 
@@ -208,7 +208,7 @@ event: {
 }
 ```
 
-Each row gives one `Event`, with the id `<pageUrl>#event-<start>`. The place, name, image and performers are shared. Inside a row, `startDate`, `endDate`, `status` and `previousStartDate` default to those names. A row's status key defaults to `status`, while the document's status key defaults to `eventStatus`. A row's `offers` replace the document's. A row with none uses the document's. Rows with no valid start date are skipped, as are rows that repeat another row's start. If no row gives an event, the plugin falls back to the document's own date.
+Each row gives one `Event`, with the id `<pageUrl>#event-<start>`. The place, name, image and performers are shared. Inside a row, `startDate`, `endDate`, `status` and `previousStartDate` default to those names. A row's status key defaults to `status`, while the document's status key defaults to `eventStatus`. A row's `offers` replace the document's. A row with no offers field, or an empty one, uses the document's. A row whose offers were all dropped as invalid gets none, so it never takes the document's price by accident. `performances.offers` inherits `defaultCurrency` from `event.offers` when it sets none. A row with no status or `previousStartDate` of its own takes the document's, so a cancelled run is output as cancelled. Rows with no valid start date are skipped, as are rows that repeat another row's start. If no row gives an event, the plugin falls back to the document's own date.
 
 ### Festival link
 
@@ -218,13 +218,15 @@ Use `superEvent` when a session belongs to a festival that has its own page:
 superEvent: (doc) => {
   const festival = doc.festival
   if (!festival || typeof festival !== 'object') return null
-  const { title, slug, startsAt, endsAt, venue } = festival as Record<string, any>
+  const { title, slug, startsAt, endsAt, venue } = festival as Record<string, unknown>
+  if (typeof title !== 'string' || typeof slug !== 'string') return null
+  const place = venue && typeof venue === 'object' ? (venue as Record<string, string | undefined>) : {}
   return {
     name: title,
     path: `/events/${slug}`,
     startDate: startsAt,
     endDate: endsAt,
-    location: { name: venue?.name, streetAddress: venue?.street, addressLocality: venue?.town, postalCode: venue?.postcode },
+    location: { name: place.name, streetAddress: place.street, addressLocality: place.town, postalCode: place.postcode },
   }
 },
 ```
@@ -312,7 +314,7 @@ The `@id` values are `<siteUrl>/#organization` and `<siteUrl>/#website` for the 
 Every node the plugin outputs is tested against two things:
 
 - **Schema.org.** The vocabulary (version 30.1, read on 2026-10-23) in `dev/rules/schemaorg.json`. A misspelt property fails the tests, as does a value of the wrong type: a nested node of a type the property does not accept, a number where the property takes no number, or true/false where it takes no Boolean. Text is accepted for any property, as Schema.org allows. Superseded and pending-layer terms are left out.
-- **Google's documented rules.** The required and recommended properties on Google Search Central, read on 2026-10-23, in `dev/rules/google.ts`. FAQPage is checked against Schema.org only, because Google retired that rich result.
+- **Google's documented rules.** The required and recommended properties on Google Search Central, read on 2026-10-23, in `dev/rules/google.ts`. The Event rules were read on 2026-10-30. FAQPage is checked against Schema.org only, because Google retired that rich result.
 
 These checks run in our test suite, not in your site. The `dev/` folder is not part of the published package.
 
@@ -334,10 +336,10 @@ payload migrate
 
 MongoDB needs no migration.
 
-## Not in version 1
+## Not yet supported
 
 - `Product`, `Recipe` and `Review`. Google's rules for these are strict and mistakes can cost you rich results. We will add them on demand.
-- Multi-tenant setups. Version 1 has one settings record and one `siteUrl` per install. Multi-tenant support (`@payloadcms/plugin-multi-tenant`) is planned.
+- Multi-tenant setups. There is one settings record and one `siteUrl` per install. Multi-tenant support (`@payloadcms/plugin-multi-tenant`) is planned.
 - Validation against Google's live tools. The tests use Google's published rules, not its tools. Check your pages with the Rich Results Test.
 
 ## Licence

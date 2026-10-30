@@ -1,7 +1,7 @@
 {
   "name": "@lavinedev/payload-plugin-structured-data",
   "version": "0.3.0",
-  "description": "Schema.org structured data (JSON-LD) for Payload CMS: Organization, WebSite, Article, BlogPosting, Service, WebPage, FAQPage and BreadcrumbList, editable in the admin.",
+  "description": "Schema.org structured data (JSON-LD) for Payload CMS: Organization, WebSite, Article, BlogPosting, Service, WebPage, FAQPage, BreadcrumbList, Event and ItemList, editable in the admin.",
   "license": "MIT",
   "type": "module",
   "exports": {

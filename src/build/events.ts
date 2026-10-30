@@ -69,6 +69,21 @@ function readDateOnly(setting: EventOptions['dateOnly'], doc: Doc, ref: string, 
 
 const instant = (date: string) => Date.parse(/(?:Z|[+-]\d{2}:\d{2})$/.test(date) || date.length === 10 ? date : `${date}Z`)
 
+/** True when `end` is before `start`. A date-only side compares by calendar date, so a same-day date-only end is kept */
+function endsBefore(end: string, start: string): boolean {
+  if (end.length === 10 || start.length === 10) return end.slice(0, 10) < start.slice(0, 10)
+  return instant(end) < instant(start)
+}
+
+/** A non-blank string, trimmed. Anything else (null, a number, blank text) is undefined */
+const cleanText = (value: unknown): string | undefined => (typeof value === 'string' && value.trim() ? value.trim() : undefined)
+
+/** A three-letter upper-case currency code, or undefined */
+function cleanCurrency(value: unknown): string | undefined {
+  const code = cleanText(value)?.toUpperCase()
+  return code && /^[A-Z]{3}$/.test(code) ? code : undefined
+}
+
 const PLACE_KEYS = ['name', 'streetAddress', 'addressLocality', 'addressRegion', 'postalCode', 'addressCountry', 'onlineUrl'] as const
 const ADDRESS_KEYS = ['streetAddress', 'addressLocality', 'addressRegion', 'postalCode', 'addressCountry'] as const
 
@@ -105,14 +120,14 @@ function placePathsTried(setting: EventOptions['location']): string[] {
 function physicalPlace(place: EventPlace) {
   const address = compact({
     '@type': 'PostalAddress' as const,
-    streetAddress: place.streetAddress,
-    addressLocality: place.addressLocality,
-    addressRegion: place.addressRegion,
-    postalCode: place.postalCode,
-    addressCountry: place.addressCountry,
+    streetAddress: cleanText(place.streetAddress),
+    addressLocality: cleanText(place.addressLocality),
+    addressRegion: cleanText(place.addressRegion),
+    postalCode: cleanText(place.postalCode),
+    addressCountry: cleanText(place.addressCountry),
   })
   if (Object.keys(address).length === 1) return undefined
-  return { '@type': 'Place' as const, name: place.name, address }
+  return compact({ '@type': 'Place' as const, name: cleanText(place.name), address })
 }
 
 type EventStatusUrl = `https://schema.org/Event${'Scheduled' | 'Cancelled' | 'Postponed' | 'Rescheduled' | 'MovedOnline'}`
@@ -196,7 +211,7 @@ function buildOffers(source: Doc, offers: EventOfferOptions | undefined, ctx: Ev
     // A price with no currency must never output. No price means no currency either
     let priceCurrency: string | undefined
     if (price !== undefined) {
-      priceCurrency = readText(row, offers?.priceCurrency ?? 'priceCurrency') || offers?.defaultCurrency?.trim() || undefined
+      priceCurrency = cleanCurrency(readFirst(row, offers?.priceCurrency ?? 'priceCurrency')) ?? cleanCurrency(offers?.defaultCurrency)
       if (!priceCurrency) {
         warnings.push(`${label} skipped, it has a price but no currency (set priceCurrency or defaultCurrency)`)
         return
@@ -315,7 +330,7 @@ function buildSuperEvent(doc: Doc, setting: EventOptions['superEvent'], url: str
   if (festival.endDate !== undefined && festival.endDate !== null) {
     endDate = formatEventDate(festival.endDate, dateCtx, warnings) ?? undefined
     if (!endDate) warnings.push(`${ctx.ref}: superEvent endDate left out, it is not a valid date`)
-    else if (instant(endDate) < instant(startDate)) {
+    else if (endsBefore(endDate, startDate)) {
       warnings.push(`${ctx.ref}: superEvent endDate left out, it is before the festival's start date`)
       endDate = undefined
     }
@@ -347,6 +362,8 @@ function buildDateParts(
   ctx: EventContext,
   warnings: string[],
   fallbackOffers: () => OfferNode[],
+  /** For a performance row: the document and its paths, used for what the row leaves out */
+  inherit?: { source: Doc; paths: DatePaths },
 ): { props: DateParts; zone: string | undefined } | null {
   const dateCtx = { ...ctx, ref: label }
   const start = readEventDate(source, paths.startDate, dateCtx, undefined, warnings)
@@ -362,26 +379,34 @@ function buildDateParts(
   const end = readEventDate(source, paths.endDate, dateCtx, start.zone, warnings)
   let endDate = end.date ?? undefined
   if (end.found && !end.date) warnings.push(`${label}: endDate left out, "${firstPath(paths.endDate)}" is not a valid date`)
-  if (endDate && instant(endDate) < instant(start.date)) {
+  if (endDate && endsBefore(endDate, start.date)) {
     warnings.push(`${label}: endDate left out, it is before the start date`)
     endDate = undefined
   }
 
-  const status = readStatus(source, paths.status, label, warnings)
+  const statusInherited = Boolean(inherit) && readFirst(source, paths.status) === undefined
+  const status = statusInherited && inherit ? readStatus(inherit.source, inherit.paths.status, label, warnings) : readStatus(source, paths.status, label, warnings)
 
   let previousStartDate: string | undefined
-  if (resolveField(source, paths.previousStartDate)) {
-    if (status === 'https://schema.org/EventRescheduled') {
-      const previous = readEventDate(source, paths.previousStartDate, dateCtx, start.zone, warnings)
+  const ownPrevious = Boolean(resolveField(source, paths.previousStartDate))
+  const previousSource = ownPrevious || !inherit ? { source, paths: paths.previousStartDate } : { source: inherit.source, paths: inherit.paths.previousStartDate }
+  if (resolveField(previousSource.source, previousSource.paths)) {
+    if (status !== 'https://schema.org/EventRescheduled' && !ownPrevious && inherit) {
+      // Inherited from the document and not relevant to this row's status: nothing to say
+    } else if (status === 'https://schema.org/EventRescheduled') {
+      const previous = readEventDate(previousSource.source, previousSource.paths, dateCtx, start.zone, warnings)
       previousStartDate = previous.date ?? undefined
-      if (!previous.date) warnings.push(`${label}: previousStartDate left out, "${firstPath(paths.previousStartDate)}" is not a valid date`)
+      if (!previous.date) warnings.push(`${label}: previousStartDate left out, "${firstPath(previousSource.paths)}" is not a valid date`)
     } else {
       warnings.push(`${label}: previousStartDate left out, it is only allowed with a rescheduled status`)
     }
   }
 
   const own = buildOffers(source, offers, { ...dateCtx, timeZone: start.zone ?? ctx.timeZone }, warnings)
-  const offerNodes = own.length ? own : fallbackOffers()
+  // Only a row with no offers field (or an empty one) takes the document's. A row whose offers were all dropped stays empty
+  const rawOffers = readFirst(source, offers?.path ?? 'offers')
+  const hasOwnOffers = rawOffers !== undefined && rawOffers !== null && !(Array.isArray(rawOffers) && rawOffers.length === 0)
+  const offerNodes = hasOwnOffers ? own : fallbackOffers()
 
   return {
     props: { startDate: start.date, endDate, eventStatus: status, previousStartDate, offers: offerNodes.length ? offerNodes : undefined },
@@ -413,7 +438,8 @@ export function buildEventNodes(input: EventNodeInput, warnings: string[]): Json
   const parts = readPlace(doc, event.location, ref, warnings)
   if (!parts) return []
   const physical = physicalPlace(parts)
-  const onlineUrl = parts.onlineUrl ? absoluteUrl(options.siteUrl, parts.onlineUrl) : undefined
+  const onlineText = cleanText(parts.onlineUrl)
+  const onlineUrl = onlineText ? absoluteUrl(options.siteUrl, onlineText) : undefined
   const virtual = onlineUrl ? { '@type': 'VirtualLocation' as const, url: onlineUrl } : undefined
   if (!physical && !virtual) {
     const tried = placePathsTried(event.location)
@@ -489,7 +515,9 @@ function buildPerformanceNodes({ doc, performances, documentPaths, event, ctx, u
     status: performances.status ?? 'status',
     previousStartDate: performances.previousStartDate ?? 'previousStartDate',
   }
-  const offerOptions = performances.offers ?? event.offers
+  const offerOptions: EventOfferOptions | undefined = performances.offers
+    ? { ...performances.offers, defaultCurrency: performances.offers.defaultCurrency ?? event.offers?.defaultCurrency }
+    : event.offers
 
   // Read once, and only when a row has no offers of its own
   let documentOffers: OfferNode[] | undefined
@@ -506,7 +534,7 @@ function buildPerformanceNodes({ doc, performances, documentPaths, event, ctx, u
       warnings.push(`${label}: Event skipped, it is not an object`)
       return
     }
-    const built = buildDateParts(row, label, rowPaths, offerOptions, ctx, warnings, documentOffersFor)
+    const built = buildDateParts(row, label, rowPaths, offerOptions, ctx, warnings, documentOffersFor, { source: doc, paths: documentPaths })
     if (!built) return
     const id = `${url}#event-${fragmentOf(built.props.startDate)}`
     if (seen.has(id)) {

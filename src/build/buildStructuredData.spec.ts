@@ -98,3 +98,12 @@ describe('buildStructuredData', () => {
     expect(buildStructuredData({ options: { ...options, disabled: true }, settings }).graph).toBeNull()
   })
 })
+
+describe('unknown configured type', () => {
+  test('a type string that is not Event falls through to WebPage, as in 0.2', () => {
+    const odd = { ...options, collections: { things: { type: 'Recipe' as never, path: (doc: { slug?: unknown }) => `/things/${doc.slug}` } } }
+    const result = buildStructuredData({ options: odd, settings, collection: 'things', doc: { id: 1, slug: 'x', title: 'X' } })
+    expect(types(result)).toContain('WebPage')
+    expect(result.warnings).toEqual([])
+  })
+})

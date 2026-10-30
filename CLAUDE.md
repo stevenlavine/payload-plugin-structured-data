@@ -38,7 +38,7 @@ On Windows, `pnpm build` may need `SWC_NATIVE_BINDING_CACHE` pointing at a direc
 - Types: Organization, LocalBusiness, WebSite, Article, BlogPosting, Service, WebPage, FAQPage, BreadcrumbList, Event, ItemList.
 - `@id` values: `<siteUrl>/#organization`, `<siteUrl>/#website`, `<pageUrl>#webpage` / `#article` / `#service` / `#faq` / `#breadcrumb`, plus `<pageUrl>#event`, `#event-<start>` (one per date) and `<listUrl>#itemlist`.
 - UK English in README and admin labels.
-- Single site only in v1. Keep every settings read inside `getSettings` and every `siteUrl` use behind `ResolvedOptions.siteUrl` so multi-tenant (v2) can swap both.
+- Single site only for now. Keep every settings read inside `getSettings` and every `siteUrl` use behind `ResolvedOptions.siteUrl` so multi-tenant (v2) can swap both.
 - Dev/test database is SQLite. No Playwright e2e.
 - No secrets in the repo.
 
