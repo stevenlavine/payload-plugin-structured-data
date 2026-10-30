@@ -291,6 +291,153 @@ describe('Event status', () => {
   })
 })
 
+describe('Event offers', () => {
+  const withOffers = (offers: unknown, event: NonNullable<CollectionOptions['event']> = {}) =>
+    run({ ...baseDoc, offers }, optionsFor({ ...eventsConfig, event }))
+  const offersOf = (result: ReturnType<typeof run>) => eventOf(result)?.offers
+
+  const full = {
+    price: 12,
+    priceCurrency: 'GBP',
+    availability: 'inStock',
+    validFrom: '2027-03-01T09:00:00.000Z',
+    url: '/tickets',
+  }
+  const fullOutput = {
+    '@type': 'Offer',
+    price: 12,
+    priceCurrency: 'GBP',
+    availability: 'https://schema.org/InStock',
+    validFrom: '2027-03-01T09:00:00+00:00',
+    url: 'https://example.com/tickets',
+  }
+
+  test('a full offer maps every field', () => {
+    const result = withOffers([full])
+    expect(offersOf(result)).toEqual([fullOutput])
+    expect(result.warnings).toEqual([])
+  })
+
+  test('one object works the same as a one-row array', () => {
+    expect(offersOf(withOffers(full))).toEqual([fullOutput])
+  })
+
+  test('no offers field gives no offers and no warning', () => {
+    const result = run(baseDoc)
+    expect(eventOf(result)).not.toHaveProperty('offers')
+    expect(result.warnings).toEqual([])
+  })
+
+  test.each([[[]], [null], ['']])('an empty offers field (%j) gives no warning', (value) => {
+    const result = withOffers(value)
+    expect(eventOf(result)).not.toHaveProperty('offers')
+    expect(result.warnings).toEqual([])
+  })
+
+  test('a price of 0 is kept', () => {
+    expect(offersOf(withOffers({ price: 0, priceCurrency: 'GBP' }))).toEqual([{ '@type': 'Offer', price: 0, priceCurrency: 'GBP' }])
+  })
+
+  test('a numeric string price becomes a number', () => {
+    expect(offersOf(withOffers({ price: '12.50', priceCurrency: 'GBP' }))).toEqual([
+      { '@type': 'Offer', price: 12.5, priceCurrency: 'GBP' },
+    ])
+  })
+
+  test('defaultCurrency fills an empty currency; a row currency wins', () => {
+    const offers = [{ price: 5 }, { price: 6, priceCurrency: 'EUR' }]
+    expect(offersOf(withOffers(offers, { offers: { defaultCurrency: 'GBP' } }))).toEqual([
+      { '@type': 'Offer', price: 5, priceCurrency: 'GBP' },
+      { '@type': 'Offer', price: 6, priceCurrency: 'EUR' },
+    ])
+  })
+
+  test('a price with no currency and no default is dropped with a warning', () => {
+    const result = withOffers({ price: 5, url: '/tickets' })
+    expect(eventOf(result)).not.toHaveProperty('offers')
+    expect(result.warnings.some((w) => w.includes('currency'))).toBe(true)
+  })
+
+  test('no price with a URL is kept, with no currency even with a default', () => {
+    expect(offersOf(withOffers({ url: '/tickets' }, { offers: { defaultCurrency: 'GBP' } }))).toEqual([
+      { '@type': 'Offer', url: 'https://example.com/tickets' },
+    ])
+  })
+
+  test('no price with availability soldOut is kept', () => {
+    expect(offersOf(withOffers({ availability: 'soldOut' }))).toEqual([
+      { '@type': 'Offer', availability: 'https://schema.org/SoldOut' },
+    ])
+  })
+
+  test('no price, no URL and no availability is dropped', () => {
+    const result = withOffers({ name: 'Standard' })
+    expect(eventOf(result)).not.toHaveProperty('offers')
+    expect(result.warnings.length).toBeGreaterThan(0)
+  })
+
+  test('an unknown availability is left out with a warning; the offer stays', () => {
+    const result = withOffers({ price: 5, priceCurrency: 'GBP', availability: 'maybe' })
+    expect(offersOf(result)).toEqual([{ '@type': 'Offer', price: 5, priceCurrency: 'GBP' }])
+    expect(result.warnings.some((w) => w.includes('maybe'))).toBe(true)
+  })
+
+  test('an unknown availability with nothing else drops the offer', () => {
+    expect(eventOf(withOffers({ availability: 'maybe' }))).not.toHaveProperty('offers')
+  })
+
+  test.each([
+    ['SoldOut', 'https://schema.org/SoldOut'],
+    ['PreOrder', 'https://schema.org/PreOrder'],
+    ['https://schema.org/InStock', 'https://schema.org/InStock'],
+  ])('availability %s maps to %s', (value, expected) => {
+    const offers = offersOf(withOffers({ price: 5, priceCurrency: 'GBP', availability: value })) as { availability: string }[]
+    expect(offers[0]?.availability).toBe(expected)
+  })
+
+  test.each([[-1], ['free']])('price %j counts as no price, with a warning', (price) => {
+    const result = withOffers({ price, priceCurrency: 'GBP', url: '/tickets' })
+    expect(offersOf(result)).toEqual([{ '@type': 'Offer', url: 'https://example.com/tickets' }])
+    expect(result.warnings.some((w) => w.includes('price'))).toBe(true)
+  })
+
+  test('an invalid validFrom is left out with a warning', () => {
+    const result = withOffers({ price: 5, priceCurrency: 'GBP', validFrom: 'soon' })
+    expect(offersOf(result)).toEqual([{ '@type': 'Offer', price: 5, priceCurrency: 'GBP' }])
+    expect(result.warnings.some((w) => w.includes('validFrom'))).toBe(true)
+  })
+
+  test('validFrom uses the event time zone', () => {
+    const offers = offersOf(withOffers({ price: 5, priceCurrency: 'GBP', validFrom: '2027-07-01T09:00:00.000Z' })) as {
+      validFrom: string
+    }[]
+    expect(offers[0]?.validFrom).toBe('2027-07-01T10:00:00+01:00')
+  })
+
+  test('offers: 42 gives no offers and a warning, and does not throw', () => {
+    const result = withOffers(42)
+    expect(eventOf(result)).not.toHaveProperty('offers')
+    expect(result.warnings.length).toBeGreaterThan(0)
+  })
+
+  test('junk rows are skipped; the valid offer stays', () => {
+    const result = withOffers([null, 'x', { price: 5, priceCurrency: 'GBP' }])
+    expect(offersOf(result)).toEqual([{ '@type': 'Offer', price: 5, priceCurrency: 'GBP' }])
+    expect(result.warnings.length).toBeGreaterThanOrEqual(2)
+  })
+
+  test('mapped paths are read', () => {
+    const offers = { path: 'tickets', price: 'cost', priceCurrency: 'cur', url: 'link', name: 'label' }
+    const result = run(
+      { ...baseDoc, tickets: [{ cost: 9, cur: 'GBP', link: '/buy', label: 'Standard' }] },
+      optionsFor({ ...eventsConfig, event: { offers } }),
+    )
+    expect(offersOf(result)).toEqual([
+      { '@type': 'Offer', name: 'Standard', price: 9, priceCurrency: 'GBP', url: 'https://example.com/buy' },
+    ])
+  })
+})
+
 describe('Event type rules', () => {
   const override = { ...baseDoc, structuredData: { type: 'Event' } }
 

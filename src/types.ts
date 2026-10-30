@@ -29,6 +29,21 @@ export type EventPlace = {
   onlineUrl?: string
 }
 
+/** Ticket offers. Each key is a field path inside one offer row; each default is the key's own name */
+export type EventOfferOptions = {
+  /** Array (or single group) field holding the offers. Default 'offers' */
+  path?: FieldPath
+  price?: FieldPath
+  priceCurrency?: FieldPath
+  /** inStock, soldOut, preOrder and the other Schema.org ItemAvailability names */
+  availability?: FieldPath
+  validFrom?: FieldPath
+  url?: FieldPath
+  name?: FieldPath
+  /** ISO 4217 code used when a priced offer has none of its own, e.g. 'GBP' */
+  defaultCurrency?: string
+}
+
 export type EventOptions = {
   /** Date field. Default 'startDate'. A time zone stored beside it is read from '<path>_tz' */
   startDate?: FieldPath
@@ -45,6 +60,8 @@ export type EventOptions = {
   status?: FieldPath
   /** Date field used only with a rescheduled status. Default 'previousStartDate' */
   previousStartDate?: FieldPath
+  /** Ticket offers on the event */
+  offers?: EventOfferOptions
 }
 
 export type CollectionOptions = {

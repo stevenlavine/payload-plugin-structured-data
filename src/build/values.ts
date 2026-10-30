@@ -28,6 +28,14 @@ export function readText(doc: unknown, paths: FieldPath): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined
 }
 
+/** A finite number >= 0, or a plain decimal string. 0 is a real price. Anything else is undefined */
+export function readPrice(doc: unknown, paths: FieldPath): number | undefined {
+  const value = readFirst(doc, paths)
+  if (typeof value === 'number') return Number.isFinite(value) && value >= 0 ? value : undefined
+  if (typeof value === 'string' && /^\d+(?:\.\d+)?$/.test(value.trim())) return Number(value.trim())
+  return undefined
+}
+
 export function absoluteUrl(siteUrl: string, pathOrUrl: string): string {
   if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl
   const base = siteUrl.replace(/\/+$/, '')

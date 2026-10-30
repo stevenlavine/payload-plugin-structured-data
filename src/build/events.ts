@@ -1,9 +1,9 @@
-import type { EventLeaf } from 'schema-dts'
+import type { EventLeaf, OfferLeaf } from 'schema-dts'
 import { DEFAULT_EVENT_FIELDS, DEFAULT_FIELDS } from '../constants.js'
-import type { CollectionOptions, Doc, EventOptions, EventPlace, FieldPath, JsonLdNode, ResolvedOptions } from '../types.js'
+import type { CollectionOptions, Doc, EventOfferOptions, EventOptions, EventPlace, FieldPath, JsonLdNode, ResolvedOptions } from '../types.js'
 import { formatEventDate, resolveTimeZone } from './eventDates.js'
 import { compact } from './siteNodes.js'
-import { absoluteUrl, mediaUrl, readFirst, readPath, readText } from './values.js'
+import { absoluteUrl, mediaUrl, readFirst, readPath, readPrice, readText } from './values.js'
 
 export type EventNodeInput = {
   doc: Doc
@@ -145,6 +145,106 @@ function readStatus(doc: Doc, path: FieldPath, ref: string, warnings: string[]):
   return word
 }
 
+type Availability = `https://schema.org/${'InStock' | 'OutOfStock' | 'SoldOut' | 'PreOrder' | 'PreSale' | 'LimitedAvailability' | 'BackOrder' | 'Discontinued' | 'OnlineOnly' | 'InStoreOnly'}`
+
+const AVAILABILITY_NAMES = [
+  'InStock',
+  'OutOfStock',
+  'SoldOut',
+  'PreOrder',
+  'PreSale',
+  'LimitedAvailability',
+  'BackOrder',
+  'Discontinued',
+  'OnlineOnly',
+  'InStoreOnly',
+] as const
+
+/** Keyed by lower-case Schema.org name */
+const AVAILABILITY_MAP: Record<string, Availability> = Object.fromEntries(
+  AVAILABILITY_NAMES.map((name) => [name.toLowerCase(), `https://schema.org/${name}`]),
+)
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value)
+
+type OfferNode = Omit<Partial<OfferLeaf>, '@type' | '@id'> & { '@type': 'Offer' }
+
+/**
+ * Ticket offers read from `source` (the event document, or a performance row).
+ * An absent or empty field gives nothing and no warning. A bad row is skipped with a warning.
+ */
+function buildOffers(source: Doc, offers: EventOfferOptions | undefined, ctx: EventContext, warnings: string[]): OfferNode[] {
+  const raw = readFirst(source, offers?.path ?? 'offers')
+  if (raw === undefined) return []
+  const rows: unknown[] = Array.isArray(raw) ? raw : [raw]
+  const result: OfferNode[] = []
+
+  rows.forEach((row, index) => {
+    const label = `${ctx.ref}: offer ${index + 1}`
+    if (!isRecord(row)) {
+      warnings.push(`${label} skipped, it is not an object`)
+      return
+    }
+    const priceField = offers?.price ?? 'price'
+    const rawPrice = readFirst(row, priceField)
+    const price = readPrice(row, priceField)
+    if (rawPrice !== undefined && price === undefined) {
+      warnings.push(`${label}: price ignored, "${String(rawPrice)}" is not a number of 0 or more`)
+    }
+
+    // A price with no currency must never output. No price means no currency either
+    let priceCurrency: string | undefined
+    if (price !== undefined) {
+      priceCurrency = readText(row, offers?.priceCurrency ?? 'priceCurrency') || offers?.defaultCurrency?.trim() || undefined
+      if (!priceCurrency) {
+        warnings.push(`${label} skipped, it has a price but no currency (set priceCurrency or defaultCurrency)`)
+        return
+      }
+    }
+
+    const availabilityRaw = readFirst(row, offers?.availability ?? 'availability')
+    let availability: Availability | undefined
+    if (availabilityRaw !== undefined) {
+      availability =
+        typeof availabilityRaw === 'string' ? AVAILABILITY_MAP[availabilityRaw.trim().replace(STATUS_PREFIX, '').toLowerCase()] : undefined
+      if (!availability) {
+        warnings.push(
+          `${label}: availability left out, "${typeof availabilityRaw === 'string' ? availabilityRaw : typeof availabilityRaw}" is not a known availability`,
+        )
+      }
+    }
+
+    const urlText = readText(row, offers?.url ?? 'url')
+    const url = urlText ? absoluteUrl(ctx.siteUrl, urlText) : undefined
+    if (price === undefined && !url && !availability) {
+      warnings.push(`${label} skipped, it needs a price, a link or an availability`)
+      return
+    }
+
+    const validFromField = offers?.validFrom ?? 'validFrom'
+    const validFromRaw = readFirst(row, validFromField)
+    let validFrom: string | undefined
+    if (validFromRaw !== undefined) {
+      validFrom = formatEventDate(validFromRaw, { timeZone: ctx.timeZone, dateOnly: false, ref: ctx.ref }, warnings) ?? undefined
+      if (!validFrom) warnings.push(`${label}: validFrom left out, "${firstPath(validFromField)}" is not a valid date`)
+    }
+
+    result.push(
+      compact({
+        '@type': 'Offer' as const,
+        name: readText(row, offers?.name ?? 'name'),
+        price,
+        priceCurrency,
+        availability,
+        validFrom,
+        url,
+      }),
+    )
+  })
+  return result
+}
+
 export function buildEventNodes(input: EventNodeInput, warnings: string[]): JsonLdNode[] {
   const { doc, url, ref, config, options } = input
   const event = config.event ?? {}
@@ -213,6 +313,8 @@ export function buildEventNodes(input: EventNodeInput, warnings: string[]): Json
     }
   }
 
+  const offerNodes = buildOffers(doc, event.offers, { ...ctx, timeZone: start.zone ?? ctx.timeZone }, warnings)
+
   // Typed object literal: a misspelt property name fails typecheck (excess property check)
   const props: Omit<Partial<EventLeaf>, '@type' | '@id'> = {
     name,
@@ -225,6 +327,7 @@ export function buildEventNodes(input: EventNodeInput, warnings: string[]): Json
     previousStartDate,
     eventAttendanceMode: `https://schema.org/${attendanceMode}`,
     location,
+    offers: offerNodes.length ? offerNodes : undefined,
   }
   return [compact({ '@type': 'Event', '@id': `${url}#event`, ...props })]
 }
