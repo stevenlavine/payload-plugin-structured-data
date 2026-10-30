@@ -62,7 +62,24 @@ export type EventSuperEvent = {
   location: EventPlace
 }
 
+/**
+ * Several dates on one page: an array field with one row per date, giving one Event each.
+ * Each key is a field path inside a row; the defaults are the key's own name.
+ * A row's offers replace the document's; a row with none uses the document's.
+ */
+export type EventPerformanceOptions = {
+  /** Array field holding the rows */
+  path: FieldPath
+  startDate?: FieldPath
+  endDate?: FieldPath
+  status?: FieldPath
+  previousStartDate?: FieldPath
+  offers?: EventOfferOptions
+}
+
 export type EventOptions = {
+  /** One Event per row of an array field, for a page with several dates */
+  performances?: EventPerformanceOptions
   /** Date field. Default 'startDate'. A time zone stored beside it is read from '<path>_tz' */
   startDate?: FieldPath
   /** Default 'endDate' */

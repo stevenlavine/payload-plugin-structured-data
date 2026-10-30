@@ -1,6 +1,6 @@
 import type { EventLeaf, OfferLeaf } from 'schema-dts'
 import { DEFAULT_EVENT_FIELDS, DEFAULT_FIELDS } from '../constants.js'
-import type { CollectionOptions, Doc, EventOfferOptions, EventOptions, EventOrganizerOptions, EventPerformerOptions, EventPlace, FieldPath, JsonLdNode, ResolvedOptions } from '../types.js'
+import type { CollectionOptions, Doc, EventOfferOptions, EventOptions, EventOrganizerOptions, EventPerformanceOptions, EventPerformerOptions, EventPlace, FieldPath, JsonLdNode, ResolvedOptions } from '../types.js'
 import { formatEventDate, resolveTimeZone } from './eventDates.js'
 import { compact, organizationId } from './siteNodes.js'
 import { absoluteUrl, mediaUrl, readFirst, readPath, readPrice, readText } from './values.js'
@@ -328,6 +328,70 @@ function buildSuperEvent(doc: Doc, setting: EventOptions['superEvent'], url: str
   return compact({ '@type': 'Event' as const, '@id': `${festivalUrl}#event`, name, url: festivalUrl, startDate, endDate, location: compact(physical) })
 }
 
+/** The date-bound parts of one Event: its dates, status and offers */
+type DateParts = Pick<Omit<Partial<EventLeaf>, '@type' | '@id'>, 'startDate' | 'endDate' | 'eventStatus' | 'previousStartDate' | 'offers'> & {
+  startDate: string
+}
+
+type DatePaths = { startDate: FieldPath; endDate: FieldPath; status: FieldPath; previousStartDate: FieldPath }
+
+/**
+ * Read one date's parts from `source` (the document, or a performance row).
+ * `label` names the source in warnings. Null (with a warning) when the start date is missing or invalid.
+ */
+function buildDateParts(
+  source: Doc,
+  label: string,
+  paths: DatePaths,
+  offers: EventOfferOptions | undefined,
+  ctx: EventContext,
+  warnings: string[],
+  fallbackOffers: () => OfferNode[],
+): { props: DateParts; zone: string | undefined } | null {
+  const dateCtx = { ...ctx, ref: label }
+  const start = readEventDate(source, paths.startDate, dateCtx, undefined, warnings)
+  if (!start.date) {
+    warnings.push(
+      start.found
+        ? `${label}: Event skipped, "${firstPath(paths.startDate)}" is not a valid date`
+        : `${label}: Event skipped, no start date (field "${firstPath(paths.startDate)}" is empty)`,
+    )
+    return null
+  }
+
+  const end = readEventDate(source, paths.endDate, dateCtx, start.zone, warnings)
+  let endDate = end.date ?? undefined
+  if (end.found && !end.date) warnings.push(`${label}: endDate left out, "${firstPath(paths.endDate)}" is not a valid date`)
+  if (endDate && instant(endDate) < instant(start.date)) {
+    warnings.push(`${label}: endDate left out, it is before the start date`)
+    endDate = undefined
+  }
+
+  const status = readStatus(source, paths.status, label, warnings)
+
+  let previousStartDate: string | undefined
+  if (resolveField(source, paths.previousStartDate)) {
+    if (status === 'https://schema.org/EventRescheduled') {
+      const previous = readEventDate(source, paths.previousStartDate, dateCtx, start.zone, warnings)
+      previousStartDate = previous.date ?? undefined
+      if (!previous.date) warnings.push(`${label}: previousStartDate left out, "${firstPath(paths.previousStartDate)}" is not a valid date`)
+    } else {
+      warnings.push(`${label}: previousStartDate left out, it is only allowed with a rescheduled status`)
+    }
+  }
+
+  const own = buildOffers(source, offers, { ...dateCtx, timeZone: start.zone ?? ctx.timeZone }, warnings)
+  const offerNodes = own.length ? own : fallbackOffers()
+
+  return {
+    props: { startDate: start.date, endDate, eventStatus: status, previousStartDate, offers: offerNodes.length ? offerNodes : undefined },
+    zone: start.zone,
+  }
+}
+
+/** An id fragment from a formatted start: every character outside [A-Za-z0-9-] becomes '-' */
+const fragmentOf = (start: string) => start.replace(/[^a-z0-9-]/gi, '-')
+
 export function buildEventNodes(input: EventNodeInput, warnings: string[]): JsonLdNode[] {
   const { doc, url, ref, config, options } = input
   const event = config.event ?? {}
@@ -345,26 +409,7 @@ export function buildEventNodes(input: EventNodeInput, warnings: string[]): Json
     dateOnly: readDateOnly(event.dateOnly, doc, ref, warnings),
   }
 
-  const startPath = event.startDate ?? DEFAULT_EVENT_FIELDS.startDate
-  const start = readEventDate(doc, startPath, ctx, undefined, warnings)
-  if (!start.date) {
-    warnings.push(
-      start.found
-        ? `${ref}: Event skipped, "${firstPath(startPath)}" is not a valid date`
-        : `${ref}: Event skipped, no start date (field "${firstPath(startPath)}" is empty)`,
-    )
-    return []
-  }
-
-  const endPath = event.endDate ?? DEFAULT_EVENT_FIELDS.endDate
-  const end = readEventDate(doc, endPath, ctx, start.zone, warnings)
-  let endDate = end.date ?? undefined
-  if (end.found && !end.date) warnings.push(`${ref}: endDate left out, "${firstPath(endPath)}" is not a valid date`)
-  if (endDate && instant(endDate) < instant(start.date)) {
-    warnings.push(`${ref}: endDate left out, it is before the start date`)
-    endDate = undefined
-  }
-
+  // Shared by every date: read once from the document
   const parts = readPlace(doc, event.location, ref, warnings)
   if (!parts) return []
   const physical = physicalPlace(parts)
@@ -381,41 +426,95 @@ export function buildEventNodes(input: EventNodeInput, warnings: string[]): Json
   const attendanceMode =
     physical && virtual ? 'MixedEventAttendanceMode' : virtual ? 'OnlineEventAttendanceMode' : 'OfflineEventAttendanceMode'
 
-  const statusPath = event.status ?? DEFAULT_EVENT_FIELDS.status
-  const status = readStatus(doc, statusPath, ref, warnings)
-
-  const previousPath = event.previousStartDate ?? DEFAULT_EVENT_FIELDS.previousStartDate
-  let previousStartDate: string | undefined
-  if (resolveField(doc, previousPath)) {
-    if (status === 'https://schema.org/EventRescheduled') {
-      const previous = readEventDate(doc, previousPath, ctx, start.zone, warnings)
-      previousStartDate = previous.date ?? undefined
-      if (!previous.date) warnings.push(`${ref}: previousStartDate left out, "${firstPath(previousPath)}" is not a valid date`)
-    } else {
-      warnings.push(`${ref}: previousStartDate left out, it is only allowed with a rescheduled status`)
-    }
+  const performers = buildPerformers(doc, event.performers, ctx, warnings)
+  const performances = event.performances
+  const documentPaths: DatePaths = {
+    startDate: event.startDate ?? DEFAULT_EVENT_FIELDS.startDate,
+    endDate: event.endDate ?? DEFAULT_EVENT_FIELDS.endDate,
+    status: event.status ?? DEFAULT_EVENT_FIELDS.status,
+    previousStartDate: event.previousStartDate ?? DEFAULT_EVENT_FIELDS.previousStartDate,
   }
 
-  const offerNodes = buildOffers(doc, event.offers, { ...ctx, timeZone: start.zone ?? ctx.timeZone }, warnings)
-
-  const performers = buildPerformers(doc, event.performers, ctx, warnings)
-
-  // Typed object literal: a misspelt property name fails typecheck (excess property check)
-  const props: Omit<Partial<EventLeaf>, '@type' | '@id'> = {
+  const shared = {
     name,
     url,
     description: readText(doc, config.fields?.description ?? DEFAULT_FIELDS.description),
     image: mediaUrl(options.siteUrl, readFirst(doc, config.fields?.image ?? [...[DEFAULT_FIELDS.image].flat()]), options.imageSize),
-    startDate: start.date,
-    endDate,
-    eventStatus: status,
-    previousStartDate,
-    eventAttendanceMode: `https://schema.org/${attendanceMode}`,
+    eventAttendanceMode: `https://schema.org/${attendanceMode}` as const,
     location,
-    offers: offerNodes.length ? offerNodes : undefined,
     organizer: buildOrganizer(doc, event.organizer, ctx, input.hasOrganization),
     performer: performers.length ? performers : undefined,
-    superEvent: buildSuperEvent(doc, event.superEvent, url, ctx, start.zone ?? ctx.timeZone, warnings),
   }
-  return [compact({ '@type': 'Event', '@id': `${url}#event`, ...props })]
+
+  // Typed object literal: a misspelt property name fails typecheck (excess property check)
+  const nodeOf = (id: string, dateParts: DateParts, superEvent: ReturnType<typeof buildSuperEvent>): JsonLdNode => {
+    const props: Omit<Partial<EventLeaf>, '@type' | '@id'> = { ...shared, ...dateParts, superEvent }
+    return compact({ '@type': 'Event', '@id': id, ...props })
+  }
+
+  if (performances) {
+    const nodes = buildPerformanceNodes({ doc, performances, documentPaths, event, ctx, url, warnings, nodeOf })
+    if (nodes.length) return nodes
+  }
+
+  // No performances mapped, or none gave a node: the document's own date
+  const own = buildDateParts(doc, ref, documentPaths, event.offers, ctx, warnings, () => [])
+  if (!own) return []
+  return [nodeOf(`${url}#event`, own.props, buildSuperEvent(doc, event.superEvent, url, ctx, own.zone ?? ctx.timeZone, warnings))]
+}
+
+type PerformanceInput = {
+  doc: Doc
+  performances: EventPerformanceOptions
+  documentPaths: DatePaths
+  event: EventOptions
+  ctx: EventContext
+  url: string
+  warnings: string[]
+  nodeOf: (id: string, parts: DateParts, superEvent: ReturnType<typeof buildSuperEvent>) => JsonLdNode
+}
+
+/** One node per valid row. Empty, absent or unusable rows give an empty list, so the caller falls back to the document's date */
+function buildPerformanceNodes({ doc, performances, documentPaths, event, ctx, url, warnings, nodeOf }: PerformanceInput): JsonLdNode[] {
+  const raw = readFirst(doc, performances.path)
+  if (raw === undefined) return []
+  if (!Array.isArray(raw)) {
+    warnings.push(`${ctx.ref}: performances ignored, "${firstPath(performances.path)}" is not a list`)
+    return []
+  }
+
+  const rowPaths: DatePaths = {
+    startDate: performances.startDate ?? 'startDate',
+    endDate: performances.endDate ?? 'endDate',
+    status: performances.status ?? 'status',
+    previousStartDate: performances.previousStartDate ?? 'previousStartDate',
+  }
+  const offerOptions = performances.offers ?? event.offers
+
+  // Read once, and only when a row has no offers of its own
+  let documentOffers: OfferNode[] | undefined
+  const documentOffersFor = () => (documentOffers ??= buildOffers(doc, event.offers, ctx, warnings))
+  // One festival link for every row, in the plugin time zone
+  let festival: { value: ReturnType<typeof buildSuperEvent> } | undefined
+  const festivalFor = () => (festival ??= { value: buildSuperEvent(doc, event.superEvent, url, ctx, ctx.timeZone, warnings) }).value
+
+  const seen = new Set<string>()
+  const nodes: JsonLdNode[] = []
+  raw.forEach((row: unknown, index) => {
+    const label = `${ctx.ref} performance ${index + 1}`
+    if (!isRecord(row)) {
+      warnings.push(`${label}: Event skipped, it is not an object`)
+      return
+    }
+    const built = buildDateParts(row, label, rowPaths, offerOptions, ctx, warnings, documentOffersFor)
+    if (!built) return
+    const id = `${url}#event-${fragmentOf(built.props.startDate)}`
+    if (seen.has(id)) {
+      warnings.push(`${label}: Event skipped, another performance has the same start (${built.props.startDate})`)
+      return
+    }
+    seen.add(id)
+    nodes.push(nodeOf(id, built.props, festivalFor()))
+  })
+  return nodes
 }

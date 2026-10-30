@@ -597,3 +597,106 @@ describe('Event festival link', () => {
     expect(result.warnings.some((w) => w.includes('superEvent endDate') && w.includes('before'))).toBe(true)
   })
 })
+
+describe('Event performances', () => {
+  const config = (event: NonNullable<CollectionOptions['event']> = {}): CollectionOptions => ({
+    ...eventsConfig,
+    event: { performances: { path: 'dates' }, ...event },
+  })
+  const docWith = (dates: unknown, extra: Doc = {}): Doc => {
+    const { startDate: _start, endDate: _end, ...rest } = baseDoc
+    return { ...rest, dates, ...extra }
+  }
+  const events = (result: ReturnType<typeof run>) => (result.graph?.['@graph'] ?? []).filter((n) => n['@type'] === 'Event')
+  const rows = [
+    { startDate: '2027-07-14T18:30:00.000Z', endDate: '2027-07-14T21:00:00.000Z' },
+    { startDate: '2027-07-15T18:30:00.000Z' },
+    { startDate: '2027-07-16T18:30:00.000Z' },
+  ]
+
+  test('three rows give three nodes sharing url, name and location', () => {
+    const result = run(docWith(rows), optionsFor(config()))
+    const nodes = events(result)
+    expect(nodes).toHaveLength(3)
+    expect(new Set(nodes.map((n) => n.url))).toEqual(new Set(['https://example.com/events/opening']))
+    expect(new Set(nodes.map((n) => n.name))).toEqual(new Set(['Opening night']))
+    expect(nodes.every((n) => (n.location as JsonLdNode).name === 'Town Hall')).toBe(true)
+    expect(nodes.map((n) => n.startDate)).toEqual([
+      '2027-07-14T19:30:00+01:00',
+      '2027-07-15T19:30:00+01:00',
+      '2027-07-16T19:30:00+01:00',
+    ])
+    expect(nodes[0].endDate).toBe('2027-07-14T22:00:00+01:00')
+    expect(result.warnings).toEqual([])
+  })
+
+  test('the @id is the page url plus the formatted start', () => {
+    const nodes = events(run(docWith(rows), optionsFor(config())))
+    expect(nodes[0]['@id']).toBe('https://example.com/events/opening#event-2027-07-14T19-30-00-01-00')
+  })
+
+  test('a cancelled row is cancelled on its own node only', () => {
+    const nodes = events(run(docWith([rows[0], { ...rows[1], status: 'cancelled' }]), optionsFor(config())))
+    expect(nodes[0]).not.toHaveProperty('eventStatus')
+    expect(nodes[1].eventStatus).toBe('https://schema.org/EventCancelled')
+  })
+
+  test("a row's offers replace the document's, and a row with none uses them", () => {
+    const docOffers = [{ price: 10, priceCurrency: 'GBP' }]
+    const rowOffers = [{ price: 20, priceCurrency: 'GBP' }]
+    const nodes = events(run(docWith([{ ...rows[0], offers: rowOffers }, rows[1]], { offers: docOffers }), optionsFor(config())))
+    expect(nodes[0].offers).toEqual([{ '@type': 'Offer', price: 20, priceCurrency: 'GBP' }])
+    expect(nodes[1].offers).toEqual([{ '@type': 'Offer', price: 10, priceCurrency: 'GBP' }])
+  })
+
+  test("a row's stored zone is used for that row", () => {
+    const nodes = events(
+      run(docWith([{ startDate: '2027-07-14T18:30:00.000Z', startDate_tz: 'America/New_York' }, rows[1]]), optionsFor(config())),
+    )
+    expect(nodes[0].startDate).toBe('2027-07-14T14:30:00-04:00')
+    expect(nodes[1].startDate).toBe('2027-07-15T19:30:00+01:00')
+  })
+
+  test('a bad row is skipped with a warning and the others output', () => {
+    const result = run(docWith([rows[0], { startDate: 'not a date' }, rows[2]]), optionsFor(config()))
+    expect(events(result)).toHaveLength(2)
+    expect(result.warnings.some((w) => w.includes('events/1') && w.includes('performance 2'))).toBe(true)
+  })
+
+  test('mapped but empty falls back to the document startDate', () => {
+    const result = run(docWith([], { startDate: '2027-07-14T18:30:00.000Z' }), optionsFor(config()))
+    expect(events(result)[0]['@id']).toBe('https://example.com/events/opening#event')
+    expect(events(result)).toHaveLength(1)
+  })
+
+  test('not an array falls back to the document startDate', () => {
+    const result = run(docWith('nope', { startDate: '2027-07-14T18:30:00.000Z' }), optionsFor(config()))
+    expect(events(result)[0]['@id']).toBe('https://example.com/events/opening#event')
+  })
+
+  test('all rows bad and no document startDate gives no Event and a warning', () => {
+    const result = run(docWith([{ startDate: 'x' }, {}]), optionsFor(config()))
+    expect(events(result)).toHaveLength(0)
+    expect(result.warnings.some((w) => w.includes('events/1') && w.includes('Event skipped'))).toBe(true)
+  })
+
+  test('two rows with the same start give one node and one warning', () => {
+    const result = run(docWith([rows[0], { ...rows[0] }, rows[1]]), optionsFor(config()))
+    const nodes = events(result)
+    const ids = nodes.map((n) => n['@id'])
+    expect(nodes).toHaveLength(2)
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(result.warnings.filter((w) => w.includes('same start'))).toHaveLength(1)
+  })
+
+  test('the festival link is shared by every row', () => {
+    const superEvent = () => ({
+      name: 'Festival',
+      path: '/events/festival',
+      startDate: '2027-07-10T09:00:00.000Z',
+      location: { streetAddress: '2 Park Lane', addressLocality: 'Ashford' },
+    })
+    const nodes = events(run(docWith(rows), optionsFor(config({ superEvent }))))
+    expect(nodes.every((n) => (n.superEvent as JsonLdNode)['@id'] === 'https://example.com/events/festival#event')).toBe(true)
+  })
+})
