@@ -25,16 +25,18 @@ export function resolveTimeZone(candidates: unknown[], ref: string, warnings: st
 }
 
 /** Offset of `timeZone` from UTC, in minutes, at the instant `ms`. */
-function offsetMinutes(ms: number, timeZone: string): number {
+function offsetMinutes(ms: number, timeZone: string): number | null {
   try {
     const parts = new Intl.DateTimeFormat('en', { timeZone, timeZoneName: 'longOffset' }).formatToParts(new Date(ms))
-    const name = parts.find((part) => part.type === 'timeZoneName')?.value ?? 'GMT'
+    const name = parts.find((part) => part.type === 'timeZoneName')?.value
+    if (!name) return null
     const match = /^GMT(?:([+-])(\d{1,2})(?::(\d{2}))?)?$/.exec(name)
-    if (!match || !match[1]) return 0
+    if (!match) return null
+    if (!match[1]) return 0
     const minutes = Number(match[2]) * 60 + Number(match[3] ?? 0)
     return match[1] === '-' ? -minutes : minutes
   } catch {
-    return 0
+    return null
   }
 }
 
@@ -86,7 +88,11 @@ export function formatEventDate(
     // offset again at the result so times near a clock change are right.
     const guess = Date.UTC(y, mo - 1, d, h, mi, s)
     const first = offsetMinutes(guess, timeZone)
-    const second = offsetMinutes(guess - first * 60000, timeZone)
+    const second = first === null ? null : offsetMinutes(guess - first * 60000, timeZone)
+    if (second === null) {
+      warnings.push(`${ref}: could not work out the UTC offset for "${timeZone}", so the time was written without one.`)
+      return `${datePart}T${timePart}`
+    }
     return `${datePart}T${timePart}${formatOffset(second)}`
   }
 
@@ -103,7 +109,11 @@ export function formatEventDate(
       warnings.push(`${ref}: no time zone was set, so the date was written in UTC.`)
       zone = 'UTC'
     }
-    const offset = zone === 'UTC' ? 0 : offsetMinutes(ms, zone)
+    let offset = zone === 'UTC' ? 0 : offsetMinutes(ms, zone)
+    if (offset === null) {
+      warnings.push(`${ref}: could not work out the UTC offset for "${zone}", so the date was written in UTC.`)
+      offset = 0
+    }
     const local = localString(ms + offset * 60000)
     return dateOnly ? local.date : `${local.date}T${local.time}${formatOffset(offset)}`
   }
