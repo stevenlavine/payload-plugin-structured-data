@@ -2,6 +2,7 @@ import type { CollectionSlug } from 'payload'
 
 export type Doc = Record<string, unknown>
 export type PageType = 'Article' | 'BlogPosting' | 'Service' | 'WebPage'
+export type DocumentType = PageType | 'Event'
 export type FieldPath = string | string[]
 export type PageField = 'headline' | 'description' | 'image' | 'datePublished' | 'dateModified' | 'author'
 export type BreadcrumbItem = { name: string; path: string }
@@ -17,13 +18,37 @@ export type FaqOptions = {
   answer: string
 }
 
+/** The parts of a venue the plugin can output */
+export type EventPlace = {
+  name?: string
+  streetAddress?: string
+  addressLocality?: string
+  addressRegion?: string
+  postalCode?: string
+  addressCountry?: string
+  onlineUrl?: string
+}
+
+export type EventOptions = {
+  /** Date field. Default 'startDate'. A time zone stored beside it is read from '<path>_tz' */
+  startDate?: FieldPath
+  /** Default 'endDate' */
+  endDate?: FieldPath
+  /** Output dates as YYYY-MM-DD in the event's time zone: true, a field path, or a function of the document */
+  dateOnly?: boolean | FieldPath | ((doc: Doc) => boolean)
+  /** Field path for each part of the place. Defaults are 'location.<key>' */
+  location?: Partial<Record<keyof EventPlace, FieldPath>>
+}
+
 export type CollectionOptions = {
-  type: PageType | ((doc: Doc) => PageType | null)
+  type: DocumentType | ((doc: Doc) => DocumentType | null)
   /** Public path of the document, starting with '/'. '/' for the home page */
   path: (doc: Doc) => string
   fields?: Partial<Record<PageField, FieldPath>>
   faq?: FaqOptions
   breadcrumbs?: (doc: Doc) => BreadcrumbItem[]
+  /** Event field mapping. Setting it also offers Event in the editor's type select */
+  event?: EventOptions
 }
 
 export type StructuredDataPluginOptions = {
@@ -33,6 +58,8 @@ export type StructuredDataPluginOptions = {
   mediaCollection?: CollectionSlug
   /** Image size name to prefer, e.g. 'og'. Falls back to the original */
   imageSize?: string
+  /** IANA time zone for event dates, e.g. 'Europe/London'. A zone stored on the document wins */
+  timeZone?: string
   /** Adds a SearchAction to WebSite, e.g. 'https://example.com/search?q={search_term_string}' */
   search?: { urlTemplate: string }
   /** Keeps the fields (so the schema stays stable) but outputs nothing */

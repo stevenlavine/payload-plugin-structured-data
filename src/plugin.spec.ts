@@ -63,3 +63,28 @@ describe('structuredDataPlugin config checks', () => {
     })
   })
 })
+
+describe('type select options', () => {
+  const selectOptions = (collectionOptions: Record<string, unknown>) => {
+    const result = structuredDataPlugin({
+      siteUrl: 'https://a.com',
+      collections: { posts: { path: () => '/', ...collectionOptions } as never },
+    })(config)
+    const group = result.collections?.[0]?.fields.find((f) => 'name' in f && f.name === 'structuredData')
+    const select = group && 'fields' in group ? group.fields.find((f) => 'name' in f && f.name === 'type') : undefined
+    return select && 'options' in select ? (select.options as { value: string }[]).map((o) => o.value) : []
+  }
+  const PAGE = ['Article', 'BlogPosting', 'Service', 'WebPage']
+  test('no event config keeps exactly the page types', () => {
+    expect(selectOptions({ type: 'WebPage' })).toEqual(PAGE)
+  })
+  test('type Event adds Event', () => {
+    expect(selectOptions({ type: 'Event' })).toEqual([...PAGE, 'Event'])
+  })
+  test('an event block adds Event', () => {
+    expect(selectOptions({ type: 'WebPage', event: {} })).toEqual([...PAGE, 'Event'])
+  })
+  test('a type function with no event keeps exactly the page types', () => {
+    expect(selectOptions({ type: () => 'WebPage' })).toEqual(PAGE)
+  })
+})

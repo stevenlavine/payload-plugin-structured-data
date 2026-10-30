@@ -1,7 +1,8 @@
 import type { Field } from 'payload'
 import { GROUP_NAME, PAGE_TYPES } from '../constants.js'
+import type { DocumentType } from '../types.js'
 
-export function sidebarGroup(): Field {
+export function sidebarGroup(types: readonly DocumentType[] = PAGE_TYPES): Field {
   return {
     name: GROUP_NAME,
     type: 'group',
@@ -11,7 +12,7 @@ export function sidebarGroup(): Field {
       {
         name: 'type',
         type: 'select',
-        options: PAGE_TYPES.map((value) => ({ label: value, value })),
+        options: types.map((value) => ({ label: value, value })),
         admin: { description: 'Leave empty to use the default for this collection.' },
       },
       { name: 'disabled', type: 'checkbox', label: 'Off for this page' },
