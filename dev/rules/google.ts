@@ -9,6 +9,10 @@ export type GoogleRule = {
   recommended: string[]
   /** Recommended properties the plugin does not output, and why */
   knownGaps?: Record<string, string>
+  /** Check only nodes that sit directly in the graph, not ones nested inside another node */
+  topLevelOnly?: boolean
+  /** Recommended paths that apply only when the node meets the condition */
+  onlyWhen?: Record<string, (node: Record<string, unknown>) => boolean>
 }
 
 /*
@@ -56,10 +60,14 @@ const FAQ_RETIRED: GoogleRule = {
   recommended: [],
 }
 
+const EVENT_CHECKED = '2026-10-30'
+const ITEM_LIST_CHECKED = '2026-10-30'
+
 export const GOOGLE_RULES: Record<string, GoogleRule> = {
   Organization: {
     source: `${PAGES}/structured-data/organization`,
     checked: CHECKED,
+    topLevelOnly: true,
     // "There are no required properties"
     required: [],
     recommended: [
@@ -172,6 +180,43 @@ export const GOOGLE_RULES: Record<string, GoogleRule> = {
   FAQPage: FAQ_RETIRED,
   Question: FAQ_RETIRED,
   Answer: FAQ_RETIRED,
+  Event: {
+    source: `${PAGES}/structured-data/event`,
+    checked: EVENT_CHECKED,
+    topLevelOnly: true,
+    required: ['location', 'location.address', 'name', 'startDate'],
+    recommended: [
+      'description',
+      'endDate',
+      'eventStatus',
+      'image',
+      'location.name',
+      'offers',
+      'offers.availability',
+      'offers.price',
+      'offers.priceCurrency',
+      'offers.url',
+      'offers.validFrom',
+      'organizer',
+      'organizer.name',
+      'organizer.url',
+      'performer',
+      'performer.name',
+      'previousStartDate',
+    ],
+    // The page allows previousStartDate only together with EventRescheduled
+    onlyWhen: {
+      previousStartDate: (node) => String(node.eventStatus).endsWith('EventRescheduled'),
+    },
+  },
+  // An ItemList earns no event result: Google's event page documents no list markup, so
+  // there is no Google list to check. Checked against Schema.org only.
+  ItemList: {
+    source: `${PAGES}/structured-data/event`,
+    checked: ITEM_LIST_CHECKED,
+    required: [],
+    recommended: [],
+  },
   WebSite: {
     source: `${PAGES}/site-names`,
     checked: CHECKED,
@@ -216,18 +261,23 @@ const resolvesPath = (value: unknown, keys: string[], graph: JsonLdGraph): boole
 export const resolvesIn = (node: Json, path: string, graph: JsonLdGraph): boolean =>
   path.split('|').some((alternative) => resolvesPath(node, alternative.split('.'), graph))
 
-/** Checks one node against GOOGLE_RULES for its @type. Returns one message per unmet rule */
+/** Checks one node against GOOGLE_RULES for each of its @types. Returns one message per unmet rule */
 export const checkGoogle = (node: Json, graph: JsonLdGraph): string[] => {
-  const type = node['@type']
-  if (typeof type !== 'string' || !Object.hasOwn(GOOGLE_RULES, type)) return []
-  const rule = GOOGLE_RULES[type]
+  const raw = node['@type']
+  const types = (Array.isArray(raw) ? raw : [raw]).filter((t): t is string => typeof t === 'string')
   const messages: string[] = []
-  for (const path of rule.required) {
-    if (!resolvesIn(node, path, graph)) messages.push(`${type}: required "${path}" is missing`)
-  }
-  for (const path of rule.recommended) {
-    if (rule.knownGaps && Object.hasOwn(rule.knownGaps, path)) continue
-    if (!resolvesIn(node, path, graph)) messages.push(`${type}: recommended "${path}" is missing`)
+  for (const type of types) {
+    if (!Object.hasOwn(GOOGLE_RULES, type)) continue
+    const rule = GOOGLE_RULES[type]
+    if (rule.topLevelOnly && !graph['@graph'].includes(node as never)) continue
+    for (const path of rule.required) {
+      if (!resolvesIn(node, path, graph)) messages.push(`${type}: required "${path}" is missing`)
+    }
+    for (const path of rule.recommended) {
+      if (rule.knownGaps && Object.hasOwn(rule.knownGaps, path)) continue
+      if (rule.onlyWhen && Object.hasOwn(rule.onlyWhen, path) && !rule.onlyWhen[path]?.(node)) continue
+      if (!resolvesIn(node, path, graph)) messages.push(`${type}: recommended "${path}" is missing`)
+    }
   }
   return messages
 }

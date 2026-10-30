@@ -151,4 +151,29 @@ describe('the checker catches a broken node', () => {
     delete list.itemListElement
     expect(checkGoogle(list, graph)).toEqual(['BreadcrumbList: required "itemListElement" is missing'])
   })
+
+  it('an array @type is checked against each type', () => {
+    const graph = clone()
+    const list = graph['@graph'].find((n) => n['@type'] === 'BreadcrumbList') as Json
+    list['@type'] = ['BreadcrumbList', 'Thing']
+    delete list.itemListElement
+    expect(checkGoogle(list, graph)).toEqual(['BreadcrumbList: required "itemListElement" is missing'])
+  })
+
+  it('a topLevelOnly rule ignores a nested node of that type', () => {
+    const graph = clone()
+    const stub = { '@type': 'Event', '@id': 'https://example.com/f#event', name: 'F', url: 'https://example.com/f' }
+    expect(checkGoogle(stub, graph)).toEqual([])
+    graph['@graph'].push(stub as never)
+    expect(checkGoogle(stub, graph)).toContain('Event: required "startDate" is missing')
+  })
+
+  it('previousStartDate is only asked for on a rescheduled event', () => {
+    const graph = clone()
+    const event = { '@type': 'Event', eventStatus: 'https://schema.org/EventScheduled' }
+    graph['@graph'].push(event as never)
+    expect(checkGoogle(event, graph).join()).not.toContain('previousStartDate')
+    event.eventStatus = 'https://schema.org/EventRescheduled'
+    expect(checkGoogle(event, graph)).toContain('Event: recommended "previousStartDate" is missing')
+  })
 })
