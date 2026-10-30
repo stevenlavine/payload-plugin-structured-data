@@ -155,6 +155,9 @@ export type Settings = {
   identifiers?: { propertyID?: string | null; value?: string | null }[] | null
 }
 
+/** A listings page: its own path, an optional heading and the rows to list. Generic on purpose. */
+export type ListInput = { path: string; name?: string; items: { name: string; path: string }[] }
+
 export type JsonLdNode = Record<string, unknown> & { '@type': string; '@id'?: string }
 export type JsonLdGraph = { '@context': 'https://schema.org'; '@graph': JsonLdNode[] }
 export type BuildResult = { graph: JsonLdGraph | null; warnings: string[] }

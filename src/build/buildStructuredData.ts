@@ -1,8 +1,9 @@
 import { DEFAULT_FIELDS, documentTypesFor, EVENT_TYPE, GROUP_NAME } from '../constants.js'
-import type { BuildResult, Doc, DocumentType, JsonLdNode, ResolvedOptions, Settings } from '../types.js'
+import type { BuildResult, Doc, DocumentType, JsonLdNode, ListInput, ResolvedOptions, Settings } from '../types.js'
 import { breadcrumbTrail, buildBreadcrumbList } from './breadcrumbs.js'
 import { buildEventNodes } from './events.js'
 import { buildFaqPage } from './faq.js'
+import { buildItemList } from './itemList.js'
 import { buildPageNode } from './pageNodes.js'
 import { buildOrganization, buildWebSite } from './siteNodes.js'
 import { absoluteUrl, readText } from './values.js'
@@ -12,9 +13,10 @@ export type BuildInput = {
   settings: Settings | null
   collection?: string
   doc?: Doc
+  list?: ListInput
 }
 
-export function buildStructuredData({ options, settings, collection, doc }: BuildInput): BuildResult {
+export function buildStructuredData({ options, settings, collection, doc, list }: BuildInput): BuildResult {
   const warnings: string[] = []
   const nodes: JsonLdNode[] = []
   if (options.disabled) return { graph: null, warnings }
@@ -64,6 +66,12 @@ export function buildStructuredData({ options, settings, collection, doc }: Buil
           if (breadcrumbs) nodes.push(breadcrumbs)
         }
       }
+    }
+
+    if (list) {
+      ref = 'list'
+      const itemList = buildItemList(list, options.siteUrl, warnings)
+      if (itemList) nodes.push(itemList)
     }
   } catch (error) {
     warnings.push(`${ref}: structured data failed: ${error instanceof Error ? error.message : String(error)}`)
