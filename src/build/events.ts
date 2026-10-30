@@ -279,7 +279,7 @@ function buildPerformers(doc: Doc, setting: EventPerformerOptions | undefined, c
 const withoutSlash = (url: string) => url.replace(/\/+$/, '')
 
 /** The festival this event belongs to. A throwing function or a link back to the event itself gives a warning and nothing */
-function buildSuperEvent(doc: Doc, setting: EventOptions['superEvent'], url: string, ctx: EventContext, warnings: string[]) {
+function buildSuperEvent(doc: Doc, setting: EventOptions['superEvent'], url: string, ctx: EventContext, zone: string | undefined, warnings: string[]) {
   if (!setting) return undefined
   let festival: unknown
   try {
@@ -289,8 +289,12 @@ function buildSuperEvent(doc: Doc, setting: EventOptions['superEvent'], url: str
     return undefined
   }
   if (festival === null || festival === undefined) return undefined
-  const name = isRecord(festival) && typeof festival.name === 'string' ? festival.name.trim() : ''
-  const path = isRecord(festival) && typeof festival.path === 'string' ? festival.path.trim() : ''
+  if (!isRecord(festival)) {
+    warnings.push(`${ctx.ref}: superEvent left out, the function did not return an object`)
+    return undefined
+  }
+  const name = typeof festival.name === 'string' ? festival.name.trim() : ''
+  const path = typeof festival.path === 'string' ? festival.path.trim() : ''
   if (!name || !path) {
     warnings.push(`${ctx.ref}: superEvent left out, it needs a name and a path`)
     return undefined
@@ -300,7 +304,28 @@ function buildSuperEvent(doc: Doc, setting: EventOptions['superEvent'], url: str
     warnings.push(`${ctx.ref}: superEvent left out, it points at the event's own page`)
     return undefined
   }
-  return { '@type': 'Event' as const, '@id': `${festivalUrl}#event`, name, url: festivalUrl }
+
+  const dateCtx = { timeZone: zone, dateOnly: festival.dateOnly === true, ref: ctx.ref }
+  const startDate = festival.startDate === undefined || festival.startDate === null ? null : formatEventDate(festival.startDate, dateCtx, warnings)
+  if (!startDate) {
+    warnings.push(`${ctx.ref}: superEvent left out, the festival has no valid startDate (Google needs a date and a place)`)
+    return undefined
+  }
+  let endDate: string | undefined
+  if (festival.endDate !== undefined && festival.endDate !== null) {
+    endDate = formatEventDate(festival.endDate, dateCtx, warnings) ?? undefined
+    if (!endDate) warnings.push(`${ctx.ref}: superEvent endDate left out, it is not a valid date`)
+    else if (instant(endDate) < instant(startDate)) {
+      warnings.push(`${ctx.ref}: superEvent endDate left out, it is before the festival's start date`)
+      endDate = undefined
+    }
+  }
+  const physical = isRecord(festival.location) ? physicalPlace(festival.location as EventPlace) : undefined
+  if (!physical) {
+    warnings.push(`${ctx.ref}: superEvent left out, the festival location has no physical address (Google needs a date and a place)`)
+    return undefined
+  }
+  return compact({ '@type': 'Event' as const, '@id': `${festivalUrl}#event`, name, url: festivalUrl, startDate, endDate, location: compact(physical) })
 }
 
 export function buildEventNodes(input: EventNodeInput, warnings: string[]): JsonLdNode[] {
@@ -390,7 +415,7 @@ export function buildEventNodes(input: EventNodeInput, warnings: string[]): Json
     offers: offerNodes.length ? offerNodes : undefined,
     organizer: buildOrganizer(doc, event.organizer, ctx, input.hasOrganization),
     performer: performers.length ? performers : undefined,
-    superEvent: buildSuperEvent(doc, event.superEvent, url, ctx, warnings),
+    superEvent: buildSuperEvent(doc, event.superEvent, url, ctx, start.zone ?? ctx.timeZone, warnings),
   }
   return [compact({ '@type': 'Event', '@id': `${url}#event`, ...props })]
 }

@@ -51,7 +51,16 @@ export type EventOrganizerOptions = { name?: FieldPath; url?: FieldPath; type?: 
 export type EventPerformerOptions = { path?: FieldPath; name?: FieldPath; type?: 'Person' | 'PerformingGroup' }
 
 /** The festival or series an event belongs to */
-export type EventSuperEvent = { name: string; path: string }
+export type EventSuperEvent = {
+  name: string
+  path: string
+  /** Required: Google reads a parent with no date and place as an invalid event */
+  startDate: unknown
+  endDate?: unknown
+  dateOnly?: boolean
+  /** Needs a physical address; an online-only place is treated as none */
+  location: EventPlace
+}
 
 export type EventOptions = {
   /** Date field. Default 'startDate'. A time zone stored beside it is read from '<path>_tz' */

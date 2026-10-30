@@ -510,44 +510,90 @@ describe('Event performers', () => {
   test('bad rows are dropped without throwing', () => {
     const result = withPerformers([null, { name: '' }, 3, 'Solo Act'])
     expect(eventOf(result)?.performer).toEqual([{ '@type': 'Person', name: 'Solo Act' }])
+    expect(result.warnings.filter((w) => w.includes('events/1') && w.includes('performer') && w.includes('skipped'))).toHaveLength(3)
+    expect(result.warnings.some((w) => w.includes('performer 2 skipped, it has no name'))).toBe(true)
   })
 
   test('a non-array performers value gives none', () => {
     const result = withPerformers(42)
     expect(eventOf(result)).not.toHaveProperty('performer')
+    expect(result.warnings.some((w) => w.includes('events/1') && w.includes('performers ignored, the field is not a list'))).toBe(true)
   })
 })
 
 describe('Event festival link', () => {
-  const withFestival = (superEvent: NonNullable<CollectionOptions['event']>['superEvent']) =>
+  const venue = { name: 'Showground', streetAddress: '2 Park Lane', addressLocality: 'Ashford', postalCode: 'TN24 8BT', addressCountry: 'GB' }
+  const festival = { name: 'Festival 2027', path: '/events/festival-2027', startDate: '2027-07-10T09:00:00.000Z', endDate: '2027-07-20T18:00:00.000Z', location: venue }
+  type Festival = NonNullable<ReturnType<NonNullable<NonNullable<CollectionOptions['event']>['superEvent']>>>
+  const withFestival = (superEvent: (() => Festival | null) | ((doc: Doc) => Festival | null)) =>
     run(baseDoc, optionsFor({ ...eventsConfig, event: { superEvent } }))
+  const dropped = (result: ReturnType<typeof run>, text: string) => {
+    expect(eventOf(result)?.name).toBe('Opening night')
+    expect(eventOf(result)).not.toHaveProperty('superEvent')
+    expect(result.warnings.some((w) => w.includes('events/1') && w.includes('superEvent') && w.includes(text))).toBe(true)
+  }
 
-  test('a festival gives a linked Event', () => {
-    const result = withFestival(() => ({ name: 'Festival 2027', path: '/events/festival-2027' }))
+  test('a festival gives a linked Event with a date and a place', () => {
+    const result = withFestival(() => festival)
     expect(eventOf(result)?.superEvent).toEqual({
       '@type': 'Event',
       '@id': 'https://example.com/events/festival-2027#event',
       name: 'Festival 2027',
       url: 'https://example.com/events/festival-2027',
+      startDate: '2027-07-10T10:00:00+01:00',
+      endDate: '2027-07-20T19:00:00+01:00',
+      location: {
+        '@type': 'Place',
+        name: 'Showground',
+        address: { '@type': 'PostalAddress', streetAddress: '2 Park Lane', addressLocality: 'Ashford', postalCode: 'TN24 8BT', addressCountry: 'GB' },
+      },
     })
+    expect(result.warnings).toEqual([])
+  })
+
+  test('dateOnly passes through', () => {
+    const result = withFestival(() => ({ ...festival, startDate: '2027-07-10T09:00:00.000Z', endDate: undefined, dateOnly: true }))
+    expect(eventOf(result)?.superEvent).toMatchObject({ startDate: '2027-07-10' })
   })
 
   test('null gives no superEvent', () => {
     expect(eventOf(withFestival(() => null))).not.toHaveProperty('superEvent')
   })
 
-  test('the event\'s own page is dropped with a warning', () => {
-    const result = withFestival(() => ({ name: 'Me', path: '/events/opening' }))
-    expect(eventOf(result)).not.toHaveProperty('superEvent')
-    expect(result.warnings.some((w) => w.includes('superEvent'))).toBe(true)
+  test("the event's own page is dropped with a warning", () => {
+    dropped(withFestival(() => ({ ...festival, path: '/events/opening' })), 'own page')
   })
 
   test('a throwing function warns and the event still outputs', () => {
-    const result = withFestival(() => {
-      throw new Error('boom')
-    })
-    expect(eventOf(result)?.name).toBe('Opening night')
-    expect(eventOf(result)).not.toHaveProperty('superEvent')
-    expect(result.warnings.some((w) => w.includes('superEvent') && w.includes('boom'))).toBe(true)
+    dropped(
+      withFestival(() => {
+        throw new Error('boom')
+      }),
+      'boom',
+    )
+  })
+
+  test('a missing startDate drops the link', () => {
+    dropped(withFestival(() => ({ ...festival, startDate: undefined })), 'startDate')
+  })
+
+  test('an invalid startDate drops the link', () => {
+    dropped(withFestival(() => ({ ...festival, startDate: 'not a date' })), 'startDate')
+  })
+
+  test('an online-only location drops the link', () => {
+    dropped(withFestival(() => ({ ...festival, location: { onlineUrl: 'https://example.com/live' } })), 'physical address')
+  })
+
+  test('an empty location drops the link', () => {
+    dropped(withFestival(() => ({ ...festival, location: {} })), 'physical address')
+  })
+
+  test('an endDate before the start drops only the endDate', () => {
+    const result = withFestival(() => ({ ...festival, endDate: '2027-07-01T00:00:00.000Z' }))
+    const parent = eventOf(result)?.superEvent as JsonLdNode
+    expect(parent.startDate).toBe('2027-07-10T10:00:00+01:00')
+    expect(parent).not.toHaveProperty('endDate')
+    expect(result.warnings.some((w) => w.includes('superEvent endDate') && w.includes('before'))).toBe(true)
   })
 })
