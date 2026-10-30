@@ -57,6 +57,45 @@ export default buildConfig({
         },
       ],
     },
+    {
+      slug: 'events',
+      fields: [
+        { name: 'title', type: 'text' },
+        { name: 'slug', type: 'text' },
+        { name: 'summary', type: 'textarea' },
+        { name: 'startsAt', type: 'date', timezone: true },
+        { name: 'endsAt', type: 'date', timezone: true },
+        {
+          name: 'venue',
+          type: 'group',
+          fields: [
+            { name: 'name', type: 'text' },
+            { name: 'street', type: 'text' },
+            { name: 'town', type: 'text' },
+            { name: 'postcode', type: 'text' },
+            { name: 'country', type: 'text' },
+            { name: 'onlineUrl', type: 'text' },
+          ],
+        },
+        {
+          name: 'tickets',
+          type: 'array',
+          fields: [
+            { name: 'label', type: 'text' },
+            { name: 'price', type: 'number' },
+            { name: 'currency', type: 'text' },
+            { name: 'link', type: 'text' },
+          ],
+        },
+        { name: 'artists', type: 'array', fields: [{ name: 'name', type: 'text' }] },
+        {
+          name: 'status',
+          type: 'select',
+          options: ['scheduled', 'cancelled', 'postponed', 'rescheduled', 'movedOnline'],
+        },
+        { name: 'festival', type: 'relationship', relationTo: 'events' },
+      ],
+    },
     { slug: 'media', fields: [], upload: { staticDir: path.resolve(dirname, 'media') } },
   ],
   db: sqliteAdapter({ client: { url: process.env.DATABASE_URL || 'file:./dev/dev.db' } }),
@@ -65,7 +104,48 @@ export default buildConfig({
   plugins: [
     structuredDataPlugin({
       siteUrl: process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000',
+      timeZone: 'Europe/London',
       collections: {
+        events: {
+          type: 'Event',
+          path: (doc) => `/events/${doc.slug}`,
+          fields: { headline: 'title', description: 'summary' },
+          event: {
+            startDate: 'startsAt',
+            endDate: 'endsAt',
+            status: 'status',
+            location: {
+              name: 'venue.name',
+              streetAddress: 'venue.street',
+              addressLocality: 'venue.town',
+              postalCode: 'venue.postcode',
+              addressCountry: 'venue.country',
+              onlineUrl: 'venue.onlineUrl',
+            },
+            offers: { path: 'tickets', name: 'label', priceCurrency: 'currency', url: 'link', defaultCurrency: 'GBP' },
+            performers: { path: 'artists' },
+            superEvent: (doc) => {
+              const festival = doc.festival
+              if (!festival || typeof festival !== 'object') return null
+              const { title, slug, startsAt, endsAt, venue } = festival as Record<string, unknown>
+              const place = (venue ?? {}) as Record<string, string | undefined>
+              if (typeof title !== 'string' || typeof slug !== 'string') return null
+              return {
+                name: title,
+                path: `/events/${slug}`,
+                startDate: startsAt,
+                endDate: endsAt,
+                location: {
+                  name: place.name,
+                  streetAddress: place.street,
+                  addressLocality: place.town,
+                  postalCode: place.postcode,
+                  addressCountry: place.country,
+                },
+              }
+            },
+          },
+        },
         posts: { type: 'BlogPosting', path: (doc) => `/blog/${doc.slug}` },
         pages: {
           type: 'WebPage',

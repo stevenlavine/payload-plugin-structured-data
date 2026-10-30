@@ -26,7 +26,12 @@ const URL_KEYS = new Set(['@id', 'image', 'item', 'logo', 'mainEntityOfPage', 'p
 
 const graphs = fullGraphs()
 
-const SCENARIOS = ['organization', 'localBusiness', 'blogPosting', 'article', 'service', 'webPage', 'faq', 'breadcrumbs']
+const SCENARIOS = ['organization', 'localBusiness', 'blogPosting', 'article', 'service', 'webPage', 'faq', 'breadcrumbs',
+  'event', 'eventRescheduled', 'festivalSession', 'eventDates', 'eventOnline', 'eventHybrid', 'listing']
+
+// Google does not support events with no real-world place, and its required-path check needs every
+// `location` entry to have an address. The Google test skips those two.
+const SCHEMA_ONLY = new Set(['eventHybrid', 'eventOnline'])
 
 it('builds every scenario', () => {
   expect(Object.keys(graphs).sort()).toEqual([...SCENARIOS].sort())
@@ -41,7 +46,7 @@ for (const scenario of SCENARIOS) {
       for (const node of nodes) expect(checkSchemaOrg(node)).toEqual([])
     })
 
-    it('every Google rule is met', () => {
+    it.skipIf(SCHEMA_ONLY.has(scenario))('every Google rule is met', () => {
       const problems: string[] = []
       walk(nodes, (_key, value) => {
         if (isRecord(value)) problems.push(...checkGoogle(value, graph))
@@ -87,6 +92,37 @@ describe('scenario contents', () => {
     expect(typesOf('webPage')).toEqual(['Organization', 'WebSite', 'WebPage', 'BreadcrumbList'])
     expect(typesOf('faq')).toEqual(['Organization', 'WebSite', 'WebPage', 'FAQPage', 'BreadcrumbList'])
     expect(typesOf('breadcrumbs')).toEqual(['Organization', 'WebSite', 'WebPage', 'BreadcrumbList'])
+    for (const name of ['event', 'eventRescheduled', 'festivalSession', 'eventOnline', 'eventHybrid']) {
+      expect(typesOf(name)).toEqual(['Organization', 'WebSite', 'Event', 'BreadcrumbList'])
+    }
+    expect(typesOf('eventDates')).toEqual(['Organization', 'WebSite', 'Event', 'Event', 'Event', 'BreadcrumbList'])
+    expect(typesOf('listing')).toEqual(['Organization', 'WebSite', 'ItemList'])
+  })
+
+  const eventNodes = (name: string) => graphs[name]?.['@graph'].filter((n) => n['@type'] === 'Event') ?? []
+
+  it('eventDates holds 3 Event nodes with unique @id values', () => {
+    const nodes = eventNodes('eventDates')
+    expect(nodes).toHaveLength(3)
+    expect(new Set(nodes.map((n) => n['@id'])).size).toBe(3)
+  })
+
+  it('festivalSession.superEvent carries a date and a physical place, so Google reads it as valid', () => {
+    const superEvent = eventNodes('festivalSession')[0]?.superEvent as Json
+    expect(isRecord(superEvent)).toBe(true)
+    expect(superEvent.startDate).toBeTruthy()
+    const location = superEvent.location as Json
+    expect(isRecord(location) && isRecord(location.address)).toBe(true)
+  })
+
+  it('every startDate in event has an offset', () => {
+    const dates: string[] = []
+    walk(graphs.event?.['@graph'], (key, value) => {
+      if (key === 'startDate' && typeof value === 'string') dates.push(value)
+    })
+    expect(dates.length).toBeGreaterThan(0)
+    for (const date of dates) expect(date).toMatch(/(?:Z|[+-]\d{2}:\d{2})$/)
+    expect(dates[0]).toBe('2027-07-10T19:00:00+01:00')
   })
 
   it('the FAQ page holds all four questions from both blocks', () => {

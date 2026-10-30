@@ -39,6 +39,7 @@ const settings: Settings = {
 const options: ResolvedOptions = {
   siteUrl: 'https://example.com',
   imageSize: 'og',
+  timeZone: 'Europe/London',
   search: { urlTemplate: 'https://example.com/search?q={search_term_string}' },
   collections: {
     posts: { type: 'BlogPosting', path: (doc) => `/blog/${String(doc.slug)}` },
@@ -51,6 +52,33 @@ const options: ResolvedOptions = {
         return crumbs.at(-1)?.url ?? (doc.slug === 'home' ? '/' : `/${String(doc.slug)}`)
       },
       faq: { block: 'faq', items: 'faqs', question: 'question', answer: 'answer' },
+    },
+    events: {
+      type: 'Event',
+      path: (doc) => `/events/${String(doc.slug)}`,
+      event: {
+        offers: { path: 'tickets', defaultCurrency: 'GBP' },
+        organizer: { name: 'organiser.name', url: 'organiser.url' },
+        performers: { path: 'artists' },
+        performances: { path: 'performances' },
+        superEvent: (doc) => {
+          const festival = doc.festival as { name: string; slug: string } | undefined
+          if (!festival) return null
+          return {
+            name: festival.name,
+            path: `/festivals/${festival.slug}`,
+            startDate: '2027-07-09T10:00:00.000Z',
+            endDate: '2027-07-11T22:00:00.000Z',
+            location: {
+              name: 'Mote Park',
+              streetAddress: 'Mote Park',
+              addressLocality: 'Maidstone',
+              postalCode: 'ME15 8NQ',
+              addressCountry: 'GB',
+            },
+          }
+        },
+      },
     },
   },
 }
@@ -141,6 +169,84 @@ const nestedPage: Doc = {
   ...dates,
 }
 
+const ticket = {
+  name: 'General admission',
+  price: 25,
+  priceCurrency: 'GBP',
+  availability: 'inStock',
+  validFrom: '2027-01-05T09:00:00.000Z',
+  url: '/tickets/general',
+}
+
+// Every recommended Event path resolves from this one. July is British Summer Time
+const fullEvent: Doc = {
+  id: 40,
+  slug: 'summer-gig',
+  title: 'Summer gig',
+  meta: meta('An evening of live music in the park.'),
+  startDate: '2027-07-10T18:00:00.000Z',
+  endDate: '2027-07-10T21:00:00.000Z',
+  eventStatus: 'scheduled',
+  location: {
+    name: 'Mote Park Bandstand',
+    streetAddress: 'Mote Park',
+    addressLocality: 'Maidstone',
+    addressRegion: 'Kent',
+    postalCode: 'ME15 8NQ',
+    addressCountry: 'GB',
+  },
+  tickets: [ticket, { ...ticket, name: 'VIP', price: 60, availability: 'limitedAvailability', url: '/tickets/vip' }],
+  organiser: { name: 'Kent Live', url: 'https://kentlive.example.org' },
+  artists: [{ name: 'The Marlows' }, { name: 'Jo Bloggs' }],
+  ...dates,
+}
+
+const rescheduledEvent: Doc = {
+  ...fullEvent,
+  id: 41,
+  slug: 'summer-gig-moved',
+  startDate: '2027-07-17T18:00:00.000Z',
+  endDate: '2027-07-17T21:00:00.000Z',
+  eventStatus: 'rescheduled',
+  previousStartDate: '2027-07-10T18:00:00.000Z',
+}
+
+const festivalSessionEvent: Doc = {
+  ...fullEvent,
+  id: 42,
+  slug: 'festival-main-stage',
+  festival: { name: 'Maidstone Music Festival', slug: 'maidstone-music-festival' },
+}
+
+const performance = (startDate: string, endDate: string) => ({ startDate, endDate, status: 'scheduled' })
+
+const multiDateEvent: Doc = {
+  ...fullEvent,
+  id: 43,
+  slug: 'summer-tour',
+  startDate: undefined,
+  endDate: undefined,
+  performances: [
+    performance('2027-07-10T18:00:00.000Z', '2027-07-10T21:00:00.000Z'),
+    performance('2027-07-11T18:00:00.000Z', '2027-07-11T21:00:00.000Z'),
+    performance('2027-07-12T18:00:00.000Z', '2027-07-12T21:00:00.000Z'),
+  ],
+}
+
+const onlineEvent: Doc = {
+  ...fullEvent,
+  id: 44,
+  slug: 'online-talk',
+  location: { onlineUrl: 'https://example.com/live/online-talk' },
+}
+
+const hybridEvent: Doc = {
+  ...fullEvent,
+  id: 45,
+  slug: 'hybrid-talk',
+  location: { ...(fullEvent.location as object), onlineUrl: 'https://example.com/live/hybrid-talk' },
+}
+
 const build = (input: Partial<Parameters<typeof buildStructuredData>[0]>): JsonLdGraph => {
   const result = buildStructuredData({ options, settings, ...input })
   if (!result.graph) throw new Error(`No graph built: ${result.warnings.join('; ')}`)
@@ -158,5 +264,22 @@ export function fullGraphs(): Record<string, JsonLdGraph> {
     webPage: build({ collection: 'pages', doc: aboutPage }),
     faq: build({ collection: 'pages', doc: faqPage }),
     breadcrumbs: build({ collection: 'pages', doc: nestedPage }),
+    event: build({ collection: 'events', doc: fullEvent }),
+    eventRescheduled: build({ collection: 'events', doc: rescheduledEvent }),
+    festivalSession: build({ collection: 'events', doc: festivalSessionEvent }),
+    eventDates: build({ collection: 'events', doc: multiDateEvent }),
+    eventOnline: build({ collection: 'events', doc: onlineEvent }),
+    eventHybrid: build({ collection: 'events', doc: hybridEvent }),
+    listing: build({
+      list: {
+        path: '/events',
+        name: 'Upcoming events',
+        items: [
+          { name: 'Summer gig', path: '/events/summer-gig' },
+          { name: 'Summer tour', path: '/events/summer-tour' },
+          { name: 'Online talk', path: '/events/online-talk' },
+        ],
+      },
+    }),
   }
 }

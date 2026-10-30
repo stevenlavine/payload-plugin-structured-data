@@ -6,15 +6,17 @@ import { mkdtemp, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import path from 'path'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { buildStructuredData } from '../src/build/buildStructuredData.js'
 import { getPluginOptions } from '../src/plugin.js'
 import { StructuredData } from '../src/render/StructuredData.js'
 import { StructuredDataPreview } from '../src/render/StructuredDataPreview.js'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
 
 let payload: Payload
-const created: { collection: 'media' | 'posts'; id: number | string }[] = []
+type Tracked = 'events' | 'media' | 'posts'
+const created: { collection: Tracked; id: number | string }[] = []
 
-const track = <T extends { id: number | string }>(collection: 'media' | 'posts', doc: T): T => {
+const track = <T extends { id: number | string }>(collection: Tracked, doc: T): T => {
   created.push({ collection, id: doc.id })
   return doc
 }
@@ -67,6 +69,43 @@ describe('plugin', () => {
     const options = getPluginOptions(payload.config)
     expect(options?.siteUrl).toBe('http://localhost:3000')
     expect(options?.collections.posts?.type).toBe('BlogPosting')
+  })
+})
+
+describe('events', () => {
+  test('a venue-mapped event gets the offset for its stored zone', async () => {
+    const event = track(
+      'events',
+      await payload.create({
+        collection: 'events',
+        data: {
+          title: 'Paris night',
+          slug: 'paris-night',
+          startsAt: '2027-07-10T18:00:00.000Z',
+          startsAt_tz: 'Europe/Paris',
+          venue: { name: 'Salle X', street: '1 Rue Y', town: 'Paris', country: 'FR' },
+        } as never,
+      }),
+    )
+    const doc = await payload.findByID({ collection: 'events', id: event.id, depth: 1 })
+    const options = getPluginOptions(payload.config)!
+    const { graph, warnings } = buildStructuredData({ options, settings: null, collection: 'events', doc })
+    const node = graph?.['@graph'].find((n) => n['@type'] === 'Event')
+    expect(warnings.filter((w) => w.startsWith('events/'))).toEqual([])
+    expect(node?.startDate).toBe('2027-07-10T20:00:00+02:00')
+    expect((node?.location as { address: { addressLocality: string } }).address.addressLocality).toBe('Paris')
+  })
+
+  test('only an event-mapped collection offers Event in its type select', () => {
+    const typeOptions = (slug: string) => {
+      const collection = payload.config.collections.find((c) => c.slug === slug)
+      const group = collection?.fields.find((f) => 'name' in f && f.name === 'structuredData')
+      const select = group && 'fields' in group ? group.fields.find((f) => 'name' in f && f.name === 'type') : undefined
+      return select && 'options' in select ? select.options.map((o) => (typeof o === 'string' ? o : o.value)) : []
+    }
+    expect(typeOptions('events')).toContain('Event')
+    expect(typeOptions('posts')).not.toContain('Event')
+    expect(typeOptions('pages')).not.toContain('Event')
   })
 })
 
@@ -138,6 +177,22 @@ describe('StructuredDataPreview', () => {
     const broken = { collectionSlug: 'posts', data: { id: 1 }, payload: {} } as never
     const html = renderToStaticMarkup(await StructuredDataPreview(broken))
     expect(html).toContain('Preview unavailable')
+  })
+
+  test('an event with a bad date renders the preview with a warning and does not throw', async () => {
+    const stub = Object.create(payload) as Payload
+    stub.findByID = (() => Promise.resolve({
+      id: 1,
+      title: 'Bad date',
+      slug: 'bad-date',
+      startsAt: 'not a date',
+      venue: { name: 'Hall', street: '1 High Street', town: 'Ashford' },
+    })) as never
+    const props = { collectionSlug: 'events', data: { id: 1 }, payload: stub } as unknown as Parameters<typeof StructuredDataPreview>[0]
+    const html = renderToStaticMarkup(await StructuredDataPreview(props))
+    expect(html).toContain('Preview (last saved version)')
+    expect(html).toContain('Event skipped')
+    expect(html).toContain('WebSite')
   })
 
   test('unsaved document prompts to save', async () => {
