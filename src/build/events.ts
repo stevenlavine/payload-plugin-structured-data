@@ -1,8 +1,8 @@
 import type { EventLeaf, OfferLeaf } from 'schema-dts'
 import { DEFAULT_EVENT_FIELDS, DEFAULT_FIELDS } from '../constants.js'
-import type { CollectionOptions, Doc, EventOfferOptions, EventOptions, EventPlace, FieldPath, JsonLdNode, ResolvedOptions } from '../types.js'
+import type { CollectionOptions, Doc, EventOfferOptions, EventOptions, EventOrganizerOptions, EventPerformerOptions, EventPlace, FieldPath, JsonLdNode, ResolvedOptions } from '../types.js'
 import { formatEventDate, resolveTimeZone } from './eventDates.js'
-import { compact } from './siteNodes.js'
+import { compact, organizationId } from './siteNodes.js'
 import { absoluteUrl, mediaUrl, readFirst, readPath, readPrice, readText } from './values.js'
 
 export type EventNodeInput = {
@@ -245,6 +245,64 @@ function buildOffers(source: Doc, offers: EventOfferOptions | undefined, ctx: Ev
   return result
 }
 
+/** The mapped organiser, or the site organisation when none is mapped or the mapped fields are empty here */
+function buildOrganizer(doc: Doc, setting: EventOrganizerOptions | undefined, ctx: EventContext, hasOrganization: boolean) {
+  const name = setting?.name ? readText(doc, setting.name) : undefined
+  const urlText = setting?.url ? readText(doc, setting.url) : undefined
+  if (name || urlText) {
+    return compact({
+      '@type': setting?.type ?? ('Organization' as const),
+      name,
+      url: urlText ? absoluteUrl(ctx.siteUrl, urlText) : undefined,
+    })
+  }
+  return hasOrganization ? { '@id': organizationId(ctx.siteUrl) } : undefined
+}
+
+function buildPerformers(doc: Doc, setting: EventPerformerOptions | undefined, ctx: EventContext, warnings: string[]) {
+  const raw = readFirst(doc, setting?.path ?? 'performers')
+  if (raw === undefined) return []
+  if (!Array.isArray(raw)) {
+    warnings.push(`${ctx.ref}: performers ignored, the field is not a list`)
+    return []
+  }
+  const type = setting?.type ?? 'Person'
+  const result: { '@type': 'Person' | 'PerformingGroup'; name: string }[] = []
+  raw.forEach((row: unknown, index) => {
+    const name = typeof row === 'string' ? row.trim() : isRecord(row) ? readText(row, setting?.name ?? 'name') : undefined
+    if (name) result.push({ '@type': type, name })
+    else warnings.push(`${ctx.ref}: performer ${index + 1} skipped, it has no name`)
+  })
+  return result
+}
+
+const withoutSlash = (url: string) => url.replace(/\/+$/, '')
+
+/** The festival this event belongs to. A throwing function or a link back to the event itself gives a warning and nothing */
+function buildSuperEvent(doc: Doc, setting: EventOptions['superEvent'], url: string, ctx: EventContext, warnings: string[]) {
+  if (!setting) return undefined
+  let festival: unknown
+  try {
+    festival = setting(doc)
+  } catch (error) {
+    warnings.push(`${ctx.ref}: superEvent left out, the function failed: ${errorText(error)}`)
+    return undefined
+  }
+  if (festival === null || festival === undefined) return undefined
+  const name = isRecord(festival) && typeof festival.name === 'string' ? festival.name.trim() : ''
+  const path = isRecord(festival) && typeof festival.path === 'string' ? festival.path.trim() : ''
+  if (!name || !path) {
+    warnings.push(`${ctx.ref}: superEvent left out, it needs a name and a path`)
+    return undefined
+  }
+  const festivalUrl = absoluteUrl(ctx.siteUrl, path)
+  if (withoutSlash(festivalUrl) === withoutSlash(url)) {
+    warnings.push(`${ctx.ref}: superEvent left out, it points at the event's own page`)
+    return undefined
+  }
+  return { '@type': 'Event' as const, '@id': `${festivalUrl}#event`, name, url: festivalUrl }
+}
+
 export function buildEventNodes(input: EventNodeInput, warnings: string[]): JsonLdNode[] {
   const { doc, url, ref, config, options } = input
   const event = config.event ?? {}
@@ -315,6 +373,8 @@ export function buildEventNodes(input: EventNodeInput, warnings: string[]): Json
 
   const offerNodes = buildOffers(doc, event.offers, { ...ctx, timeZone: start.zone ?? ctx.timeZone }, warnings)
 
+  const performers = buildPerformers(doc, event.performers, ctx, warnings)
+
   // Typed object literal: a misspelt property name fails typecheck (excess property check)
   const props: Omit<Partial<EventLeaf>, '@type' | '@id'> = {
     name,
@@ -328,6 +388,9 @@ export function buildEventNodes(input: EventNodeInput, warnings: string[]): Json
     eventAttendanceMode: `https://schema.org/${attendanceMode}`,
     location,
     offers: offerNodes.length ? offerNodes : undefined,
+    organizer: buildOrganizer(doc, event.organizer, ctx, input.hasOrganization),
+    performer: performers.length ? performers : undefined,
+    superEvent: buildSuperEvent(doc, event.superEvent, url, ctx, warnings),
   }
   return [compact({ '@type': 'Event', '@id': `${url}#event`, ...props })]
 }

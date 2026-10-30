@@ -44,6 +44,15 @@ export type EventOfferOptions = {
   defaultCurrency?: string
 }
 
+/** Who runs the event. With no mapping, or nothing at the mapped paths, the site organisation is used */
+export type EventOrganizerOptions = { name?: FieldPath; url?: FieldPath; type?: 'Organization' | 'Person' }
+
+/** Performer rows. A row is an object read at `name`, or a plain string. Defaults 'performers' and 'name' */
+export type EventPerformerOptions = { path?: FieldPath; name?: FieldPath; type?: 'Person' | 'PerformingGroup' }
+
+/** The festival or series an event belongs to */
+export type EventSuperEvent = { name: string; path: string }
+
 export type EventOptions = {
   /** Date field. Default 'startDate'. A time zone stored beside it is read from '<path>_tz' */
   startDate?: FieldPath
@@ -62,6 +71,10 @@ export type EventOptions = {
   previousStartDate?: FieldPath
   /** Ticket offers on the event */
   offers?: EventOfferOptions
+  organizer?: EventOrganizerOptions
+  performers?: EventPerformerOptions
+  /** The parent festival for a document, or null. Its path must differ from the event's own page */
+  superEvent?: (doc: Doc) => EventSuperEvent | null
 }
 
 export type CollectionOptions = {

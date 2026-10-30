@@ -49,6 +49,7 @@ describe('Event node', () => {
       startDate: '2027-07-14T19:30:00+01:00',
       endDate: '2027-07-14T22:00:00+01:00',
       eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      organizer: { '@id': 'https://example.com/#organization' },
       location: {
         '@type': 'Place',
         name: 'Town Hall',
@@ -459,5 +460,94 @@ describe('Event type rules', () => {
     const config: CollectionOptions = { type: 'Article', path: (d) => `/events/${d.slug}`, event: {} }
     const result = run(override, optionsFor(config))
     expect(eventOf(result)?.name).toBe('Opening night')
+  })
+})
+
+describe('Event organiser', () => {
+  const withEvent = (event: NonNullable<CollectionOptions['event']>, doc: Doc = baseDoc, settings: Parameters<typeof buildStructuredData>[0]['settings'] = { name: 'Acme' }) =>
+    buildStructuredData({ options: optionsFor({ ...eventsConfig, event }), settings, collection: 'events', doc })
+
+  test('no mapping uses the site organisation', () => {
+    expect(eventOf(run(baseDoc))?.organizer).toEqual({ '@id': 'https://example.com/#organization' })
+  })
+
+  test('no mapping and no settings gives no organizer', () => {
+    const result = withEvent({}, baseDoc, null)
+    expect(eventOf(result)).toBeDefined()
+    expect(eventOf(result)).not.toHaveProperty('organizer')
+  })
+
+  test('a mapped organiser gives an Organization with an absolute URL', () => {
+    const doc = { ...baseDoc, host: 'Kent Arts', hostUrl: '/arts' }
+    const result = withEvent({ organizer: { name: 'host', url: 'hostUrl' } }, doc)
+    expect(eventOf(result)?.organizer).toEqual({ '@type': 'Organization', name: 'Kent Arts', url: 'https://example.com/arts' })
+  })
+
+  test('type Person works', () => {
+    const result = withEvent({ organizer: { name: 'host', type: 'Person' } }, { ...baseDoc, host: 'Sam' })
+    expect(eventOf(result)?.organizer).toEqual({ '@type': 'Person', name: 'Sam' })
+  })
+
+  test('a mapped organiser that is empty here falls back to the site organisation', () => {
+    const result = withEvent({ organizer: { name: 'host', url: 'hostUrl' } })
+    expect(eventOf(result)?.organizer).toEqual({ '@id': 'https://example.com/#organization' })
+  })
+})
+
+describe('Event performers', () => {
+  const withPerformers = (performers: unknown, event: NonNullable<CollectionOptions['event']> = {}) =>
+    run({ ...baseDoc, performers }, optionsFor({ ...eventsConfig, event }))
+
+  test('rows give PerformingGroup when mapped', () => {
+    const result = withPerformers([{ name: 'The Band' }], { performers: { type: 'PerformingGroup' } })
+    expect(eventOf(result)?.performer).toEqual([{ '@type': 'PerformingGroup', name: 'The Band' }])
+  })
+
+  test('a plain string row is a Person by default', () => {
+    expect(eventOf(withPerformers(['Solo Act']))?.performer).toEqual([{ '@type': 'Person', name: 'Solo Act' }])
+  })
+
+  test('bad rows are dropped without throwing', () => {
+    const result = withPerformers([null, { name: '' }, 3, 'Solo Act'])
+    expect(eventOf(result)?.performer).toEqual([{ '@type': 'Person', name: 'Solo Act' }])
+  })
+
+  test('a non-array performers value gives none', () => {
+    const result = withPerformers(42)
+    expect(eventOf(result)).not.toHaveProperty('performer')
+  })
+})
+
+describe('Event festival link', () => {
+  const withFestival = (superEvent: NonNullable<CollectionOptions['event']>['superEvent']) =>
+    run(baseDoc, optionsFor({ ...eventsConfig, event: { superEvent } }))
+
+  test('a festival gives a linked Event', () => {
+    const result = withFestival(() => ({ name: 'Festival 2027', path: '/events/festival-2027' }))
+    expect(eventOf(result)?.superEvent).toEqual({
+      '@type': 'Event',
+      '@id': 'https://example.com/events/festival-2027#event',
+      name: 'Festival 2027',
+      url: 'https://example.com/events/festival-2027',
+    })
+  })
+
+  test('null gives no superEvent', () => {
+    expect(eventOf(withFestival(() => null))).not.toHaveProperty('superEvent')
+  })
+
+  test('the event\'s own page is dropped with a warning', () => {
+    const result = withFestival(() => ({ name: 'Me', path: '/events/opening' }))
+    expect(eventOf(result)).not.toHaveProperty('superEvent')
+    expect(result.warnings.some((w) => w.includes('superEvent'))).toBe(true)
+  })
+
+  test('a throwing function warns and the event still outputs', () => {
+    const result = withFestival(() => {
+      throw new Error('boom')
+    })
+    expect(eventOf(result)?.name).toBe('Opening night')
+    expect(eventOf(result)).not.toHaveProperty('superEvent')
+    expect(result.warnings.some((w) => w.includes('superEvent') && w.includes('boom'))).toBe(true)
   })
 })
