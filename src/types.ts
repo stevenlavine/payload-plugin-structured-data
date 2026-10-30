@@ -36,8 +36,15 @@ export type EventOptions = {
   endDate?: FieldPath
   /** Output dates as YYYY-MM-DD in the event's time zone: true, a field path, or a function of the document */
   dateOnly?: boolean | FieldPath | ((doc: Doc) => boolean)
-  /** Field path for each part of the place. Defaults are 'location.<key>' */
-  location?: Partial<Record<keyof EventPlace, FieldPath>>
+  /**
+   * Field path for each part of the place (defaults are 'location.<key>'), or a function of the document
+   * for a fixed venue. Return null when the document has no place.
+   */
+  location?: Partial<Record<keyof EventPlace, FieldPath>> | ((doc: Doc) => EventPlace | null)
+  /** Field holding scheduled, cancelled, postponed, rescheduled or movedOnline (or the Schema.org names). Default 'eventStatus' */
+  status?: FieldPath
+  /** Date field used only with a rescheduled status. Default 'previousStartDate' */
+  previousStartDate?: FieldPath
 }
 
 export type CollectionOptions = {

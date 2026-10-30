@@ -3,7 +3,7 @@ import { DEFAULT_EVENT_FIELDS, DEFAULT_FIELDS } from '../constants.js'
 import type { CollectionOptions, Doc, EventOptions, EventPlace, FieldPath, JsonLdNode, ResolvedOptions } from '../types.js'
 import { formatEventDate, resolveTimeZone } from './eventDates.js'
 import { compact } from './siteNodes.js'
-import { mediaUrl, readFirst, readPath, readText } from './values.js'
+import { absoluteUrl, mediaUrl, readFirst, readPath, readText } from './values.js'
 
 export type EventNodeInput = {
   doc: Doc
@@ -67,17 +67,38 @@ function readDateOnly(setting: EventOptions['dateOnly'], doc: Doc, ref: string, 
   return readFirst(doc, setting) === true
 }
 
-const instant = (date: string) => Date.parse(/(Z|[+-]\d{2}:\d{2})$/.test(date) || date.length === 10 ? date : `${date}Z`)
+const instant = (date: string) => Date.parse(/(?:Z|[+-]\d{2}:\d{2})$/.test(date) || date.length === 10 ? date : `${date}Z`)
 
-const PLACE_KEYS = ['name', 'streetAddress', 'addressLocality', 'addressRegion', 'postalCode', 'addressCountry'] as const
+const PLACE_KEYS = ['name', 'streetAddress', 'addressLocality', 'addressRegion', 'postalCode', 'addressCountry', 'onlineUrl'] as const
+const ADDRESS_KEYS = ['streetAddress', 'addressLocality', 'addressRegion', 'postalCode', 'addressCountry'] as const
 
-function readPlace(doc: Doc, map: EventOptions['location']): EventPlace {
+const errorText = (error: unknown) => (error instanceof Error ? error.message : String(error))
+
+/** The place parts for a document, from mapped paths or a site function. Null when the function gives none or throws */
+function readPlace(doc: Doc, setting: EventOptions['location'], ref: string, warnings: string[]): EventPlace | null {
+  if (typeof setting === 'function') {
+    try {
+      const place = setting(doc)
+      if (place && typeof place === 'object') return place
+      warnings.push(`${ref}: Event skipped, the location function returned no place`)
+      return null
+    } catch (error) {
+      warnings.push(`${ref}: Event skipped, location function failed: ${errorText(error)}`)
+      return null
+    }
+  }
   const place: EventPlace = {}
   for (const key of PLACE_KEYS) {
-    const value = readText(doc, map?.[key] ?? DEFAULT_EVENT_FIELDS.location[key])
+    const value = readText(doc, setting?.[key] ?? DEFAULT_EVENT_FIELDS.location[key])
     if (value) place[key] = value
   }
   return place
+}
+
+/** The paths readPlace looks at for the parts that make a place, for the warning */
+function placePathsTried(setting: EventOptions['location']): string[] {
+  if (typeof setting === 'function') return []
+  return [...ADDRESS_KEYS, 'onlineUrl' as const].map((key) => firstPath(setting?.[key] ?? DEFAULT_EVENT_FIELDS.location[key]))
 }
 
 /** A Place with a postal address, or undefined when no address part is set */
@@ -92,6 +113,36 @@ function physicalPlace(place: EventPlace) {
   })
   if (Object.keys(address).length === 1) return undefined
   return { '@type': 'Place' as const, name: place.name, address }
+}
+
+type EventStatusUrl = `https://schema.org/Event${'Scheduled' | 'Cancelled' | 'Postponed' | 'Rescheduled' | 'MovedOnline'}`
+
+const STATUS_PREFIX = /^(?:https?:\/\/schema\.org\/)?/i
+
+/** Keyed by lower-case word: the short form and the Schema.org name */
+const STATUS_MAP: Record<string, EventStatusUrl> = {
+  scheduled: 'https://schema.org/EventScheduled',
+  eventscheduled: 'https://schema.org/EventScheduled',
+  cancelled: 'https://schema.org/EventCancelled',
+  canceled: 'https://schema.org/EventCancelled',
+  eventcancelled: 'https://schema.org/EventCancelled',
+  postponed: 'https://schema.org/EventPostponed',
+  eventpostponed: 'https://schema.org/EventPostponed',
+  rescheduled: 'https://schema.org/EventRescheduled',
+  eventrescheduled: 'https://schema.org/EventRescheduled',
+  movedonline: 'https://schema.org/EventMovedOnline',
+  eventmovedonline: 'https://schema.org/EventMovedOnline',
+}
+
+function readStatus(doc: Doc, path: FieldPath, ref: string, warnings: string[]): EventStatusUrl | undefined {
+  const raw = readFirst(doc, path)
+  if (raw === undefined) return undefined
+  const word = typeof raw === 'string' ? STATUS_MAP[raw.trim().replace(STATUS_PREFIX, '').toLowerCase()] : undefined
+  if (!word) {
+    warnings.push(`${ref}: eventStatus left out, "${typeof raw === 'string' ? raw : typeof raw}" is not a known status`)
+    return undefined
+  }
+  return word
 }
 
 export function buildEventNodes(input: EventNodeInput, warnings: string[]): JsonLdNode[] {
@@ -131,10 +182,35 @@ export function buildEventNodes(input: EventNodeInput, warnings: string[]): Json
     endDate = undefined
   }
 
-  const location = physicalPlace(readPlace(doc, event.location))
-  if (!location) {
-    warnings.push(`${ref}: Event skipped, no place (set at least one address field under "location")`)
+  const parts = readPlace(doc, event.location, ref, warnings)
+  if (!parts) return []
+  const physical = physicalPlace(parts)
+  const onlineUrl = parts.onlineUrl ? absoluteUrl(options.siteUrl, parts.onlineUrl) : undefined
+  const virtual = onlineUrl ? { '@type': 'VirtualLocation' as const, url: onlineUrl } : undefined
+  if (!physical && !virtual) {
+    const tried = placePathsTried(event.location)
+    warnings.push(
+      `${ref}: Event skipped, no place (needs an address${tried.length ? `, looked at ${tried.join(', ')}` : ''}, or an online link)`,
+    )
     return []
+  }
+  const location = physical && virtual ? [physical, virtual] : (physical ?? virtual)
+  const attendanceMode =
+    physical && virtual ? 'MixedEventAttendanceMode' : virtual ? 'OnlineEventAttendanceMode' : 'OfflineEventAttendanceMode'
+
+  const statusPath = event.status ?? DEFAULT_EVENT_FIELDS.status
+  const status = readStatus(doc, statusPath, ref, warnings)
+
+  const previousPath = event.previousStartDate ?? DEFAULT_EVENT_FIELDS.previousStartDate
+  let previousStartDate: string | undefined
+  if (resolveField(doc, previousPath)) {
+    if (status === 'https://schema.org/EventRescheduled') {
+      const previous = readEventDate(doc, previousPath, ctx, start.zone, warnings)
+      previousStartDate = previous.date ?? undefined
+      if (!previous.date) warnings.push(`${ref}: previousStartDate left out, "${firstPath(previousPath)}" is not a valid date`)
+    } else {
+      warnings.push(`${ref}: previousStartDate left out, it is only allowed with a rescheduled status`)
+    }
   }
 
   // Typed object literal: a misspelt property name fails typecheck (excess property check)
@@ -145,7 +221,9 @@ export function buildEventNodes(input: EventNodeInput, warnings: string[]): Json
     image: mediaUrl(options.siteUrl, readFirst(doc, config.fields?.image ?? [...[DEFAULT_FIELDS.image].flat()]), options.imageSize),
     startDate: start.date,
     endDate,
-    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventStatus: status,
+    previousStartDate,
+    eventAttendanceMode: `https://schema.org/${attendanceMode}`,
     location,
   }
   return [compact({ '@type': 'Event', '@id': `${url}#event`, ...props })]
