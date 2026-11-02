@@ -4,7 +4,7 @@ import React from 'react'
 import { buildStructuredData } from '../build/buildStructuredData.js'
 import { serializeJsonLd } from '../build/serialize.js'
 import { getPluginOptions } from '../plugin.js'
-import type { Doc } from '../types.js'
+import type { Doc, ListInput } from '../types.js'
 import { logWarnings } from '../log.js'
 import { getSettings } from './getSettings.js'
 
@@ -13,10 +13,12 @@ export type StructuredDataProps = {
   collection?: CollectionSlug
   /** Any Payload document, including generated interfaces such as `Post`. */
   doc?: object | null
+  /** A listings page: its path, optional name and the rows to list. Pass the rows in; nothing is queried. */
+  list?: ListInput
 }
 
 /** Writes one <script type="application/ld+json"> for the page. Never throws. */
-export async function StructuredData({ config, collection, doc }: StructuredDataProps) {
+export async function StructuredData({ config, collection, doc, list }: StructuredDataProps) {
   try {
     const payload = await getPayload({ config })
     const options = getPluginOptions(payload.config)
@@ -25,7 +27,7 @@ export async function StructuredData({ config, collection, doc }: StructuredData
       return null
     }
     const settings = await getSettings(payload)
-    const { graph, warnings } = buildStructuredData({ options, settings, collection, doc: (doc ?? undefined) as Doc | undefined })
+    const { graph, warnings } = buildStructuredData({ options, settings, collection, doc: (doc ?? undefined) as Doc | undefined, list })
     logWarnings(warnings)
     if (!graph) return null
     return (

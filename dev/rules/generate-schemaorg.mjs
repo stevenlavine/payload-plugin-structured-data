@@ -8,6 +8,7 @@ const KEEP = [
   'Organization', 'LocalBusiness', 'WebSite', 'WebPage', 'Article', 'BlogPosting', 'Service',
   'FAQPage', 'Question', 'Answer', 'BreadcrumbList', 'ListItem', 'PostalAddress', 'Person',
   'PropertyValue', 'ImageObject', 'SearchAction', 'EntryPoint',
+  'Event', 'Place', 'VirtualLocation', 'Offer', 'PerformingGroup', 'ItemList',
 ]
 
 const strip = (id) => id.replace(/^schema:/, '')

@@ -1,5 +1,28 @@
 import { describe, expect, test } from 'vitest'
-import { absoluteUrl, mediaUrl, readFirst, readPath, readText } from './values.js'
+import { absoluteUrl, mediaUrl, readFirst, readPath, readPrice, readText } from './values.js'
+
+describe('readPrice', () => {
+  test.each([
+    [12, 12],
+    [0, 0],
+    ['12.50', 12.5],
+    [' 7 ', 7],
+    ['0', 0],
+  ])('%j gives %j', (value, expected) => {
+    expect(readPrice({ price: value }, 'price')).toBe(expected)
+  })
+
+  test.each([[-1], ['-1'], ['free'], ['12,50'], [''], [null], [undefined], [Number.NaN], [Infinity], [true], [{}], ['1e3']])(
+    '%j gives undefined',
+    (value) => {
+      expect(readPrice({ price: value }, 'price')).toBeUndefined()
+    },
+  )
+
+  test('reads the first path that holds a value, and a nested path', () => {
+    expect(readPrice({ a: { b: 3 } }, ['x', 'a.b'])).toBe(3)
+  })
+})
 
 describe('readPath', () => {
   test('reads nested dot paths', () => {

@@ -49,6 +49,24 @@ describe('checkSchemaOrg', () => {
     expect(checkSchemaOrg({ '@type': 'Organisation' })).toHaveLength(1)
   })
 
+  it('names KEEP in the unknown type message', () => {
+    expect(checkSchemaOrg({ '@type': 'Movie' })).toEqual([
+      'Movie: unknown type "Movie" (if it is real, add it to KEEP in dev/rules/generate-schemaorg.mjs)',
+    ])
+  })
+
+  it('checks every type of an array @type', () => {
+    const messages = checkSchemaOrg({ '@type': ['BlogPosting', 'Article'], headlin: 'x' })
+    expect(messages).toHaveLength(1)
+    expect(messages[0]).toContain('headlin')
+  })
+
+  it('points at the bad entry of an array value', () => {
+    const messages = checkSchemaOrg({ '@type': 'BlogPosting', author: ['A', true] })
+    expect(messages).toHaveLength(1)
+    expect(messages[0]).toMatch(/\[1\]/)
+  })
+
   it('walks arrays and nested objects, prefixing the path', () => {
     const messages = checkSchemaOrg(
       { '@type': 'Organization', address: { '@type': 'PostalAddress', stret: 'x' } },

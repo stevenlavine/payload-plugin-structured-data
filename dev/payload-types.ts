@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     posts: Post;
     pages: Page;
+    events: Event;
     media: Media;
     'payload-kv': PayloadKv;
     users: User;
@@ -80,6 +81,7 @@ export interface Config {
   collectionsSelect: {
     posts: PostsSelect<false> | PostsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
+    events: EventsSelect<false> | EventsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -200,6 +202,54 @@ export interface Page {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events".
+ */
+export interface Event {
+  id: number;
+  title?: string | null;
+  slug?: string | null;
+  summary?: string | null;
+  startsAt?: string | null;
+  startsAt_tz?: SupportedTimezones;
+  endsAt?: string | null;
+  endsAt_tz?: SupportedTimezones;
+  venue?: {
+    name?: string | null;
+    street?: string | null;
+    town?: string | null;
+    postcode?: string | null;
+    country?: string | null;
+    onlineUrl?: string | null;
+  };
+  tickets?:
+    | {
+        label?: string | null;
+        price?: number | null;
+        currency?: string | null;
+        link?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  artists?:
+    | {
+        name?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  status?: ('scheduled' | 'cancelled' | 'postponed' | 'rescheduled' | 'movedOnline') | null;
+  festival?: (number | null) | Event;
+  structuredData?: {
+    /**
+     * Leave empty to use the default for this collection.
+     */
+    type?: ('Article' | 'BlogPosting' | 'Service' | 'WebPage' | 'Event') | null;
+    disabled?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -255,6 +305,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'pages';
         value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'events';
+        value: number | Event;
       } | null)
     | ({
         relationTo: 'media';
@@ -353,6 +407,54 @@ export interface PagesSelect<T extends boolean = true> {
               blockName?: T;
             };
       };
+  structuredData?:
+    | T
+    | {
+        type?: T;
+        disabled?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events_select".
+ */
+export interface EventsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  summary?: T;
+  startsAt?: T;
+  startsAt_tz?: T;
+  endsAt?: T;
+  endsAt_tz?: T;
+  venue?:
+    | T
+    | {
+        name?: T;
+        street?: T;
+        town?: T;
+        postcode?: T;
+        country?: T;
+        onlineUrl?: T;
+      };
+  tickets?:
+    | T
+    | {
+        label?: T;
+        price?: T;
+        currency?: T;
+        link?: T;
+        id?: T;
+      };
+  artists?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
+  status?: T;
+  festival?: T;
   structuredData?:
     | T
     | {

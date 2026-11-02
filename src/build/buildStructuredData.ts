@@ -1,7 +1,9 @@
-import { DEFAULT_FIELDS, GROUP_NAME, PAGE_TYPES } from '../constants.js'
-import type { BuildResult, Doc, JsonLdNode, PageType, ResolvedOptions, Settings } from '../types.js'
+import { DEFAULT_FIELDS, documentTypesFor, EVENT_TYPE, GROUP_NAME } from '../constants.js'
+import type { BuildResult, Doc, DocumentType, JsonLdNode, ListInput, ResolvedOptions, Settings } from '../types.js'
 import { breadcrumbTrail, buildBreadcrumbList } from './breadcrumbs.js'
+import { buildEventNodes } from './events.js'
 import { buildFaqPage } from './faq.js'
+import { buildItemList } from './itemList.js'
 import { buildPageNode } from './pageNodes.js'
 import { buildOrganization, buildWebSite } from './siteNodes.js'
 import { absoluteUrl, readText } from './values.js'
@@ -11,12 +13,10 @@ export type BuildInput = {
   settings: Settings | null
   collection?: string
   doc?: Doc
+  list?: ListInput
 }
 
-const isPageType = (value: unknown): value is PageType =>
-  typeof value === 'string' && (PAGE_TYPES as readonly string[]).includes(value)
-
-export function buildStructuredData({ options, settings, collection, doc }: BuildInput): BuildResult {
+export function buildStructuredData({ options, settings, collection, doc, list }: BuildInput): BuildResult {
   const warnings: string[] = []
   const nodes: JsonLdNode[] = []
   if (options.disabled) return { graph: null, warnings }
@@ -36,15 +36,17 @@ export function buildStructuredData({ options, settings, collection, doc }: Buil
       if (!config) {
         warnings.push(`${collection}: not configured in structuredDataPlugin`)
       } else if (overrides.disabled !== true) {
-        const type = isPageType(overrides.type)
-          ? overrides.type
-          : typeof config.type === 'function'
-            ? config.type(doc)
-            : config.type
+        const allowed = documentTypesFor(config)
+        const stored = allowed.find((t) => t === overrides.type)
+        const type: DocumentType | null = stored ?? (typeof config.type === 'function' ? config.type(doc) : config.type)
         const path = config.path(doc)
         const url = absoluteUrl(options.siteUrl, path)
 
-        if (type) {
+        if (type === EVENT_TYPE && !allowed.includes(type)) {
+          warnings.push(`${ref}: ${type} skipped, this collection does not allow it (set type: '${type}' or an event block)`)
+        } else if (type === EVENT_TYPE) {
+          nodes.push(...buildEventNodes({ doc, url, ref, config, options, hasOrganization: Boolean(organization) }, warnings))
+        } else if (type) {
           const page = buildPageNode(
             { type, doc, url, ref, fields: config.fields, options, settings, hasOrganization: Boolean(organization) },
             warnings,
@@ -64,6 +66,12 @@ export function buildStructuredData({ options, settings, collection, doc }: Buil
           if (breadcrumbs) nodes.push(breadcrumbs)
         }
       }
+    }
+
+    if (list) {
+      ref = 'list'
+      const itemList = buildItemList(list, options.siteUrl, warnings)
+      if (itemList) nodes.push(itemList)
     }
   } catch (error) {
     warnings.push(`${ref}: structured data failed: ${error instanceof Error ? error.message : String(error)}`)

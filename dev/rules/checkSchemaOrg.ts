@@ -77,7 +77,7 @@ export const checkSchemaOrg = (node: Record<string, unknown>, path?: string): st
   const known = types.filter((t) => typeInfo(t))
   for (const t of types) {
     if (!typeInfo(t)) {
-      messages.push(`${base}: unknown type "${t}"`)
+      messages.push(`${base}: unknown type "${t}" (if it is real, add it to KEEP in dev/rules/generate-schemaorg.mjs)`)
     }
   }
   if (known.length === 0) {

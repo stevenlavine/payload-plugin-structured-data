@@ -1,5 +1,5 @@
 import type { Config } from 'payload'
-import { CUSTOM_KEY, GROUP_NAME } from './constants.js'
+import { CUSTOM_KEY, documentTypesFor, GROUP_NAME } from './constants.js'
 import { settingsGlobal } from './fields/settingsGlobal.js'
 import { sidebarGroup } from './fields/sidebarGroup.js'
 import type { ResolvedOptions, StructuredDataPluginOptions } from './types.js'
@@ -20,10 +20,11 @@ export const structuredDataPlugin =
 
     const collections = (config.collections ?? []).map((collection) => {
       if (!Object.hasOwn(resolved.collections, collection.slug)) return collection
+      const collectionOptions = resolved.collections[collection.slug]
       if (collection.fields.some((field) => 'name' in field && field.name === GROUP_NAME)) {
         throw new Error(`structuredDataPlugin: collection "${collection.slug}" already has a field named "${GROUP_NAME}"`)
       }
-      return { ...collection, fields: [...collection.fields, sidebarGroup()] }
+      return { ...collection, fields: [...collection.fields, sidebarGroup(collectionOptions ? documentTypesFor(collectionOptions) : undefined)] }
     })
 
     for (const slug of Object.keys(resolved.collections)) {
