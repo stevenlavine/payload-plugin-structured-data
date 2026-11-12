@@ -322,7 +322,7 @@ const { docs } = await payload.find({
 
 ### Currency
 
-A page outputs prices in one currency, because Google wants a separate URL for each currency. The currency is the `currency` prop on `StructuredData` if you pass one, then `shop.currency`. If neither is set, the first enabled currency is used, with a development warning. A product without that currency enabled gets no offer.
+A page outputs prices in one currency, because Google wants a separate URL for each currency. The currency is the `currency` prop on `StructuredData` if you pass one, then `shop.currency`. If neither is set, the first currency enabled on the product is used (for a product with variants, the first variant that enables one), with a development warning. A product without that currency enabled gets no offer.
 
 ```tsx
 <StructuredData config={config} collection="products" doc={product} currency="EUR" />
@@ -336,13 +336,13 @@ Shops that map their own price fields instead of using the eCommerce plugin must
 product: { price: { amount: 'price', currency: 'currencyCode', minorUnits: false } }
 ```
 
-Shipping rates always stay in `shop.currency`, even on a page rendered with a different `currency` prop.
+Shipping rates always stay in `shop.currency`, even on a page rendered with a different `currency` prop. If you set shipping rows but no `shop.currency`, shipping is left out with a warning.
 
 ### Stock and availability
 
 The plugin reads, in this order:
 
-1. The `availability` mapping: a field path or `(doc) => value`. It accepts `inStock`, `outOfStock`, `soldOut`, `preOrder`, `backOrder`, `madeToOrder`, `discontinued`, `limitedAvailability` or the Schema.org names, in any case. An unknown value is dropped with a warning.
+1. The `availability` mapping: a field path or `(doc) => value`. It accepts `inStock`, `outOfStock`, `soldOut`, `preOrder`, `backOrder`, `madeToOrder`, `discontinued`, `limitedAvailability` or the Schema.org names, in any case. An unknown value is dropped with a warning and the stock number is used instead.
 2. The stock number (`inventory` by default, or the `stock` mapping). Above 0 is `InStock`. 0 or less is `OutOfStock`, or `SoldOut` if you set `outOfStock: 'SoldOut'`.
 3. Neither: no `availability`.
 
@@ -386,7 +386,7 @@ Pass ratings and reviews from your own data. The plugin never queries for them a
 
 With `shop` set, the Structured data settings gain a Shop group: default condition, shipping options and a returns policy. Shipping is a list of rows, each with countries, a cost (in `shop.currency`, 0 for free), an optional free-over amount, and handling and transit days. The returns policy covers the window in days, countries, fees, methods, and an optional link to your returns page. A link on its own is enough.
 
-Both are output on the `Organization`, which is where Google recommends shop-wide policies sit. Every offer links to the return policy by `@id`, and Google follows that link (checked 2026-11-12). Shipping sits on the `Organization` only, so Google may show "Missing field shippingDetails" as an optional warning.
+Both are output on the `Organization`, which is where Google recommends shop-wide policies sit. When a returns policy is set in the settings, every offer links to it by `@id`, and Google follows that link (checked 2026-11-12). Shipping sits on the `Organization` only, so Google may show "Missing field shippingDetails" as an optional warning.
 
 Handling time is one value per shop. It is output only when all the shipping rows agree. Rows that cannot be valid, such as no country or a minimum above its maximum, are dropped with a warning and the rest still output.
 
@@ -400,7 +400,7 @@ If the category has a nested-docs `breadcrumbs` array, that is the trail. Otherw
 
 - A product page where a shopper can buy the item is eligible for a merchant listing. A sold one-off item gets a product snippet, not a merchant listing.
 - Category pages get no product result. Use the `list` prop for an `ItemList` of product links. The markup is valid, but Google shows nothing for it.
-- Merchant listings need a price above zero. A product with no price outputs a plain `WebPage` instead, with a warning.
+- Merchant listings need a price above zero. A product with no valid price and no ratings or reviews outputs a plain `WebPage` instead, with a warning. With ratings or reviews it outputs a `Product` with no offer.
 - Check a product page and a variant page in the Rich Results Test before you rely on them.
 
 ### Database
