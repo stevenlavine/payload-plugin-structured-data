@@ -2,7 +2,7 @@ import type { OfferLeaf, ProductGroupLeaf, ProductLeaf } from 'schema-dts'
 import { DEFAULT_PRODUCT_FIELDS } from '../constants.js'
 import { currencyDecimals } from '../currencies.js'
 import type { CollectionOptions, Doc, FieldPath, JsonLdNode, ProductOptions, RatingInput, ResolvedOptions, ReviewsInput, Settings } from '../types.js'
-import { readMoney, resolveAvailability, resolveCondition, runMapped } from './productValues.js'
+import { lookup, readMoney, resolveAvailability, resolveCondition, runMapped } from './productValues.js'
 import { compact, organizationId } from './siteNodes.js'
 import { absoluteUrl, mediaUrl, plainText, readFirst, readPath, readText } from './values.js'
 
@@ -337,7 +337,8 @@ function variesByProperty(variantType: unknown): string | undefined {
   if (!isObject(variantType)) return undefined
   for (const key of ['name', 'label']) {
     const text = readText(variantType, key)?.toLowerCase()
-    if (text && VARIES_BY[text]) return VARIES_BY[text]
+    const property = text ? lookup(VARIES_BY, text) : undefined
+    if (property) return property
   }
   return undefined
 }

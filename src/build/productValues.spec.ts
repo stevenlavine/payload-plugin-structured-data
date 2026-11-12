@@ -127,6 +127,14 @@ describe('resolveAvailability', () => {
     expect(warnings).toHaveLength(1)
   })
 
+  test('availability text matching an Object.prototype key is unknown', () => {
+    for (const s of ['__proto__', 'constructor', 'toString']) {
+      const warnings: string[] = []
+      expect(resolveAvailability({ s }, { n: 0 }, { availability: 's', stock: 'n' }, 'r', warnings)).toBe('https://schema.org/OutOfStock')
+      expect(warnings).toEqual([`r: availability mapping ignored, "${s}" is not a known availability`])
+    }
+  })
+
   test('a throwing availability function warns and falls through to stock', () => {
     const warnings: string[] = []
     const availability = () => {
@@ -151,6 +159,15 @@ describe('resolveCondition', () => {
     expect(resolveCondition({}, { condition: 'c' }, 'refurbished', 'r', [])).toBe('https://schema.org/RefurbishedCondition')
     expect(resolveCondition({}, undefined, 'new', 'r', [])).toBe('https://schema.org/NewCondition')
     expect(resolveCondition({}, undefined, null, 'r', [])).toBeUndefined()
+  })
+
+  test('condition text matching an Object.prototype key is unknown, and so is such a shop default', () => {
+    for (const c of ['constructor', '__proto__', 'hasOwnProperty']) {
+      const warnings: string[] = []
+      expect(resolveCondition({ c }, { condition: 'c' }, 'new', 'r', warnings)).toBe('https://schema.org/NewCondition')
+      expect(warnings).toEqual([`r: condition mapping ignored, "${c}" is not new, used or refurbished`])
+      expect(resolveCondition({}, undefined, c, 'r', [])).toBeUndefined()
+    }
   })
 
   test('an unknown mapped value warns and falls back to the default', () => {

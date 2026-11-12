@@ -166,6 +166,19 @@ describe('buildProductNodes', () => {
     for (const key of ['brand', 'sku', 'gtin', 'mpn', 'color', 'size', 'material', 'pattern']) expect(plain).not.toHaveProperty(key)
   })
 
+  test('a mapped price currency that is not the page currency drops the offer with a warning', () => {
+    const config: CollectionOptions = { ...productsConfig, product: { price: { amount: 'price', currency: 'currency' } } }
+    const warnings: string[] = []
+    // As with an unenabled currency, a product with no offer is not output
+    expect(buildProductNodes(inputFor({ doc: { ...watch, price: 1750, currency: 'eur' }, config }), warnings)).toEqual([])
+    expect(warnings).toContain("products/7: offer left out, the product's price is in EUR and this page shows GBP")
+
+    const same: string[] = []
+    const [gbp] = buildProductNodes(inputFor({ doc: { ...watch, price: 1750, currency: 'GBP' }, config }), same)
+    expect(offerOf([gbp as JsonLdNode])).toMatchObject({ price: 1750, priceCurrency: 'GBP' })
+    expect(same).toEqual([])
+  })
+
   test('itemCondition from the shop default when no mapping', () => {
     const settings: Settings = { shop: { defaultCondition: 'used' } }
     expect(offerOf(buildProductNodes(inputFor({ settings }), []))?.itemCondition).toBe('https://schema.org/UsedCondition')
@@ -440,6 +453,20 @@ describe('buildProductNodes with variants', () => {
     // Two colour types: the first label wins
     expect(variant).toMatchObject({ color: 'L0', size: 'L2', material: 'L3', pattern: 'L4' })
     for (const key of ['suggestedAge', 'age', 'engraving', 'audience']) expect(variant).not.toHaveProperty(key)
+  })
+
+  test('option types named after Object.prototype keys are not mapped', () => {
+    const types = [
+      { id: 1, name: 'constructor', label: 'constructor' },
+      { id: 2, name: 'toString', label: 'toString' },
+      { id: 3, name: '__proto__', label: '__proto__' },
+    ]
+    const options = types.map((variantType, i) => ({ id: 100 + i, label: `L${i}`, value: `v${i}`, variantType }))
+    const doc = withVariants([{ id: 12, _status: 'published', inventory: 1, priceInGBPEnabled: true, priceInGBP: 2000, options }])
+    const [group] = buildProductNodes(groupInput({ doc }), [])
+    expect(group).not.toHaveProperty('variesBy')
+    const [variant] = variantsOf([group as JsonLdNode])
+    for (const key of ['constructor', 'toString', '__proto__']) expect(Object.hasOwn(variant ?? {}, key)).toBe(false)
   })
 
   test('gender maps to audience.suggestedGender only for male, female or unisex', () => {

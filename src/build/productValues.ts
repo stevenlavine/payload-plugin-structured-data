@@ -4,6 +4,9 @@ import { readFirst } from './values.js'
 export type Availability = `https://schema.org/${'InStock' | 'OutOfStock' | 'SoldOut' | 'PreOrder' | 'PreSale' | 'LimitedAvailability' | 'BackOrder' | 'Discontinued' | 'OnlineOnly' | 'InStoreOnly'}`
 export type Condition = `https://schema.org/${'NewCondition' | 'UsedCondition' | 'RefurbishedCondition'}`
 
+/** The map's own entry for `key`; never an inherited one such as `constructor` or `__proto__` */
+export const lookup = <T>(map: Record<string, T>, key: string): T | undefined => (Object.hasOwn(map, key) ? map[key] : undefined)
+
 export const STATUS_PREFIX = /^(?:https?:\/\/schema\.org\/)?/i
 
 const AVAILABILITY_NAMES = [
@@ -152,7 +155,7 @@ export function resolveAvailability(
 ): Availability | undefined {
   const mapped = runMapped(source, product?.availability, ref, 'availability', warnings)
   if (mapped !== undefined) {
-    const known = typeof mapped === 'string' ? PRODUCT_AVAILABILITY_MAP[mapped.trim().replace(STATUS_PREFIX, '').toLowerCase()] : undefined
+    const known = typeof mapped === 'string' ? lookup(PRODUCT_AVAILABILITY_MAP, mapped.trim().replace(STATUS_PREFIX, '').toLowerCase()) : undefined
     if (known) return known
     warnings.push(`${ref}: availability mapping ignored, "${typeof mapped === 'string' ? mapped : typeof mapped}" is not a known availability`)
   }
@@ -178,9 +181,9 @@ export function resolveCondition(
 ): Condition | undefined {
   const mapped = runMapped(doc, product?.condition, ref, 'condition', warnings)
   if (mapped !== undefined) {
-    const known = typeof mapped === 'string' ? CONDITION_MAP[mapped.trim().replace(STATUS_PREFIX, '').toLowerCase()] : undefined
+    const known = typeof mapped === 'string' ? lookup(CONDITION_MAP, mapped.trim().replace(STATUS_PREFIX, '').toLowerCase()) : undefined
     if (known) return known
     warnings.push(`${ref}: condition mapping ignored, "${typeof mapped === 'string' ? mapped : typeof mapped}" is not new, used or refurbished`)
   }
-  return shopDefault ? CONDITION_MAP[shopDefault.trim().toLowerCase()] : undefined
+  return shopDefault ? lookup(CONDITION_MAP, shopDefault.trim().toLowerCase()) : undefined
 }

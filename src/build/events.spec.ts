@@ -268,6 +268,14 @@ describe('Event status', () => {
     expect(result.warnings.some((w) => w.includes('sometime'))).toBe(true)
   })
 
+  test('a status matching an Object.prototype key is unknown', () => {
+    for (const value of ['constructor', '__proto__']) {
+      const result = withStatus(value)
+      expect(eventOf(result)).not.toHaveProperty('eventStatus')
+      expect(result.warnings.some((w) => w.includes(value))).toBe(true)
+    }
+  })
+
   test('no status field leaves eventStatus out without a warning', () => {
     const result = run(baseDoc)
     expect(eventOf(result)).not.toHaveProperty('eventStatus')
@@ -381,6 +389,12 @@ describe('Event offers', () => {
     const result = withOffers({ price: 5, priceCurrency: 'GBP', availability: 'maybe' })
     expect(offersOf(result)).toEqual([{ '@type': 'Offer', price: 5, priceCurrency: 'GBP' }])
     expect(result.warnings.some((w) => w.includes('maybe'))).toBe(true)
+  })
+
+  test('an offer availability matching an Object.prototype key is unknown', () => {
+    const result = withOffers({ price: 5, priceCurrency: 'GBP', availability: 'constructor' })
+    expect(offersOf(result)).toEqual([{ '@type': 'Offer', price: 5, priceCurrency: 'GBP' }])
+    expect(result.warnings.some((w) => w.includes('"constructor" is not a known availability'))).toBe(true)
   })
 
   test('an unknown availability with nothing else drops the offer', () => {

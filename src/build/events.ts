@@ -2,7 +2,7 @@ import type { EventLeaf, OfferLeaf } from 'schema-dts'
 import { DEFAULT_EVENT_FIELDS, DEFAULT_FIELDS } from '../constants.js'
 import type { CollectionOptions, Doc, EventOfferOptions, EventOptions, EventOrganizerOptions, EventPerformanceOptions, EventPerformerOptions, EventPlace, FieldPath, JsonLdNode, ResolvedOptions } from '../types.js'
 import { formatEventDate, resolveTimeZone } from './eventDates.js'
-import { type Availability, AVAILABILITY_MAP, STATUS_PREFIX } from './productValues.js'
+import { type Availability, AVAILABILITY_MAP, lookup, STATUS_PREFIX } from './productValues.js'
 import { compact, organizationId } from './siteNodes.js'
 import { absoluteUrl, mediaUrl, readFirst, readPath, readPrice, readText } from './values.js'
 
@@ -151,7 +151,7 @@ const STATUS_MAP: Record<string, EventStatusUrl> = {
 function readStatus(doc: Doc, path: FieldPath, ref: string, warnings: string[]): EventStatusUrl | undefined {
   const raw = readFirst(doc, path)
   if (raw === undefined) return undefined
-  const word = typeof raw === 'string' ? STATUS_MAP[raw.trim().replace(STATUS_PREFIX, '').toLowerCase()] : undefined
+  const word = typeof raw === 'string' ? lookup(STATUS_MAP, raw.trim().replace(STATUS_PREFIX, '').toLowerCase()) : undefined
   if (!word) {
     warnings.push(`${ref}: eventStatus left out, "${typeof raw === 'string' ? raw : typeof raw}" is not a known status`)
     return undefined
@@ -201,7 +201,7 @@ function buildOffers(source: Doc, offers: EventOfferOptions | undefined, ctx: Ev
     let availability: Availability | undefined
     if (availabilityRaw !== undefined) {
       availability =
-        typeof availabilityRaw === 'string' ? AVAILABILITY_MAP[availabilityRaw.trim().replace(STATUS_PREFIX, '').toLowerCase()] : undefined
+        typeof availabilityRaw === 'string' ? lookup(AVAILABILITY_MAP, availabilityRaw.trim().replace(STATUS_PREFIX, '').toLowerCase()) : undefined
       if (!availability) {
         warnings.push(
           `${label}: availability left out, "${typeof availabilityRaw === 'string' ? availabilityRaw : typeof availabilityRaw}" is not a known availability`,
