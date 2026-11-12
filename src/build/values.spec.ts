@@ -1,5 +1,18 @@
 import { describe, expect, test } from 'vitest'
-import { absoluteUrl, mediaUrl, readFirst, readPath, readPrice, readText } from './values.js'
+import { absoluteUrl, mediaUrl, plainText, readFirst, readPath, readPrice, readText } from './values.js'
+
+describe('plainText', () => {
+  test('trims a string', () => {
+    expect(plainText('  hi ')).toBe('hi')
+  })
+  test('joins Lexical text nodes, one space between blocks', () => {
+    const value = { root: { children: [{ children: [{ text: 'Hand ' }, { text: 'knitted.' }] }, { children: [{ text: 'Made to order.' }] }] } }
+    expect(plainText(value)).toBe('Hand knitted. Made to order.')
+  })
+  test.each([[null], [undefined], [5], [{}], [{ root: {} }], ['  '], [{ root: { children: [] } }]])('%j gives undefined', (value) => {
+    expect(plainText(value)).toBeUndefined()
+  })
+})
 
 describe('readPrice', () => {
   test.each([

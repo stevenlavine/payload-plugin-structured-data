@@ -49,3 +49,23 @@ export function mediaUrl(siteUrl: string, media: unknown, size?: string): string
   const url = sized ?? readText(media, 'url')
   return url ? absoluteUrl(siteUrl, url) : undefined
 }
+
+/** Text from a plain string or a Lexical value: text nodes joined, one space between block nodes. Anything else is undefined */
+export function plainText(value: unknown): string | undefined {
+  if (typeof value === 'string') return value.trim() || undefined
+  if (typeof value !== 'object' || value === null) return undefined
+  const root = (value as { root?: unknown }).root
+  if (typeof root !== 'object' || root === null) return undefined
+  const collect = (node: unknown): string => {
+    if (typeof node !== 'object' || node === null) return ''
+    const { text, children } = node as { text?: unknown; children?: unknown }
+    if (typeof text === 'string') return text
+    if (!Array.isArray(children)) return ''
+    const hasBlocks = children.some((child) => typeof child === 'object' && child !== null && Array.isArray((child as { children?: unknown }).children))
+    return children
+      .map(collect)
+      .filter((part) => part !== '')
+      .join(hasBlocks ? ' ' : '')
+  }
+  return collect(root).trim() || undefined
+}

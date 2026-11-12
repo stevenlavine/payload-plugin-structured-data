@@ -2,6 +2,7 @@ import type { EventLeaf, OfferLeaf } from 'schema-dts'
 import { DEFAULT_EVENT_FIELDS, DEFAULT_FIELDS } from '../constants.js'
 import type { CollectionOptions, Doc, EventOfferOptions, EventOptions, EventOrganizerOptions, EventPerformanceOptions, EventPerformerOptions, EventPlace, FieldPath, JsonLdNode, ResolvedOptions } from '../types.js'
 import { formatEventDate, resolveTimeZone } from './eventDates.js'
+import { type Availability, AVAILABILITY_MAP, STATUS_PREFIX } from './productValues.js'
 import { compact, organizationId } from './siteNodes.js'
 import { absoluteUrl, mediaUrl, readFirst, readPath, readPrice, readText } from './values.js'
 
@@ -132,8 +133,6 @@ function physicalPlace(place: EventPlace) {
 
 type EventStatusUrl = `https://schema.org/Event${'Scheduled' | 'Cancelled' | 'Postponed' | 'Rescheduled' | 'MovedOnline'}`
 
-const STATUS_PREFIX = /^(?:https?:\/\/schema\.org\/)?/i
-
 /** Keyed by lower-case word: the short form and the Schema.org name */
 const STATUS_MAP: Record<string, EventStatusUrl> = {
   scheduled: 'https://schema.org/EventScheduled',
@@ -159,26 +158,6 @@ function readStatus(doc: Doc, path: FieldPath, ref: string, warnings: string[]):
   }
   return word
 }
-
-type Availability = `https://schema.org/${'InStock' | 'OutOfStock' | 'SoldOut' | 'PreOrder' | 'PreSale' | 'LimitedAvailability' | 'BackOrder' | 'Discontinued' | 'OnlineOnly' | 'InStoreOnly'}`
-
-const AVAILABILITY_NAMES = [
-  'InStock',
-  'OutOfStock',
-  'SoldOut',
-  'PreOrder',
-  'PreSale',
-  'LimitedAvailability',
-  'BackOrder',
-  'Discontinued',
-  'OnlineOnly',
-  'InStoreOnly',
-] as const
-
-/** Keyed by lower-case Schema.org name */
-const AVAILABILITY_MAP: Record<string, Availability> = Object.fromEntries(
-  AVAILABILITY_NAMES.map((name) => [name.toLowerCase(), `https://schema.org/${name}`]),
-)
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value)
