@@ -65,6 +65,8 @@ const ITEM_LIST_CHECKED = '2026-10-30'
 const SHOPS_CHECKED = '2026-11-12'
 
 const endsWith = (value: unknown, suffix: string): boolean => typeof value === 'string' && value.endsWith(suffix)
+const hasShopData = (node: Record<string, unknown>): boolean =>
+  Object.hasOwn(node, 'hasShippingService') || Object.hasOwn(node, 'hasMerchantReturnPolicy')
 
 export const GOOGLE_RULES: Record<string, GoogleRule> = {
   Organization: {
@@ -112,15 +114,19 @@ export const GOOGLE_RULES: Record<string, GoogleRule> = {
       'contactPoint.telephone': 'settings hold one telephone, output as Organization.telephone',
       duns: IDENTIFIER,
       globalLocationNumber: IDENTIFIER,
-      hasMerchantReturnPolicy: 'merchant data is out of scope for this plugin',
-      hasMemberProgram: 'merchant data is out of scope for this plugin',
-      hasShippingService: 'merchant data is out of scope for this plugin',
+      hasMemberProgram: 'loyalty and member prices are a non-goal of the shop settings',
       iso6523Code: IDENTIFIER,
       leiCode: IDENTIFIER,
       naics: IDENTIFIER,
       numberOfEmployees: NO_FIELD,
       taxID: IDENTIFIER,
       vatID: IDENTIFIER,
+    },
+    // Shipping and returns come from the shop settings, which exist only with the shop option. A node
+    // carrying either one is a shop's Organization, and is then checked for both
+    onlyWhen: {
+      hasMerchantReturnPolicy: hasShopData,
+      hasShippingService: hasShopData,
     },
   },
   LocalBusiness: {
@@ -301,12 +307,33 @@ const isFilled = (value: unknown): boolean => {
   return true
 }
 
+const isReference = (value: Json): boolean => {
+  const keys = Object.keys(value)
+  return keys.length === 1 && keys[0] === '@id'
+}
+
+/** The node that defines `id` anywhere in the graph (top level or nested, e.g. a return policy on the Organization) */
+const findDefinition = (value: unknown, id: unknown): Json | undefined => {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = findDefinition(item, id)
+      if (found) return found
+    }
+    return undefined
+  }
+  if (!isRecord(value)) return undefined
+  if (value['@id'] === id && !isReference(value)) return value
+  for (const child of Object.values(value)) {
+    const found = findDefinition(child, id)
+    if (found) return found
+  }
+  return undefined
+}
+
 /** Follows an `{ '@id' }`-only reference to the node it names in the same graph */
 const deref = (value: unknown, graph: JsonLdGraph): unknown => {
-  if (!isRecord(value)) return value
-  const keys = Object.keys(value)
-  if (keys.length !== 1 || keys[0] !== '@id') return value
-  return graph['@graph'].find((n) => n['@id'] === value['@id']) ?? value
+  if (!isRecord(value) || !isReference(value)) return value
+  return findDefinition(graph['@graph'], value['@id']) ?? value
 }
 
 const resolvesPath = (value: unknown, keys: string[], graph: JsonLdGraph): boolean => {

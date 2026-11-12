@@ -323,6 +323,18 @@ describe('buildProductNodes with variants', () => {
     expect(variant?.name).toBe('Loopy Cardigan')
   })
 
+  test("an option's variantType left as an ID (the plugin's variants join stops at depth 2) is read from the product's variantTypes", () => {
+    const flatType = (o: Doc) => ({ ...o, variantType: (o.variantType as Doc).id })
+    const docs = (cardigan.variants as { docs: Doc[] }).docs.map((v) => ({ ...v, options: (v.options as Doc[]).map(flatType) }))
+    const warnings: string[] = []
+    const nodes = buildProductNodes(groupInput({ doc: withVariants(docs) }), warnings)
+    expect(warnings).toEqual([])
+    expect(nodes[0]?.variesBy).toEqual(['https://schema.org/size'])
+    const [first, second] = variantsOf(nodes)
+    expect(first?.size).toBe('0-3 months')
+    expect(variantOffer(second)?.url).toBe(`${cardiganUrl}?size=14&extras=15&variant=13`)
+  })
+
   test('variant images come from gallery rows whose variantOption is one of its options', () => {
     const [first, second] = variantsOf(buildProductNodes(groupInput(), []))
     expect(first?.image).toEqual(['https://example.com/media/c-small.jpg'])

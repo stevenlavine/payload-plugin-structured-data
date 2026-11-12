@@ -27,7 +27,9 @@ const URL_KEYS = new Set(['@id', 'image', 'item', 'logo', 'mainEntityOfPage', 'p
 const graphs = fullGraphs()
 
 const SCENARIOS = ['organization', 'localBusiness', 'blogPosting', 'article', 'service', 'webPage', 'faq', 'breadcrumbs',
-  'event', 'eventRescheduled', 'festivalSession', 'eventDates', 'eventOnline', 'eventHybrid', 'listing']
+  'event', 'eventRescheduled', 'festivalSession', 'eventDates', 'eventOnline', 'eventHybrid', 'listing',
+  'productOneOff', 'productSold', 'productMadeToOrder', 'productMadeToOrderVariants', 'productVariants', 'productReviews',
+  'shopPolicies', 'productTwoCurrencies', 'productTwoCurrenciesShop']
 
 // Google does not support events with no real-world place, and its required-path check needs every
 // `location` entry to have an address. The Google test skips those two.
@@ -65,7 +67,12 @@ for (const scenario of SCENARIOS) {
     })
 
     it('nodes link by @id', () => {
-      const ids = nodes.map((n) => n['@id']).filter((id): id is string => typeof id === 'string')
+      // A node may be defined nested inside another (the Organization's return policy), and offers link to it
+      const ids: string[] = []
+      walk(nodes, (_key, value) => {
+        if (!isRecord(value) || typeof value['@id'] !== 'string') return
+        if (Object.keys(value).length > 1) ids.push(value['@id'])
+      })
       expect(new Set(ids).size).toBe(ids.length)
       const dangling: string[] = []
       walk(nodes, (_key, value) => {
@@ -97,6 +104,13 @@ describe('scenario contents', () => {
     }
     expect(typesOf('eventDates')).toEqual(['Organization', 'WebSite', 'Event', 'Event', 'Event', 'BreadcrumbList'])
     expect(typesOf('listing')).toEqual(['Organization', 'WebSite', 'ItemList'])
+    for (const name of ['productOneOff', 'productSold', 'productMadeToOrder', 'productReviews', 'productTwoCurrencies', 'productTwoCurrenciesShop']) {
+      expect(typesOf(name)).toEqual(['Organization', 'WebSite', 'Product', 'BreadcrumbList'])
+    }
+    for (const name of ['productVariants', 'productMadeToOrderVariants']) {
+      expect(typesOf(name)).toEqual(['Organization', 'WebSite', 'ProductGroup', 'BreadcrumbList'])
+    }
+    expect(typesOf('shopPolicies')).toEqual(['Organization', 'WebSite'])
   })
 
   const eventNodes = (name: string) => graphs[name]?.['@graph'].filter((n) => n['@type'] === 'Event') ?? []
@@ -136,6 +150,99 @@ describe('scenario contents', () => {
     expect(items.length).toBeGreaterThanOrEqual(2)
     expect(items.map((i) => i.name)).toEqual(['Home', 'Services', 'AI consulting', 'Workshops'])
     expect(items.map((i) => i.position)).toEqual([1, 2, 3, 4])
+  })
+})
+
+describe('product scenario contents', () => {
+  const productOf = (name: string) =>
+    graphs[name]?.['@graph'].find((n) => n['@type'] === 'Product' || n['@type'] === 'ProductGroup') as Json
+  const offerOf = (name: string) => productOf(name).offers as Json
+  const variantsOf = (name: string) => productOf(name).hasVariant as Json[]
+  const RETURNS = { '@id': 'https://example.com/#returns' }
+
+  it('the one-off used item is in stock at its major-unit price, linked to the shop return policy', () => {
+    expect(offerOf('productOneOff')).toMatchObject({
+      price: 1750,
+      priceCurrency: 'GBP',
+      availability: 'https://schema.org/InStock',
+      itemCondition: 'https://schema.org/UsedCondition',
+      hasMerchantReturnPolicy: RETURNS,
+    })
+    expect(productOf('productOneOff').description).toBe('A brass duplex pocket watch by Barwise of London, c. 1830, in full working order.')
+  })
+
+  it('the sold item (stock 0) is SoldOut, never in stock', () => {
+    expect(offerOf('productSold').availability).toBe('https://schema.org/SoldOut')
+  })
+
+  it('made to order outputs BackOrder (Google rejects MadeToOrder), with the shop default condition', () => {
+    expect(offerOf('productMadeToOrder')).toMatchObject({
+      availability: 'https://schema.org/BackOrder',
+      itemCondition: 'https://schema.org/NewCondition',
+    })
+  })
+
+  it('a made-to-order product with variants at stock 0 shows BackOrder on every variant', () => {
+    const variants = variantsOf('productMadeToOrderVariants')
+    expect(variants).toHaveLength(2)
+    for (const variant of variants) expect((variant.offers as Json).availability).toBe('https://schema.org/BackOrder')
+  })
+
+  it('variants: size in variesBy, extras left out, draft skipped, each with its own price, sku, URL and stock', () => {
+    const group = productOf('productVariants')
+    expect(group.variesBy).toEqual(['https://schema.org/size'])
+    expect(group.productGroupID).toBe('4433')
+    const variants = variantsOf('productVariants')
+    expect(variants.map((v) => v.sku)).toEqual(['4433-101', '4433-102', '4433-103'])
+    expect(variants.map((v) => v.size)).toEqual(['0-3 months', '0-3 months', '3-6 months'])
+    expect(variants.map((v) => (v.offers as Json).price)).toEqual([20, 25, 22])
+    expect(variants.map((v) => (v.offers as Json).availability)).toEqual([
+      'https://schema.org/InStock',
+      'https://schema.org/InStock',
+      'https://schema.org/SoldOut',
+    ])
+    expect((variants[0]?.offers as Json).url).toBe('https://example.com/products/loopy-cardigan?size=11&extras=21&variant=101')
+    expect(variants[0]?.image).toEqual(['https://example.com/media/cardigan-small-1200x630.png'])
+    for (const variant of variants) expect((variant.offers as Json).hasMerchantReturnPolicy).toEqual(RETURNS)
+  })
+
+  it('reviews: the supplied rating and reviews sit on the product as given', () => {
+    const product = productOf('productReviews')
+    expect(product.aggregateRating).toMatchObject({ ratingValue: 4.8, reviewCount: 12 })
+    expect(product.review).toHaveLength(2)
+  })
+
+  it('shop policies: shipping and returns on the Organization, each with its own @id', () => {
+    const organization = graphs.shopPolicies?.['@graph'][0] as Json
+    expect((organization.hasShippingService as Json)['@id']).toBe('https://example.com/#shipping')
+    expect((organization.hasMerchantReturnPolicy as Json)['@id']).toBe('https://example.com/#returns')
+  })
+
+  const currenciesIn = (value: unknown): string[] => {
+    const found: string[] = []
+    walk(value, (key, v) => {
+      if ((key === 'priceCurrency' || key === 'currency') && typeof v === 'string') found.push(v)
+    })
+    return [...new Set(found)]
+  }
+
+  it('two currencies enabled, rendered with currency EUR: the product holds EUR only', () => {
+    expect(offerOf('productTwoCurrencies')).toMatchObject({ price: 1400, priceCurrency: 'EUR' })
+    expect(currenciesIn(productOf('productTwoCurrencies'))).toEqual(['EUR'])
+    // Shipping rates are in shop.currency by design; they are the only other currency on the page
+    const others = graphs.productTwoCurrencies?.['@graph'].filter((n) => n !== productOf('productTwoCurrencies'))
+    expect(currenciesIn(others)).toEqual(['GBP'])
+    expect(currenciesIn((graphs.productTwoCurrencies?.['@graph'][0] as Json).hasShippingService)).toEqual(['GBP'])
+  })
+
+  it('two currencies enabled, rendered with shop.currency: GBP only', () => {
+    expect(offerOf('productTwoCurrenciesShop')).toMatchObject({ price: 1200, priceCurrency: 'GBP' })
+    expect(currenciesIn(graphs.productTwoCurrenciesShop?.['@graph'])).toEqual(['GBP'])
+  })
+
+  it('category breadcrumbs follow the parent chain', () => {
+    const list = graphs.productOneOff?.['@graph'].find((n) => n['@type'] === 'BreadcrumbList')
+    expect((list?.itemListElement as Json[]).map((i) => i.name)).toEqual(['Home', 'Antiques', 'Clocks', 'Brass Calibre Duplex by Barwise'])
   })
 })
 
@@ -251,6 +358,13 @@ describe('the checker catches a broken node', () => {
     const graph = alone(group)
     expect(checkGoogle(variant, graph)).toEqual([])
     expect(checkGoogle(group, graph)).toContain('ProductGroup: recommended "hasVariant.name" is missing')
+  })
+
+  it('a shop Organization is asked for both shipping and returns; one with no shop data for neither', () => {
+    const organization = { '@type': 'Organization', name: 'Shop' }
+    expect(checkGoogle(organization, alone(organization)).join()).not.toMatch(/hasShippingService|hasMerchantReturnPolicy/)
+    const returnsOnly = { ...organization, hasMerchantReturnPolicy: { '@type': 'MerchantReturnPolicy', merchantReturnLink: 'https://example.com/returns' } }
+    expect(checkGoogle(returnsOnly, alone(returnsOnly))).toContain('Organization: recommended "hasShippingService" is missing')
   })
 
   it('a ShippingService without shippingConditions fails', () => {

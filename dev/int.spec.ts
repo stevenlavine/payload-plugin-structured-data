@@ -109,6 +109,66 @@ describe('events', () => {
   })
 })
 
+describe('eCommerce plugin products', () => {
+  test('options discover GBP decimals from the eCommerce price fields', () => {
+    const options = getPluginOptions(payload.config)!
+    expect(options.shop?.currency).toBe('GBP')
+    expect(options.shop?.currencies).toContainEqual({ code: 'GBP', decimals: 2 })
+  })
+
+  test('a product with two published variants outputs a ProductGroup with GBP prices from minor units', async () => {
+    const cleanUp: (() => Promise<unknown>)[] = []
+    try {
+      const size = await payload.create({ collection: 'variantTypes', data: { label: 'Size', name: 'size' } })
+      cleanUp.push(() => payload.delete({ collection: 'variantTypes', id: size.id }))
+      const small = await payload.create({ collection: 'variantOptions', data: { variantType: size.id, label: 'Small', value: 'small' } })
+      cleanUp.push(() => payload.delete({ collection: 'variantOptions', id: small.id }))
+      const large = await payload.create({ collection: 'variantOptions', data: { variantType: size.id, label: 'Large', value: 'large' } })
+      cleanUp.push(() => payload.delete({ collection: 'variantOptions', id: large.id }))
+
+      const product = await payload.create({
+        collection: 'products',
+        data: { title: 'Loopy Cardigan', slug: 'loopy-cardigan', enableVariants: true, variantTypes: [size.id], _status: 'published' },
+      })
+      cleanUp.push(() => payload.delete({ collection: 'products', id: product.id }))
+
+      const stored: { id: number; optionId: number; size: string; price: number; inventory: number }[] = []
+      for (const [option, price, inventory] of [[small, 2000, 4], [large, 2250, 0]] as const) {
+        const variant = await payload.create({
+          collection: 'variants',
+          data: { product: product.id, options: [option.id], inventory, priceInGBPEnabled: true, priceInGBP: price, _status: 'published' },
+        })
+        cleanUp.push(() => payload.delete({ collection: 'variants', id: variant.id }))
+        stored.push({ id: variant.id, optionId: option.id, size: option.label, price: variant.priceInGBP!, inventory })
+      }
+
+      const doc = await payload.findByID({ collection: 'products', id: product.id, depth: 3 })
+      const options = getPluginOptions(payload.config)!
+      const { graph, warnings } = buildStructuredData({ options, settings: null, collection: 'products', doc })
+      expect(warnings.filter((w) => w.startsWith('products/'))).toEqual([])
+
+      const group = graph?.['@graph'].find((n) => n['@type'] === 'ProductGroup')
+      expect(group?.name).toBe('Loopy Cardigan')
+      expect(group?.variesBy).toEqual(['https://schema.org/size'])
+      // The variants join lists the newest first, so match each output variant to its stored row by size
+      type OutVariant = { size: string; offers: { price: number; priceCurrency: string; availability: string; url: string } }
+      const variants = group?.hasVariant as OutVariant[]
+      expect(variants.map((v) => v.size).sort()).toEqual(['Large', 'Small'])
+      for (const v of variants) {
+        const row = stored.find((s) => s.size === v.size)!
+        expect(v.offers.price).toBe(row.price / 100)
+        expect(v.offers.priceCurrency).toBe('GBP')
+        expect(v.offers.availability).toBe(row.inventory > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock')
+        expect(v.offers.url).toBe(`http://localhost:3000/products/loopy-cardigan?size=${row.optionId}&variant=${row.id}`)
+      }
+      expect(variants.find((v) => v.size === 'Large')?.offers.price).toBe(22.5)
+    } finally {
+      // Newest first; a delete that throws fails the test
+      while (cleanUp.length) await cleanUp.pop()!()
+    }
+  })
+})
+
 describe('StructuredData component', () => {
   test('renders one escaped script tag with the full graph', async () => {
     await payload.updateGlobal({ slug: 'structured-data-settings', data: { name: 'Acme' } })

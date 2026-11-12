@@ -1,4 +1,5 @@
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
+import { ecommercePlugin, EUR, GBP } from '@payloadcms/plugin-ecommerce'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -6,6 +7,33 @@ import { structuredDataPlugin } from '@lavinedev/payload-plugin-structured-data'
 import { fileURLToPath } from 'url'
 
 import { testEmailAdapter } from './helpers/testEmailAdapter.js'
+
+// Dev only: the eCommerce plugin with products, variants, GBP and EUR, and no payment methods. Carts, orders,
+// addresses and transactions stay on: at 3.90.2 its generated types reference those collections even when
+// they are turned off, so generate:types fails without them
+const signedIn = ({ req }: { req: { user?: unknown } }) => Boolean(req.user)
+const shop = ecommercePlugin({
+  access: {
+    adminOnlyFieldAccess: signedIn,
+    adminOrPublishedStatus: ({ req }) => (req.user ? true : { _status: { equals: 'published' } }),
+    isAdmin: signedIn,
+    isDocumentOwner: signedIn,
+  },
+  currencies: { supportedCurrencies: [GBP, EUR], defaultCurrency: 'GBP' },
+  products: {
+    variants: true,
+    // The plugin's products collection has no name, URL slug or description; the official template adds them
+    productsCollectionOverride: ({ defaultCollection }) => ({
+      ...defaultCollection,
+      fields: [
+        { name: 'title', type: 'text', required: true },
+        { name: 'slug', type: 'text' },
+        { name: 'description', type: 'richText' },
+        ...defaultCollection.fields,
+      ],
+    }),
+  },
+})
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -102,10 +130,14 @@ export default buildConfig({
   editor: lexicalEditor(),
   email: testEmailAdapter,
   plugins: [
+    // Before structuredDataPlugin, so it can read each currency's decimals from the price fields
+    shop,
     structuredDataPlugin({
       siteUrl: process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000',
       timeZone: 'Europe/London',
+      shop: { currency: 'GBP' },
       collections: {
+        products: { type: 'Product', path: (doc) => `/products/${doc.slug}` },
         events: {
           type: 'Event',
           path: (doc) => `/events/${doc.slug}`,

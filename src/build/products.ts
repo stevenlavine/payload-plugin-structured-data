@@ -267,13 +267,26 @@ function idOf(value: unknown): string | undefined {
 const populatedOptions = (variant: Doc): Doc[] => (Array.isArray(variant.options) ? variant.options.filter(isObject) : [])
 
 /**
+ * An option's variant type: the populated one, else the product's populated variantTypes entry with its ID.
+ * The eCommerce plugin's variants join has maxDepth 2, so an option's variantType arrives as an ID.
+ */
+function optionType(option: Doc, productTypes: unknown): Doc | undefined {
+  if (isObject(option.variantType)) return option.variantType
+  const id = idOf(option.variantType)
+  if (id === undefined || !Array.isArray(productTypes)) return undefined
+  return productTypes.find((type): type is Doc => isObject(type) && idOf(type) === id)
+}
+
+/**
  * The official eCommerce template's variant URL (components/product/VariantSelector.tsx, v3.90.2):
  * `path` plus one `<variantType.name>=<option.id>` per populated option, then `variant=<variant id>`.
+ * `productTypes` is the product's variantTypes, for options whose variantType is only an ID.
  */
-export function defaultVariantUrl(path: string, variant: Doc): string {
+export function defaultVariantUrl(path: string, variant: Doc, productTypes?: unknown): string {
   const params = new URLSearchParams()
   for (const option of populatedOptions(variant)) {
-    const typeName = isObject(option.variantType) ? readText(option.variantType, 'name') : undefined
+    const type = optionType(option, productTypes)
+    const typeName = type ? readText(type, 'name') : undefined
     const id = idOf(option)
     if (typeName && id !== undefined) params.append(typeName, id)
   }
@@ -286,7 +299,7 @@ export function defaultVariantUrl(path: string, variant: Doc): string {
 
 /** The variant's offer URL: the variantUrl option (absolutised), else the template default */
 function variantUrlOf(input: ProductNodeInput, product: ProductOptions, variant: Doc, ref: string, warnings: string[]): string {
-  const fallback = defaultVariantUrl(input.url, variant)
+  const fallback = defaultVariantUrl(input.url, variant, input.doc.variantTypes)
   if (!product.variantUrl) return fallback
   try {
     const value: unknown = product.variantUrl(input.doc, variant)
@@ -404,7 +417,7 @@ function buildProductGroup(input: ProductNodeInput, common: Common, docs: unknow
     const labels = options_.map((option) => readText(option, 'label')).filter((l): l is string => Boolean(l))
     const varies: Record<string, unknown> = {}
     for (const option of options_) {
-      const property = variesByProperty(option.variantType)
+      const property = variesByProperty(optionType(option, doc.variantTypes))
       if (!property || property in varies) continue
       if (property === 'suggestedGender') {
         // On the variant as audience.suggestedGender; an unrecognised gender label adds nothing
