@@ -175,7 +175,7 @@ describe('buildProductNodes', () => {
 
     const same: string[] = []
     const [gbp] = buildProductNodes(inputFor({ doc: { ...watch, price: 1750, currency: 'GBP' }, config }), same)
-    expect(offerOf([gbp as JsonLdNode])).toMatchObject({ price: 1750, priceCurrency: 'GBP' })
+    expect(offerOf([gbp])).toMatchObject({ price: 1750, priceCurrency: 'GBP' })
     expect(same).toEqual([])
   })
 
@@ -465,7 +465,7 @@ describe('buildProductNodes with variants', () => {
     const doc = withVariants([{ id: 12, _status: 'published', inventory: 1, priceInGBPEnabled: true, priceInGBP: 2000, options }])
     const [group] = buildProductNodes(groupInput({ doc }), [])
     expect(group).not.toHaveProperty('variesBy')
-    const [variant] = variantsOf([group as JsonLdNode])
+    const [variant] = variantsOf([group])
     for (const key of ['constructor', 'toString', '__proto__']) expect(Object.hasOwn(variant ?? {}, key)).toBe(false)
   })
 
