@@ -62,6 +62,14 @@ const FAQ_RETIRED: GoogleRule = {
 
 const EVENT_CHECKED = '2026-10-30'
 const ITEM_LIST_CHECKED = '2026-10-30'
+const SHOPS_CHECKED = '2026-11-12'
+
+const endsWith = (value: unknown, suffix: string): boolean => typeof value === 'string' && value.endsWith(suffix)
+const hasShopData = (node: Record<string, unknown>): boolean =>
+  Object.hasOwn(node, 'hasShippingService') || Object.hasOwn(node, 'hasMerchantReturnPolicy')
+
+const isConditionWithTransit = (value: unknown): boolean =>
+  typeof value === 'object' && value !== null && Object.hasOwn(value, 'transitTime')
 
 export const GOOGLE_RULES: Record<string, GoogleRule> = {
   Organization: {
@@ -109,15 +117,19 @@ export const GOOGLE_RULES: Record<string, GoogleRule> = {
       'contactPoint.telephone': 'settings hold one telephone, output as Organization.telephone',
       duns: IDENTIFIER,
       globalLocationNumber: IDENTIFIER,
-      hasMerchantReturnPolicy: 'merchant data is out of scope for this plugin',
-      hasMemberProgram: 'merchant data is out of scope for this plugin',
-      hasShippingService: 'merchant data is out of scope for this plugin',
+      hasMemberProgram: 'loyalty and member prices are a non-goal of the shop settings',
       iso6523Code: IDENTIFIER,
       leiCode: IDENTIFIER,
       naics: IDENTIFIER,
       numberOfEmployees: NO_FIELD,
       taxID: IDENTIFIER,
       vatID: IDENTIFIER,
+    },
+    // Shipping and returns come from the shop settings, which exist only with the shop option. A node
+    // carrying either one is a shop's Organization, and is then checked for both
+    onlyWhen: {
+      hasMerchantReturnPolicy: hasShopData,
+      hasShippingService: hasShopData,
     },
   },
   LocalBusiness: {
@@ -217,6 +229,74 @@ export const GOOGLE_RULES: Record<string, GoogleRule> = {
     required: [],
     recommended: [],
   },
+  Product: {
+    // The merchant-listing page (name, image, offers) is the stricter of the two; the snippet page
+    // asks only for name plus one of offers, review or aggregateRating
+    source: `${PAGES}/structured-data/merchant-listing`,
+    checked: SHOPS_CHECKED,
+    topLevelOnly: true,
+    required: ['name', 'image', 'offers|review|aggregateRating', 'offers.price', 'offers.priceCurrency'],
+    recommended: [
+      'aggregateRating',
+      'brand.name',
+      'description',
+      'offers.availability',
+      'offers.hasMerchantReturnPolicy',
+      'offers.itemCondition',
+      'offers.shippingDetails',
+      'offers.url',
+      'review',
+      'sku',
+    ],
+    knownGaps: {
+      'offers.shippingDetails':
+        'shipping is output on the Organization as a ShippingService; an Offer.shippingDetails would need an OfferShippingDetails node',
+    },
+    // The page asks for a rating or review only where the site supplies one
+    onlyWhen: {
+      aggregateRating: (node) => Object.hasOwn(node, 'aggregateRating') || Object.hasOwn(node, 'review'),
+      review: (node) => Object.hasOwn(node, 'aggregateRating') || Object.hasOwn(node, 'review'),
+    },
+  },
+  ProductGroup: {
+    source: `${PAGES}/structured-data/product-variants`,
+    checked: SHOPS_CHECKED,
+    topLevelOnly: true,
+    // The page's table lists only name. A variant must also meet the Product merchant-listing rules,
+    // so its price and currency are required here
+    required: ['name', 'hasVariant.offers.price', 'hasVariant.offers.priceCurrency'],
+    recommended: ['description', 'hasVariant', 'hasVariant.name', 'hasVariant.sku', 'productGroupID', 'url', 'variesBy'],
+  },
+  MerchantReturnPolicy: {
+    source: `${PAGES}/structured-data/return-policy`,
+    checked: SHOPS_CHECKED,
+    required: ['applicableCountry|merchantReturnLink', 'returnPolicyCategory|merchantReturnLink'],
+    recommended: ['merchantReturnDays', 'returnShippingFeesAmount'],
+    onlyWhen: {
+      merchantReturnDays: (node) => endsWith(node.returnPolicyCategory, 'MerchantReturnFiniteReturnWindow'),
+      returnShippingFeesAmount: (node) => endsWith(node.returnFees, 'ReturnShippingFees'),
+    },
+  },
+  ShippingService: {
+    source: `${PAGES}/structured-data/shipping-policy`,
+    checked: SHOPS_CHECKED,
+    // The page requires only shippingConditions; a destination and rate are recommended on it,
+    // and addressCountry / currency are required once those objects exist
+    required: ['shippingConditions'],
+    recommended: [
+      'shippingConditions.shippingDestination.addressCountry',
+      'shippingConditions.shippingRate.currency',
+      // Each time is a ServicePeriod whose duration needs a value or maxValue; the plugin outputs maxValue
+      'handlingTime.duration.maxValue',
+      'shippingConditions.transitTime.duration.maxValue',
+    ],
+    // Times are optional: check their shape only when the service has them
+    onlyWhen: {
+      'handlingTime.duration.maxValue': (node) => Object.hasOwn(node, 'handlingTime'),
+      'shippingConditions.transitTime.duration.maxValue': (node) =>
+        [node.shippingConditions].flat().every((c) => isConditionWithTransit(c)),
+    },
+  },
   WebSite: {
     source: `${PAGES}/site-names`,
     checked: CHECKED,
@@ -239,12 +319,33 @@ const isFilled = (value: unknown): boolean => {
   return true
 }
 
+const isReference = (value: Json): boolean => {
+  const keys = Object.keys(value)
+  return keys.length === 1 && keys[0] === '@id'
+}
+
+/** The node that defines `id` anywhere in the graph (top level or nested, e.g. a return policy on the Organization) */
+const findDefinition = (value: unknown, id: unknown): Json | undefined => {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = findDefinition(item, id)
+      if (found) return found
+    }
+    return undefined
+  }
+  if (!isRecord(value)) return undefined
+  if (value['@id'] === id && !isReference(value)) return value
+  for (const child of Object.values(value)) {
+    const found = findDefinition(child, id)
+    if (found) return found
+  }
+  return undefined
+}
+
 /** Follows an `{ '@id' }`-only reference to the node it names in the same graph */
 const deref = (value: unknown, graph: JsonLdGraph): unknown => {
-  if (!isRecord(value)) return value
-  const keys = Object.keys(value)
-  if (keys.length !== 1 || keys[0] !== '@id') return value
-  return graph['@graph'].find((n) => n['@id'] === value['@id']) ?? value
+  if (!isRecord(value) || !isReference(value)) return value
+  return findDefinition(graph['@graph'], value['@id']) ?? value
 }
 
 const resolvesPath = (value: unknown, keys: string[], graph: JsonLdGraph): boolean => {

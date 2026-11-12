@@ -42,6 +42,11 @@ describe('structuredDataPlugin config checks', () => {
       structuredDataPlugin({ siteUrl: 'https://a.com', collections: { nope: { type: 'WebPage', path: () => '/' } } as never })(config),
     ).toThrow(/collection "nope" not found/)
   })
+  test('the unknown-collection error says to list the plugin after one that adds the collection', () => {
+    expect(() =>
+      structuredDataPlugin({ siteUrl: 'https://a.com', collections: { products: { type: 'Product', path: () => '/' } } as never })(config),
+    ).toThrow(/if another plugin \(such as ecommercePlugin\) adds this collection, list structuredDataPlugin after it/)
+  })
 
   test('throws when a configured collection already has a structuredData field', () => {
     const withField = { collections: [{ slug: 'posts', fields: [{ name: 'structuredData', type: 'text' }] }] } as never
@@ -86,5 +91,57 @@ describe('type select options', () => {
   })
   test('a type function with no event keeps exactly the page types', () => {
     expect(selectOptions({ type: () => 'WebPage' })).toEqual(PAGE)
+  })
+})
+describe('product type and shop options', () => {
+  const run = (collectionOptions: Record<string, unknown>, extra: Record<string, unknown> = {}, cfg: unknown = config) =>
+    structuredDataPlugin({
+      siteUrl: 'https://a.com',
+      collections: { posts: { path: () => '/', ...collectionOptions } as never },
+      ...extra,
+    })(cfg as never)
+  const typeValues = (collectionOptions: Record<string, unknown>) => {
+    const group = run(collectionOptions).collections?.[0]?.fields.find((f) => 'name' in f && f.name === 'structuredData')
+    const select = group && 'fields' in group ? group.fields.find((f) => 'name' in f && f.name === 'type') : undefined
+    return select && 'options' in select ? (select.options as { value: string }[]).map((o) => o.value) : []
+  }
+  const globalNames = (result: ReturnType<typeof run>) =>
+    (result.globals?.find((g) => g.slug === 'structured-data-settings')?.fields ?? []).map((f) => ('name' in f ? f.name : ''))
+
+  test('a collection with no product config keeps its exact select options', () => {
+    expect(typeValues({ type: 'BlogPosting' })).toEqual(['Article', 'BlogPosting', 'Service', 'WebPage'])
+  })
+  test('Product is offered only where type is Product or a product block exists', () => {
+    expect(typeValues({ type: 'Product' })).toContain('Product')
+    expect(typeValues({ type: 'WebPage', product: {} })).toContain('Product')
+    expect(typeValues({ type: () => 'WebPage' })).not.toContain('Product')
+  })
+  test('no shop option adds no shop fields to the settings global', () => {
+    expect(globalNames(run({ type: 'WebPage' }))).toEqual([
+      'organizationType', 'name', 'legalName', 'description', 'logo', 'image', 'email', 'telephone',
+      'address', 'sameAs', 'areaServed', 'foundingDate', 'founder', 'identifiers',
+    ])
+  })
+  test('the shop option adds one group named shop to the settings global', () => {
+    const names = globalNames(run({ type: 'WebPage' }, { shop: { currency: 'gbp' } }))
+    expect(names.filter((n) => n === 'shop')).toHaveLength(1)
+    expect(names.at(-1)).toBe('shop')
+  })
+  test('resolves shop currencies from the eCommerce price fields, site entries winning', () => {
+    const price = (code: string, decimals: number) => ({
+      name: `priceIn${code}`,
+      type: 'number',
+      admin: { components: { Field: { clientProps: { currency: { code, decimals } } } } },
+    })
+    const cfg = {
+      collections: [
+        { slug: 'posts', fields: [{ type: 'group', name: 'g', fields: [{ type: 'row', fields: [price('JPY', 0), price('GBP', 5)] }] }] },
+      ],
+    }
+    const result = run({ type: 'WebPage' }, { shop: { currency: 'gbp', currencies: [{ code: 'GBP', decimals: 2 }] } }, cfg)
+    expect(getPluginOptions(result)?.shop).toEqual({
+      currency: 'GBP',
+      currencies: [{ code: 'GBP', decimals: 2 }, { code: 'JPY', decimals: 0 }],
+    })
   })
 })

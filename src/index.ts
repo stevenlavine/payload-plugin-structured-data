@@ -1,5 +1,7 @@
 export { buildStructuredData } from './build/buildStructuredData.js'
 export type { BuildInput } from './build/buildStructuredData.js'
 export { serializeJsonLd } from './build/serialize.js'
+export { categoryBreadcrumbs } from './categoryBreadcrumbs.js'
+export type { CategoryBreadcrumbsInput } from './categoryBreadcrumbs.js'
 export { getPluginOptions, structuredDataPlugin } from './plugin.js'
 export type * from './types.js'

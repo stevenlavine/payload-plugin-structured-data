@@ -99,6 +99,28 @@ describe('buildStructuredData', () => {
   })
 })
 
+describe('products', () => {
+  test('products get no extra WebPage node and keep their breadcrumbs', () => {
+    const shopOptions: ResolvedOptions = {
+      siteUrl: 'https://a.com',
+      shop: { currency: 'GBP', currencies: [{ code: 'GBP', decimals: 2 }] },
+      collections: {
+        products: {
+          type: 'Product',
+          path: (doc) => `/products/${doc.slug}`,
+          breadcrumbs: (doc) => [{ name: 'Home', path: '/' }, { name: 'Shop', path: '/shop' }, { name: String(doc.title), path: `/products/${doc.slug}` }],
+        },
+      },
+    }
+    const doc = { id: 7, slug: 'duplex', title: 'Duplex', priceInGBPEnabled: true, priceInGBP: 1999, inventory: 2 }
+    const result = buildStructuredData({ options: shopOptions, settings, collection: 'products', doc, currency: 'GBP' })
+    expect(types(result)).toEqual(['Organization', 'WebSite', 'Product', 'BreadcrumbList'])
+    expect(result.warnings).toEqual([])
+    const crumbs = result.graph?.['@graph'][3]?.itemListElement as { name: string }[]
+    expect(crumbs.map((c) => c.name)).toEqual(['Home', 'Shop', 'Duplex'])
+  })
+})
+
 describe('unknown configured type', () => {
   test('a type string that is not Event falls through to WebPage, as in 0.2', () => {
     const odd = { ...options, collections: { things: { type: 'Recipe' as never, path: (doc: { slug?: unknown }) => `/things/${doc.slug}` } } }

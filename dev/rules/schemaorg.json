@@ -1,8 +1,96 @@
 {
  "source": "https://schema.org/version/latest/schemaorg-current-https.jsonld",
  "version": "30.1",
- "fetched": "2026-10-30",
+ "fetched": "2026-11-12",
  "types": {
+  "AggregateRating": {
+   "parents": [
+    "Rating",
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "author": [
+     "Organization",
+     "Person"
+    ],
+    "bestRating": [
+     "Number",
+     "Text"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "itemReviewed": [
+     "Thing"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "ratingCount": [
+     "Integer"
+    ],
+    "ratingExplanation": [
+     "Text"
+    ],
+    "ratingValue": [
+     "Number",
+     "Text"
+    ],
+    "reviewAspect": [
+     "StructuredValue",
+     "Text"
+    ],
+    "reviewCount": [
+     "Integer"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "url": [
+     "URL"
+    ],
+    "worstRating": [
+     "Number",
+     "Text"
+    ]
+   }
+  },
   "Answer": {
    "parents": [
     "Comment",
@@ -1380,6 +1468,75 @@
     ]
    }
   },
+  "Brand": {
+   "parents": [
+    "cmns-cls:Classifier",
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "logo": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "review": [
+     "Review"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "slogan": [
+     "Text"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "url": [
+     "URL"
+    ]
+   }
+  },
   "BreadcrumbList": {
    "parents": [
     "ItemList",
@@ -1442,6 +1599,222 @@
     "subjectOf": [
      "CreativeWork",
      "Event"
+    ],
+    "url": [
+     "URL"
+    ]
+   }
+  },
+  "DefinedRegion": {
+   "parents": [
+    "Place",
+    "StructuredValue",
+    "Thing",
+    "Intangible"
+   ],
+   "properties": {
+    "additionalProperty": [
+     "PropertyValue"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "address": [
+     "PostalAddress",
+     "Text"
+    ],
+    "addressCountry": [
+     "Country",
+     "Text"
+    ],
+    "addressRegion": [
+     "AdministrativeArea",
+     "Text"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "amenityFeature": [
+     "LocationFeatureSpecification"
+    ],
+    "branchCode": [
+     "Text"
+    ],
+    "containedInPlace": [
+     "Place"
+    ],
+    "containsPlace": [
+     "Place"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "event": [
+     "Event"
+    ],
+    "faxNumber": [
+     "Text"
+    ],
+    "geo": [
+     "GeoCoordinates",
+     "GeoShape"
+    ],
+    "geoContains": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoCoveredBy": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoCovers": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoCrosses": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoDisjoint": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoEquals": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoIntersects": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoOverlaps": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoTouches": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "geoWithin": [
+     "GeospatialGeometry",
+     "Place"
+    ],
+    "globalLocationNumber": [
+     "Text"
+    ],
+    "hasCertification": [
+     "Certification"
+    ],
+    "hasDriveThroughService": [
+     "Boolean"
+    ],
+    "hasGS1DigitalLink": [
+     "URL"
+    ],
+    "hasMap": [
+     "Map",
+     "URL"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "isAccessibleForFree": [
+     "Boolean"
+    ],
+    "isicV4": [
+     "Text"
+    ],
+    "keywords": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "latitude": [
+     "Number",
+     "Text"
+    ],
+    "logo": [
+     "ImageObject",
+     "URL"
+    ],
+    "longitude": [
+     "Number",
+     "Text"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "maximumAttendeeCapacity": [
+     "Integer"
+    ],
+    "name": [
+     "Text"
+    ],
+    "openingHoursSpecification": [
+     "OpeningHoursSpecification"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "photo": [
+     "ImageObject",
+     "Photograph"
+    ],
+    "postalCode": [
+     "Text"
+    ],
+    "postalCodePrefix": [
+     "Text"
+    ],
+    "postalCodeRange": [
+     "PostalCodeRangeSpecification"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "publicAccess": [
+     "Boolean"
+    ],
+    "review": [
+     "Review"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "slogan": [
+     "Text"
+    ],
+    "smokingAllowed": [
+     "Boolean"
+    ],
+    "specialOpeningHoursSpecification": [
+     "OpeningHoursSpecification"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "telephone": [
+     "Text"
+    ],
+    "tourBookingPage": [
+     "URL"
     ],
     "url": [
      "URL"
@@ -3235,6 +3608,212 @@
     ]
    }
   },
+  "MerchantReturnPolicy": {
+   "parents": [
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalProperty": [
+     "PropertyValue"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "applicableCountry": [
+     "Country",
+     "Text"
+    ],
+    "customerRemorseReturnFees": [
+     "ReturnFeesEnumeration"
+    ],
+    "customerRemorseReturnLabelSource": [
+     "ReturnLabelSourceEnumeration"
+    ],
+    "customerRemorseReturnShippingFeesAmount": [
+     "MonetaryAmount"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "inStoreReturnsOffered": [
+     "Boolean"
+    ],
+    "itemCondition": [
+     "OfferItemCondition"
+    ],
+    "itemDefectReturnFees": [
+     "ReturnFeesEnumeration"
+    ],
+    "itemDefectReturnLabelSource": [
+     "ReturnLabelSourceEnumeration"
+    ],
+    "itemDefectReturnShippingFeesAmount": [
+     "MonetaryAmount"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "merchantReturnDays": [
+     "Date",
+     "DateTime",
+     "Integer"
+    ],
+    "merchantReturnLink": [
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "refundType": [
+     "RefundTypeEnumeration"
+    ],
+    "restockingFee": [
+     "MonetaryAmount",
+     "Number"
+    ],
+    "returnFees": [
+     "ReturnFeesEnumeration"
+    ],
+    "returnLabelSource": [
+     "ReturnLabelSourceEnumeration"
+    ],
+    "returnMethod": [
+     "ReturnMethodEnumeration"
+    ],
+    "returnPolicyCategory": [
+     "MerchantReturnEnumeration"
+    ],
+    "returnPolicyCountry": [
+     "Country",
+     "Text"
+    ],
+    "returnPolicySeasonalOverride": [
+     "MerchantReturnPolicySeasonalOverride"
+    ],
+    "returnShippingFeesAmount": [
+     "MonetaryAmount"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "url": [
+     "URL"
+    ],
+    "validForMemberTier": [
+     "MemberProgramTier"
+    ]
+   }
+  },
+  "MonetaryAmount": {
+   "parents": [
+    "StructuredValue",
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "currency": [
+     "Text"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "maxValue": [
+     "Number"
+    ],
+    "minValue": [
+     "Number"
+    ],
+    "name": [
+     "Text"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "url": [
+     "URL"
+    ],
+    "validFrom": [
+     "Date",
+     "DateTime"
+    ],
+    "validThrough": [
+     "Date",
+     "DateTime"
+    ],
+    "value": [
+     "Boolean",
+     "Number",
+     "QualitativeValue",
+     "StructuredValue",
+     "Text"
+    ]
+   }
+  },
   "Offer": {
    "parents": [
     "Intangible",
@@ -3463,6 +4042,113 @@
     ],
     "warranty": [
      "WarrantyPromise"
+    ]
+   }
+  },
+  "OfferShippingDetails": {
+   "parents": [
+    "StructuredValue",
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "deliveryTime": [
+     "ShippingDeliveryTime"
+    ],
+    "depth": [
+     "Distance",
+     "QuantitativeValue"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "doesNotShip": [
+     "Boolean"
+    ],
+    "hasShippingService": [
+     "ShippingService"
+    ],
+    "height": [
+     "Distance",
+     "QuantitativeValue"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "provider": [
+     "Organization",
+     "Person"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "shippingDestination": [
+     "DefinedRegion"
+    ],
+    "shippingLabel": [
+     "Text"
+    ],
+    "shippingOrigin": [
+     "DefinedRegion"
+    ],
+    "shippingRate": [
+     "MonetaryAmount",
+     "ShippingRateSettings"
+    ],
+    "shippingSettingsLink": [
+     "URL"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "transitTimeLabel": [
+     "Text"
+    ],
+    "url": [
+     "URL"
+    ],
+    "validForMemberTier": [
+     "MemberProgramTier"
+    ],
+    "weight": [
+     "Mass",
+     "QuantitativeValue"
+    ],
+    "width": [
+     "Distance",
+     "QuantitativeValue"
     ]
    }
   },
@@ -3754,6 +4440,96 @@
     ],
     "vatID": [
      "Text"
+    ]
+   }
+  },
+  "PeopleAudience": {
+   "parents": [
+    "Audience",
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "audienceType": [
+     "Text"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "geographicArea": [
+     "AdministrativeArea"
+    ],
+    "healthCondition": [
+     "MedicalCondition"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "requiredGender": [
+     "Text"
+    ],
+    "requiredMaxAge": [
+     "Integer"
+    ],
+    "requiredMinAge": [
+     "Integer"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "suggestedAge": [
+     "QuantitativeValue"
+    ],
+    "suggestedGender": [
+     "GenderType",
+     "Text"
+    ],
+    "suggestedMaxAge": [
+     "Number"
+    ],
+    "suggestedMeasurement": [
+     "QuantitativeValue"
+    ],
+    "suggestedMinAge": [
+     "Number"
+    ],
+    "url": [
+     "URL"
     ]
    }
   },
@@ -4614,6 +5390,492 @@
     ]
    }
   },
+  "Product": {
+   "parents": [
+    "Thing"
+   ],
+   "properties": {
+    "additionalProperty": [
+     "PropertyValue"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "audience": [
+     "Audience"
+    ],
+    "award": [
+     "Text"
+    ],
+    "brand": [
+     "Brand",
+     "Organization"
+    ],
+    "category": [
+     "CategoryCode",
+     "PhysicalActivityCategory",
+     "Text",
+     "Thing",
+     "URL"
+    ],
+    "color": [
+     "Text"
+    ],
+    "countryOfAssembly": [
+     "Text"
+    ],
+    "countryOfLastProcessing": [
+     "Text"
+    ],
+    "countryOfOrigin": [
+     "Country"
+    ],
+    "depth": [
+     "Distance",
+     "QuantitativeValue"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "funding": [
+     "Grant"
+    ],
+    "gtin12": [
+     "Text"
+    ],
+    "gtin13": [
+     "Text"
+    ],
+    "gtin14": [
+     "Text"
+    ],
+    "gtin8": [
+     "Text"
+    ],
+    "hasCertification": [
+     "Certification"
+    ],
+    "hasEnergyConsumptionDetails": [
+     "EnergyConsumptionDetails"
+    ],
+    "hasGS1DigitalLink": [
+     "URL"
+    ],
+    "hasMeasurement": [
+     "QuantitativeValue"
+    ],
+    "hasMerchantReturnPolicy": [
+     "MerchantReturnPolicy"
+    ],
+    "height": [
+     "Distance",
+     "QuantitativeValue"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "inProductGroupWithID": [
+     "Text"
+    ],
+    "isAccessoryOrSparePartFor": [
+     "Product"
+    ],
+    "isConsumableFor": [
+     "Product"
+    ],
+    "isFamilyFriendly": [
+     "Boolean"
+    ],
+    "isRelatedTo": [
+     "Product",
+     "Service"
+    ],
+    "isSimilarTo": [
+     "Product",
+     "Service"
+    ],
+    "isVariantOf": [
+     "ProductGroup",
+     "ProductModel"
+    ],
+    "itemCondition": [
+     "OfferItemCondition"
+    ],
+    "keywords": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "logo": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "manufacturer": [
+     "Organization"
+    ],
+    "material": [
+     "Product",
+     "Text",
+     "URL"
+    ],
+    "model": [
+     "ProductModel",
+     "Text"
+    ],
+    "mpn": [
+     "Text"
+    ],
+    "name": [
+     "Text"
+    ],
+    "negativeNotes": [
+     "ItemList",
+     "ListItem",
+     "Text",
+     "WebContent"
+    ],
+    "nsn": [
+     "Text"
+    ],
+    "offers": [
+     "Demand",
+     "Offer"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "pattern": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "positiveNotes": [
+     "ItemList",
+     "ListItem",
+     "Text",
+     "WebContent"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "productID": [
+     "Text"
+    ],
+    "productionDate": [
+     "Date"
+    ],
+    "purchaseDate": [
+     "Date"
+    ],
+    "releaseDate": [
+     "Date"
+    ],
+    "review": [
+     "Review"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "size": [
+     "DefinedTerm",
+     "QuantitativeValue",
+     "SizeSpecification",
+     "Text"
+    ],
+    "sku": [
+     "Text"
+    ],
+    "slogan": [
+     "Text"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "url": [
+     "URL"
+    ],
+    "weight": [
+     "Mass",
+     "QuantitativeValue"
+    ],
+    "width": [
+     "Distance",
+     "QuantitativeValue"
+    ]
+   }
+  },
+  "ProductGroup": {
+   "parents": [
+    "cmns-cls:Classifier",
+    "cmns-col:Collection",
+    "Product",
+    "Thing"
+   ],
+   "properties": {
+    "additionalProperty": [
+     "PropertyValue"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "audience": [
+     "Audience"
+    ],
+    "award": [
+     "Text"
+    ],
+    "brand": [
+     "Brand",
+     "Organization"
+    ],
+    "category": [
+     "CategoryCode",
+     "PhysicalActivityCategory",
+     "Text",
+     "Thing",
+     "URL"
+    ],
+    "color": [
+     "Text"
+    ],
+    "countryOfAssembly": [
+     "Text"
+    ],
+    "countryOfLastProcessing": [
+     "Text"
+    ],
+    "countryOfOrigin": [
+     "Country"
+    ],
+    "depth": [
+     "Distance",
+     "QuantitativeValue"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "funding": [
+     "Grant"
+    ],
+    "gtin12": [
+     "Text"
+    ],
+    "gtin13": [
+     "Text"
+    ],
+    "gtin14": [
+     "Text"
+    ],
+    "gtin8": [
+     "Text"
+    ],
+    "hasCertification": [
+     "Certification"
+    ],
+    "hasEnergyConsumptionDetails": [
+     "EnergyConsumptionDetails"
+    ],
+    "hasGS1DigitalLink": [
+     "URL"
+    ],
+    "hasMeasurement": [
+     "QuantitativeValue"
+    ],
+    "hasMerchantReturnPolicy": [
+     "MerchantReturnPolicy"
+    ],
+    "hasVariant": [
+     "Product"
+    ],
+    "height": [
+     "Distance",
+     "QuantitativeValue"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "inProductGroupWithID": [
+     "Text"
+    ],
+    "isAccessoryOrSparePartFor": [
+     "Product"
+    ],
+    "isConsumableFor": [
+     "Product"
+    ],
+    "isFamilyFriendly": [
+     "Boolean"
+    ],
+    "isRelatedTo": [
+     "Product",
+     "Service"
+    ],
+    "isSimilarTo": [
+     "Product",
+     "Service"
+    ],
+    "isVariantOf": [
+     "ProductGroup",
+     "ProductModel"
+    ],
+    "itemCondition": [
+     "OfferItemCondition"
+    ],
+    "keywords": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "logo": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "manufacturer": [
+     "Organization"
+    ],
+    "material": [
+     "Product",
+     "Text",
+     "URL"
+    ],
+    "model": [
+     "ProductModel",
+     "Text"
+    ],
+    "mpn": [
+     "Text"
+    ],
+    "name": [
+     "Text"
+    ],
+    "negativeNotes": [
+     "ItemList",
+     "ListItem",
+     "Text",
+     "WebContent"
+    ],
+    "nsn": [
+     "Text"
+    ],
+    "offers": [
+     "Demand",
+     "Offer"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "pattern": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "positiveNotes": [
+     "ItemList",
+     "ListItem",
+     "Text",
+     "WebContent"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "productGroupID": [
+     "Text"
+    ],
+    "productID": [
+     "Text"
+    ],
+    "productionDate": [
+     "Date"
+    ],
+    "purchaseDate": [
+     "Date"
+    ],
+    "releaseDate": [
+     "Date"
+    ],
+    "review": [
+     "Review"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "size": [
+     "DefinedTerm",
+     "QuantitativeValue",
+     "SizeSpecification",
+     "Text"
+    ],
+    "sku": [
+     "Text"
+    ],
+    "slogan": [
+     "Text"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "url": [
+     "URL"
+    ],
+    "variesBy": [
+     "DefinedTerm",
+     "PropertyValue",
+     "Text"
+    ],
+    "weight": [
+     "Mass",
+     "QuantitativeValue"
+    ],
+    "width": [
+     "Distance",
+     "QuantitativeValue"
+    ]
+   }
+  },
   "PropertyValue": {
    "parents": [
     "StructuredValue",
@@ -4679,6 +5941,95 @@
     "propertyID": [
      "Text",
      "URL"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "unitCode": [
+     "Text",
+     "URL"
+    ],
+    "unitText": [
+     "Text"
+    ],
+    "url": [
+     "URL"
+    ],
+    "value": [
+     "Boolean",
+     "Number",
+     "QualitativeValue",
+     "StructuredValue",
+     "Text"
+    ],
+    "valueReference": [
+     "DefinedTerm",
+     "Enumeration",
+     "MeasurementTypeEnumeration",
+     "PropertyValue",
+     "QualitativeValue",
+     "QuantitativeValue",
+     "StructuredValue",
+     "Text"
+    ]
+   }
+  },
+  "QuantitativeValue": {
+   "parents": [
+    "StructuredValue",
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalProperty": [
+     "PropertyValue"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "maxValue": [
+     "Number"
+    ],
+    "minValue": [
+     "Number"
+    ],
+    "name": [
+     "Text"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
     ],
     "sameAs": [
      "URL"
@@ -5180,6 +6531,554 @@
     ]
    }
   },
+  "Rating": {
+   "parents": [
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "author": [
+     "Organization",
+     "Person"
+    ],
+    "bestRating": [
+     "Number",
+     "Text"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "ratingExplanation": [
+     "Text"
+    ],
+    "ratingValue": [
+     "Number",
+     "Text"
+    ],
+    "reviewAspect": [
+     "StructuredValue",
+     "Text"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "url": [
+     "URL"
+    ],
+    "worstRating": [
+     "Number",
+     "Text"
+    ]
+   }
+  },
+  "Review": {
+   "parents": [
+    "CreativeWork",
+    "Thing"
+   ],
+   "properties": {
+    "about": [
+     "Thing"
+    ],
+    "abstract": [
+     "Text"
+    ],
+    "accessibilityAPI": [
+     "Text"
+    ],
+    "accessibilityControl": [
+     "Text"
+    ],
+    "accessibilityFeature": [
+     "Text"
+    ],
+    "accessibilityHazard": [
+     "Text"
+    ],
+    "accessibilitySummary": [
+     "Text"
+    ],
+    "accessMode": [
+     "Text"
+    ],
+    "accessModeSufficient": [
+     "ItemList"
+    ],
+    "accountablePerson": [
+     "Person"
+    ],
+    "acquireLicensePage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "aggregateRating": [
+     "AggregateRating"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "alternativeHeadline": [
+     "Text"
+    ],
+    "archivedAt": [
+     "URL",
+     "WebPage"
+    ],
+    "assesses": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "associatedClaimReview": [
+     "Review"
+    ],
+    "associatedMedia": [
+     "MediaObject"
+    ],
+    "associatedMediaReview": [
+     "Review"
+    ],
+    "associatedReview": [
+     "Review"
+    ],
+    "audience": [
+     "Audience"
+    ],
+    "audio": [
+     "AudioObject",
+     "Clip",
+     "MusicRecording"
+    ],
+    "author": [
+     "Organization",
+     "Person"
+    ],
+    "award": [
+     "Text"
+    ],
+    "character": [
+     "Person"
+    ],
+    "citation": [
+     "CreativeWork",
+     "Text"
+    ],
+    "comment": [
+     "Comment"
+    ],
+    "commentCount": [
+     "Integer"
+    ],
+    "conditionsOfAccess": [
+     "Text"
+    ],
+    "contentLocation": [
+     "Place"
+    ],
+    "contentRating": [
+     "Rating",
+     "Text"
+    ],
+    "contentReferenceTime": [
+     "DateTime"
+    ],
+    "contributor": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightHolder": [
+     "Organization",
+     "Person"
+    ],
+    "copyrightNotice": [
+     "Text"
+    ],
+    "copyrightYear": [
+     "Number"
+    ],
+    "correction": [
+     "CorrectionComment",
+     "Text",
+     "URL"
+    ],
+    "countryOfOrigin": [
+     "Country"
+    ],
+    "creator": [
+     "Organization",
+     "Person"
+    ],
+    "creditText": [
+     "Text"
+    ],
+    "dateCreated": [
+     "Date",
+     "DateTime"
+    ],
+    "dateModified": [
+     "Date",
+     "DateTime"
+    ],
+    "datePublished": [
+     "Date",
+     "DateTime"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "digitalSourceType": [
+     "IPTCDigitalSourceEnumeration"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "discussionUrl": [
+     "URL"
+    ],
+    "editEIDR": [
+     "Text",
+     "URL"
+    ],
+    "editor": [
+     "Person"
+    ],
+    "educationalAlignment": [
+     "AlignmentObject"
+    ],
+    "educationalUse": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "encoding": [
+     "MediaObject"
+    ],
+    "encodingFormat": [
+     "Text",
+     "URL"
+    ],
+    "exampleOfWork": [
+     "CreativeWork"
+    ],
+    "expires": [
+     "Date",
+     "DateTime"
+    ],
+    "funder": [
+     "Organization",
+     "Person"
+    ],
+    "funding": [
+     "Grant"
+    ],
+    "genre": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "hasPart": [
+     "CreativeWork"
+    ],
+    "headline": [
+     "Text"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "inLanguage": [
+     "Language",
+     "Text"
+    ],
+    "interactionStatistic": [
+     "InteractionCounter"
+    ],
+    "interactivityType": [
+     "Text"
+    ],
+    "interpretedAsClaim": [
+     "Claim"
+    ],
+    "isAccessibleForFree": [
+     "Boolean"
+    ],
+    "isBasedOn": [
+     "CreativeWork",
+     "Product",
+     "URL"
+    ],
+    "isFamilyFriendly": [
+     "Boolean"
+    ],
+    "isPartOf": [
+     "CreativeWork",
+     "URL"
+    ],
+    "itemReviewed": [
+     "Thing"
+    ],
+    "keywords": [
+     "DefinedTerm",
+     "Text",
+     "URL"
+    ],
+    "learningResourceType": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "license": [
+     "CreativeWork",
+     "URL"
+    ],
+    "locationCreated": [
+     "Place"
+    ],
+    "mainEntity": [
+     "Thing"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "maintainer": [
+     "Organization",
+     "Person"
+    ],
+    "material": [
+     "Product",
+     "Text",
+     "URL"
+    ],
+    "materialExtent": [
+     "QuantitativeValue",
+     "Text"
+    ],
+    "mentions": [
+     "Thing"
+    ],
+    "name": [
+     "Text"
+    ],
+    "negativeNotes": [
+     "ItemList",
+     "ListItem",
+     "Text",
+     "WebContent"
+    ],
+    "offers": [
+     "Demand",
+     "Offer"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "pattern": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "position": [
+     "Integer",
+     "Text"
+    ],
+    "positiveNotes": [
+     "ItemList",
+     "ListItem",
+     "Text",
+     "WebContent"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "producer": [
+     "Organization",
+     "Person"
+    ],
+    "provider": [
+     "Organization",
+     "Person"
+    ],
+    "publication": [
+     "PublicationEvent"
+    ],
+    "publisher": [
+     "Organization",
+     "Person"
+    ],
+    "publisherImprint": [
+     "Organization"
+    ],
+    "publishingPrinciples": [
+     "CreativeWork",
+     "URL"
+    ],
+    "recordedAt": [
+     "Event"
+    ],
+    "releasedEvent": [
+     "PublicationEvent"
+    ],
+    "review": [
+     "Review"
+    ],
+    "reviewAspect": [
+     "StructuredValue",
+     "Text"
+    ],
+    "reviewBody": [
+     "Text"
+    ],
+    "reviewRating": [
+     "Rating"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "schemaVersion": [
+     "Text",
+     "URL"
+    ],
+    "sdDatePublished": [
+     "Date"
+    ],
+    "sdLicense": [
+     "CreativeWork",
+     "URL"
+    ],
+    "sdPublisher": [
+     "Organization",
+     "Person"
+    ],
+    "size": [
+     "DefinedTerm",
+     "QuantitativeValue",
+     "SizeSpecification",
+     "Text"
+    ],
+    "sourceOrganization": [
+     "Organization"
+    ],
+    "spatial": [
+     "Place"
+    ],
+    "spatialCoverage": [
+     "Place"
+    ],
+    "sponsor": [
+     "Organization",
+     "Person"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "teaches": [
+     "DefinedTerm",
+     "Text"
+    ],
+    "temporal": [
+     "DateTime",
+     "Text"
+    ],
+    "temporalCoverage": [
+     "DateTime",
+     "Text",
+     "URL"
+    ],
+    "text": [
+     "Text"
+    ],
+    "thumbnail": [
+     "ImageObject"
+    ],
+    "thumbnailUrl": [
+     "URL"
+    ],
+    "timeRequired": [
+     "Duration"
+    ],
+    "translationOfWork": [
+     "CreativeWork"
+    ],
+    "translator": [
+     "Organization",
+     "Person"
+    ],
+    "typicalAgeRange": [
+     "Text"
+    ],
+    "url": [
+     "URL"
+    ],
+    "usageInfo": [
+     "CreativeWork",
+     "URL"
+    ],
+    "version": [
+     "Number",
+     "Text"
+    ],
+    "video": [
+     "Clip",
+     "VideoObject"
+    ],
+    "wordCount": [
+     "Integer"
+    ],
+    "workExample": [
+     "CreativeWork"
+    ],
+    "workTranslation": [
+     "CreativeWork"
+    ]
+   }
+  },
   "SearchAction": {
    "parents": [
     "Action",
@@ -5420,6 +7319,311 @@
     ],
     "url": [
      "URL"
+    ]
+   }
+  },
+  "ServicePeriod": {
+   "parents": [
+    "StructuredValue",
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "businessDays": [
+     "DayOfWeek",
+     "OpeningHoursSpecification"
+    ],
+    "cutoffTime": [
+     "Time"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "duration": [
+     "Duration",
+     "QuantitativeValue"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "url": [
+     "URL"
+    ]
+   }
+  },
+  "ShippingConditions": {
+   "parents": [
+    "StructuredValue",
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "depth": [
+     "Distance",
+     "QuantitativeValue"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "doesNotShip": [
+     "Boolean"
+    ],
+    "height": [
+     "Distance",
+     "QuantitativeValue"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "numItems": [
+     "QuantitativeValue"
+    ],
+    "orderValue": [
+     "MonetaryAmount"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "seasonalOverride": [
+     "OpeningHoursSpecification"
+    ],
+    "shippingDestination": [
+     "DefinedRegion"
+    ],
+    "shippingOrigin": [
+     "DefinedRegion"
+    ],
+    "shippingRate": [
+     "MonetaryAmount",
+     "ShippingRateSettings"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "transitTime": [
+     "QuantitativeValue",
+     "ServicePeriod"
+    ],
+    "url": [
+     "URL"
+    ],
+    "weight": [
+     "Mass",
+     "QuantitativeValue"
+    ],
+    "width": [
+     "Distance",
+     "QuantitativeValue"
+    ]
+   }
+  },
+  "ShippingDeliveryTime": {
+   "parents": [
+    "StructuredValue",
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "businessDays": [
+     "DayOfWeek",
+     "OpeningHoursSpecification"
+    ],
+    "cutoffTime": [
+     "Time"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "handlingTime": [
+     "QuantitativeValue",
+     "ServicePeriod"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "transitTime": [
+     "QuantitativeValue",
+     "ServicePeriod"
+    ],
+    "url": [
+     "URL"
+    ]
+   }
+  },
+  "ShippingService": {
+   "parents": [
+    "StructuredValue",
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "fulfillmentType": [
+     "FulfillmentTypeEnumeration"
+    ],
+    "handlingTime": [
+     "QuantitativeValue",
+     "ServicePeriod"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "shippingConditions": [
+     "ShippingConditions"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "url": [
+     "URL"
+    ],
+    "validForMemberTier": [
+     "MemberProgramTier"
     ]
    }
   },
