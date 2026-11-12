@@ -38,10 +38,13 @@ const CONDITION_MAP: Record<string, Condition> = {
 
 const errorText = (error: unknown) => (error instanceof Error ? error.message : String(error))
 
+/** Minor-unit digits that are safe to use: a whole number from 0 to 20 */
+const validDecimals = (decimals: number): boolean => Number.isInteger(decimals) && decimals >= 0 && decimals <= 20
+
 /** Whole minor units to major units. Undefined unless a positive integer: 0 is not a shop price */
 export function minorToMajor(amount: unknown, decimals: number): number | undefined {
   if (typeof amount !== 'number' || !Number.isInteger(amount) || amount <= 0) return undefined
-  if (!Number.isInteger(decimals) || decimals < 0) return undefined
+  if (!validDecimals(decimals)) return undefined
   return Number((amount / 10 ** decimals).toFixed(decimals))
 }
 
@@ -73,6 +76,16 @@ function majorAmount(value: unknown): number | undefined {
 export function readMoney(source: Doc, input: MoneyInput, warnings: string[]): number | undefined {
   const { currency, decimals, decimalsSource, mapping, ref } = input
   const field = `priceIn${currency}`
+
+  if (decimals !== undefined && !validDecimals(decimals)) {
+    warnings.push(`${ref}: ${currency} price left out, ${decimals} is not a usable number of decimals (0 to 20)`)
+    return undefined
+  }
+
+  if (source[`${field}Enabled`] === false) {
+    warnings.push(`${ref}: ${currency} price left out, ${currency} is not enabled on this product`)
+    return undefined
+  }
 
   if (source[`${field}Enabled`] === true) {
     if (decimals === undefined) {

@@ -56,16 +56,18 @@ export function plainText(value: unknown): string | undefined {
   if (typeof value !== 'object' || value === null) return undefined
   const root = (value as { root?: unknown }).root
   if (typeof root !== 'object' || root === null) return undefined
+  const isInline = (node: unknown): boolean => {
+    if (typeof node !== 'object' || node === null) return true
+    const { text, type } = node as { text?: unknown; type?: unknown }
+    return typeof text === 'string' || type === 'link' || type === 'autolink' || type === 'linebreak'
+  }
   const collect = (node: unknown): string => {
     if (typeof node !== 'object' || node === null) return ''
-    const { text, children } = node as { text?: unknown; children?: unknown }
+    const { text, children, type } = node as { text?: unknown; children?: unknown; type?: unknown }
     if (typeof text === 'string') return text
+    if (type === 'linebreak') return ' '
     if (!Array.isArray(children)) return ''
-    const hasBlocks = children.some((child) => typeof child === 'object' && child !== null && Array.isArray((child as { children?: unknown }).children))
-    return children
-      .map(collect)
-      .filter((part) => part !== '')
-      .join(hasBlocks ? ' ' : '')
+    return children.map(collect).join(children.some((child) => !isInline(child)) ? ' ' : '')
   }
-  return collect(root).trim() || undefined
+  return collect(root).replace(/\s+/g, ' ').trim() || undefined
 }

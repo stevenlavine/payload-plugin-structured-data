@@ -37,6 +37,25 @@ describe('readMoney', () => {
     expect(warnings).toEqual([])
   })
 
+  test('an explicitly disabled currency gives no price even with a mapping', () => {
+    const warnings: string[] = []
+    const price = readMoney({ priceInGBPEnabled: false, cost: 12 }, { ...base, mapping: { amount: 'cost' } }, warnings)
+    expect(price).toBeUndefined()
+    expect(warnings).toHaveLength(1)
+  })
+
+  test('unusable decimals give no price and never throw', () => {
+    for (const decimals of [101, 21, -1, 1.5, Number.NaN]) {
+      const warnings: string[] = []
+      const source = { priceInGBP: 1999, priceInGBPEnabled: true }
+      expect(() => readMoney(source, { ...base, decimals }, warnings)).not.toThrow()
+      expect(warnings).toHaveLength(1)
+      expect(readMoney(source, { ...base, decimals }, [])).toBeUndefined()
+      expect(minorToMajor(1999, decimals)).toBeUndefined()
+    }
+    expect(minorToMajor(1, 20)).toBeDefined()
+  })
+
   test('a mapped zero is dropped with a warning', () => {
     const warnings: string[] = []
     expect(readMoney({ cost: 0 }, { ...base, mapping: { amount: 'cost' } }, warnings)).toBeUndefined()
