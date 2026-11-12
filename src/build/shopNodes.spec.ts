@@ -196,6 +196,16 @@ describe('buildReturnPolicy', () => {
     )
   })
 
+  test('an unknown policy value warns and gives only the link, or nothing with no link', () => {
+    const unknown = { policy: 'forever', countries: 'GB' } as unknown as NonNullable<ShopSettings['returns']>
+    const linked = policy({ returns: { ...unknown, link: '/returns' } })
+    expect(linked.node).toEqual({ '@type': 'MerchantReturnPolicy', '@id': 'https://a.com/#returns', merchantReturnLink: 'https://a.com/returns' })
+    expect(linked.warnings).toEqual(['settings: returns policy "forever" is not finite, unlimited or none, only the returns link is output'])
+    const bare = policy({ returns: unknown })
+    expect(bare.node).toBeUndefined()
+    expect(bare.warnings).toEqual(['settings: returns policy dropped, "forever" is not finite, unlimited or none'])
+  })
+
   test('no returns settings: nothing', () => {
     expect(policy({}).node).toBeUndefined()
     expect(policy({ returns: null }).node).toBeUndefined()

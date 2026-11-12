@@ -142,6 +142,11 @@ const FEES = {
   customer: 'ReturnFeesCustomerResponsibility',
   shipping: 'ReturnShippingFees',
 } as const
+const CATEGORIES = {
+  finite: 'MerchantReturnFiniteReturnWindow',
+  unlimited: 'MerchantReturnUnlimitedWindow',
+  none: 'MerchantReturnNotPermitted',
+} as const
 const METHODS = { mail: 'ReturnByMail', store: 'ReturnInStore' } as const
 
 /** The shop's MerchantReturnPolicy. Undefined when nothing usable is set */
@@ -159,6 +164,14 @@ export function buildReturnPolicy(
 
   const policy = returns.policy
   if (!policy) return linkOnly()
+  if (!Object.hasOwn(CATEGORIES, policy)) {
+    warnings.push(
+      link
+        ? `settings: returns policy "${String(policy)}" is not finite, unlimited or none, only the returns link is output`
+        : `settings: returns policy dropped, "${String(policy)}" is not finite, unlimited or none`,
+    )
+    return linkOnly()
+  }
 
   if (policy === 'finite' && !(isNumber(returns.days) && Number.isInteger(returns.days) && returns.days > 0)) {
     warnings.push(
@@ -183,9 +196,7 @@ export function buildReturnPolicy(
     '@type': 'MerchantReturnPolicy',
     '@id': id,
     ...(countries.length ? { applicableCountry: countries.length === 1 ? countries[0] : countries } : {}),
-    returnPolicyCategory: schema(
-      policy === 'finite' ? 'MerchantReturnFiniteReturnWindow' : policy === 'none' ? 'MerchantReturnNotPermitted' : 'MerchantReturnUnlimitedWindow',
-    ),
+    returnPolicyCategory: schema(CATEGORIES[policy]),
   }
   if (policy === 'finite') node.merchantReturnDays = returns.days
 
