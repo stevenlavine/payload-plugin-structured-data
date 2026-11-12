@@ -405,7 +405,7 @@ describe('buildProductNodes with variants', () => {
     expect(variantOffer(own)?.url).toBe('https://example.com/shop/loopy-cardigan/12')
   })
 
-  test('colour, color, size, material, pattern, age, gender map; age → suggestedAge', () => {
+  test('colour, color, size, material, pattern map to the option label; age is not mapped', () => {
     const types = [
       { id: 1, name: 'Colour', label: 'Colour' },
       { id: 2, name: 'shade', label: 'color' },
@@ -413,7 +413,6 @@ describe('buildProductNodes with variants', () => {
       { id: 4, name: 'material', label: 'Material' },
       { id: 5, name: 'pattern', label: 'Pattern' },
       { id: 6, name: 'age', label: 'Age' },
-      { id: 7, name: 'gender', label: 'Gender' },
       { id: 8, name: 'engraving', label: 'Engraving' },
     ]
     const options = types.map((variantType, i) => ({ id: 100 + i, label: `L${i}`, value: `v${i}`, variantType }))
@@ -424,18 +423,36 @@ describe('buildProductNodes with variants', () => {
       'https://schema.org/size',
       'https://schema.org/material',
       'https://schema.org/pattern',
-      'https://schema.org/suggestedAge',
-      'https://schema.org/suggestedGender',
     ])
+    const [variant] = variantsOf([group])
     // Two colour types: the first label wins
-    expect(variantsOf([group])[0]).toMatchObject({
-      color: 'L0',
-      size: 'L2',
-      material: 'L3',
-      pattern: 'L4',
-      suggestedAge: 'L5',
-      suggestedGender: 'L6',
+    expect(variant).toMatchObject({ color: 'L0', size: 'L2', material: 'L3', pattern: 'L4' })
+    for (const key of ['suggestedAge', 'age', 'engraving', 'audience']) expect(variant).not.toHaveProperty(key)
+  })
+
+  test('gender maps to audience.suggestedGender only for male, female or unisex', () => {
+    const gender = { id: 7, name: 'gender', label: 'Gender' }
+    const variant = (id: number, label: string, value: string) => ({
+      id,
+      _status: 'published',
+      inventory: 1,
+      priceInGBPEnabled: true,
+      priceInGBP: 2000,
+      options: [{ id: id * 10, label, value, variantType: gender }],
     })
+    const doc = withVariants([variant(12, 'Boys', 'Male'), variant(13, 'UNISEX', 'u'), variant(14, 'Kids', 'kids')])
+    const [group] = buildProductNodes(groupInput({ doc }), [])
+    expect(group?.variesBy).toEqual(['https://schema.org/suggestedGender'])
+    const [boys, unisex, kids] = variantsOf([group])
+    expect(boys?.audience).toEqual({ '@type': 'PeopleAudience', suggestedGender: 'male' })
+    expect(unisex?.audience).toEqual({ '@type': 'PeopleAudience', suggestedGender: 'unisex' })
+    expect(kids).not.toHaveProperty('audience')
+    expect(kids).not.toHaveProperty('suggestedGender')
+
+    const invalidOnly = withVariants([variant(14, 'Kids', 'kids')])
+    const [plain] = buildProductNodes(groupInput({ doc: invalidOnly }), [])
+    expect(plain).not.toHaveProperty('variesBy')
+    expect(variantsOf([plain])).toHaveLength(1)
   })
 
   test('with no page currency set, the first currency a variant enables is used, with one warning', () => {

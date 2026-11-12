@@ -12,6 +12,7 @@ const KEEP = [
   'Product', 'ProductGroup', 'Brand', 'AggregateRating', 'Review', 'Rating',
   'ShippingService', 'ShippingConditions', 'DefinedRegion', 'MonetaryAmount', 'ServicePeriod',
   'QuantitativeValue', 'MerchantReturnPolicy', 'OfferShippingDetails', 'ShippingDeliveryTime',
+  'PeopleAudience',
 ]
 
 const strip = (id) => id.replace(/^schema:/, '')

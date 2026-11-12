@@ -205,8 +205,19 @@ const VARIES_BY: Record<string, string> = {
   size: 'size',
   material: 'material',
   pattern: 'pattern',
-  age: 'suggestedAge',
   gender: 'suggestedGender',
+}
+
+/** suggestedGender values Google accepts. An age option type is not mapped: Google wants a QuantitativeValue range, not a label */
+const GENDERS = new Set(['female', 'male', 'unisex'])
+
+/** A valid gender from the option's label, else its value, lower case */
+function genderOf(option: Doc): string | undefined {
+  for (const key of ['label', 'value']) {
+    const text = readText(option, key)?.toLowerCase()
+    if (text && GENDERS.has(text)) return text
+  }
+  return undefined
 }
 
 function variesByProperty(variantType: unknown): string | undefined {
@@ -291,14 +302,23 @@ function buildProductGroup(input: ProductNodeInput, common: Common, docs: unknow
 
     const options_ = populatedOptions(variant)
     const labels = options_.map((option) => readText(option, 'label')).filter((l): l is string => Boolean(l))
-    const varies: Record<string, string> = {}
+    const varies: Record<string, unknown> = {}
     for (const option of options_) {
       const property = variesByProperty(option.variantType)
-      const label = readText(option, 'label')
-      if (!property || !label || property in varies) continue
-      varies[property] = label
+      if (!property || property in varies) continue
+      if (property === 'suggestedGender') {
+        // On the variant as audience.suggestedGender; an unrecognised gender label adds nothing
+        const gender = genderOf(option)
+        if (!gender) continue
+        varies[property] = gender
+      } else {
+        const label = readText(option, 'label')
+        if (!label) continue
+        varies[property] = label
+      }
       if (!variesBy.includes(property)) variesBy.push(property)
     }
+    const { suggestedGender, ...flat } = varies
 
     const ownSku = textAt(variant, product.sku)
     hasVariant.push(
@@ -307,7 +327,8 @@ function buildProductGroup(input: ProductNodeInput, common: Common, docs: unknow
         name: readText(variant, 'title') ?? [name, ...labels].join(', '),
         sku: ownSku ?? (groupId !== undefined && variantId !== undefined ? `${groupId}-${variantId}` : variantId),
         image: variantImages(doc, variant, config, options) ?? images,
-        ...varies,
+        ...flat,
+        audience: suggestedGender ? { '@type': 'PeopleAudience', suggestedGender } : undefined,
         offers: offer,
       }),
     )

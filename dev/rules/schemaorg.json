@@ -4443,6 +4443,96 @@
     ]
    }
   },
+  "PeopleAudience": {
+   "parents": [
+    "Audience",
+    "Intangible",
+    "Thing"
+   ],
+   "properties": {
+    "additionalType": [
+     "Text",
+     "URL"
+    ],
+    "alternateName": [
+     "Text"
+    ],
+    "audienceType": [
+     "Text"
+    ],
+    "description": [
+     "Text",
+     "TextObject"
+    ],
+    "disambiguatingDescription": [
+     "Text"
+    ],
+    "geographicArea": [
+     "AdministrativeArea"
+    ],
+    "healthCondition": [
+     "MedicalCondition"
+    ],
+    "identifier": [
+     "PropertyValue",
+     "Text",
+     "URL"
+    ],
+    "image": [
+     "ImageObject",
+     "URL"
+    ],
+    "mainEntityOfPage": [
+     "CreativeWork",
+     "URL"
+    ],
+    "name": [
+     "Text"
+    ],
+    "owner": [
+     "Organization",
+     "Person"
+    ],
+    "potentialAction": [
+     "Action"
+    ],
+    "requiredGender": [
+     "Text"
+    ],
+    "requiredMaxAge": [
+     "Integer"
+    ],
+    "requiredMinAge": [
+     "Integer"
+    ],
+    "sameAs": [
+     "URL"
+    ],
+    "subjectOf": [
+     "CreativeWork",
+     "Event"
+    ],
+    "suggestedAge": [
+     "QuantitativeValue"
+    ],
+    "suggestedGender": [
+     "GenderType",
+     "Text"
+    ],
+    "suggestedMaxAge": [
+     "Number"
+    ],
+    "suggestedMeasurement": [
+     "QuantitativeValue"
+    ],
+    "suggestedMinAge": [
+     "Number"
+    ],
+    "url": [
+     "URL"
+    ]
+   }
+  },
   "PerformingGroup": {
    "parents": [
     "Organization",
