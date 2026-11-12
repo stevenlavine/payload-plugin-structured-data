@@ -20,6 +20,28 @@ const full: Settings = {
   identifiers: [{ propertyID: 'Companies House company number', value: '12345678' }],
 }
 
+describe('buildOrganization shop settings', () => {
+  const shopSettings = { shipping: [{ countries: 'GB', cost: 3 }], returns: { policy: 'unlimited' as const, countries: 'GB' } }
+  const shopOptions: ResolvedOptions = { ...options, shop: { currency: 'GBP', currencies: [] } }
+
+  test('no shop option: shop settings are ignored and the Organization is byte-identical to 0.3.0', () => {
+    const plain = buildOrganization(full, options, [])
+    expect(JSON.stringify(buildOrganization({ ...full, shop: shopSettings }, options, []))).toBe(JSON.stringify(plain))
+    expect(plain).not.toHaveProperty('hasShippingService')
+    expect(plain).not.toHaveProperty('hasMerchantReturnPolicy')
+  })
+
+  test('shop option with empty shop settings adds nothing', () => {
+    expect(JSON.stringify(buildOrganization({ ...full, shop: {} }, shopOptions, []))).toBe(JSON.stringify(buildOrganization(full, options, [])))
+  })
+
+  test('shop option adds hasShippingService and hasMerchantReturnPolicy', () => {
+    const node = buildOrganization({ ...full, shop: shopSettings }, shopOptions, [])
+    expect(node?.hasShippingService).toMatchObject({ '@type': 'ShippingService', '@id': 'https://a.com/#shipping' })
+    expect(node?.hasMerchantReturnPolicy).toMatchObject({ '@type': 'MerchantReturnPolicy', '@id': 'https://a.com/#returns' })
+  })
+})
+
 describe('buildOrganization', () => {
   test('builds a full Organization node', () => {
     const warnings: string[] = []

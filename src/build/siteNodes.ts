@@ -1,5 +1,6 @@
 import type { OrganizationLeaf, WebSiteLeaf } from 'schema-dts'
 import type { JsonLdNode, ResolvedOptions, Settings } from '../types.js'
+import { buildReturnPolicy, buildShippingService } from './shopNodes.js'
 import { absoluteUrl, mediaUrl } from './values.js'
 
 const clean = (value: string | null | undefined) => (value && value.trim() ? value.trim() : undefined)
@@ -77,7 +78,11 @@ export function buildOrganization(
     identifier: identifiers.length ? identifiers : undefined,
   }
 
-  return compact({ '@type': type, '@id': organizationId(options.siteUrl), ...props })
+  const shop = options.shop && settings.shop ? settings.shop : undefined
+  const hasShippingService = shop ? buildShippingService(shop, options.shop?.currency, options.siteUrl, warnings) : undefined
+  const hasMerchantReturnPolicy = shop ? buildReturnPolicy(shop, options.siteUrl, warnings, options.shop?.currency) : undefined
+
+  return compact({ '@type': type, '@id': organizationId(options.siteUrl), ...props, hasShippingService, hasMerchantReturnPolicy })
 }
 
 export function buildWebSite(

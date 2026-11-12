@@ -6,6 +6,7 @@ import { buildFaqPage } from './faq.js'
 import { buildItemList } from './itemList.js'
 import { buildPageNode } from './pageNodes.js'
 import { buildProductNodes } from './products.js'
+import { returnPolicyId } from './shopNodes.js'
 import { buildOrganization, buildWebSite } from './siteNodes.js'
 import { absoluteUrl, readText } from './values.js'
 
@@ -55,7 +56,12 @@ export function buildStructuredData({ options, settings, collection, doc, list, 
           warnings.push(`${ref}: ${type} skipped, this collection does not allow it (set type: '${type}' or a product block)`)
         } else if (type === PRODUCT_TYPE) {
           const hasOrganization = Boolean(organization)
-          const product = buildProductNodes({ doc, url, ref, config, options, settings, currency, reviews, hasOrganization }, warnings)
+          // Offers link the return policy only when the Organization was built and carries one
+          const policyId = organization?.hasMerchantReturnPolicy ? returnPolicyId(options.siteUrl) : undefined
+          const product = buildProductNodes(
+            { doc, url, ref, config, options, settings, currency, reviews, hasOrganization, returnPolicyId: policyId },
+            warnings,
+          )
           if (product.length) {
             nodes.push(...product)
           } else {
