@@ -40,7 +40,9 @@ export const structuredDataPlugin =
 
     for (const slug of Object.keys(resolved.collections)) {
       if (!collections.some((c) => c.slug === slug)) {
-        throw new Error(`structuredDataPlugin: collection "${slug}" not found in the Payload config`)
+        throw new Error(
+          `structuredDataPlugin: collection "${slug}" not found in the Payload config; if another plugin (such as ecommercePlugin) adds this collection, list structuredDataPlugin after it`,
+        )
       }
     }
 

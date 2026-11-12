@@ -42,6 +42,11 @@ describe('structuredDataPlugin config checks', () => {
       structuredDataPlugin({ siteUrl: 'https://a.com', collections: { nope: { type: 'WebPage', path: () => '/' } } as never })(config),
     ).toThrow(/collection "nope" not found/)
   })
+  test('the unknown-collection error says to list the plugin after one that adds the collection', () => {
+    expect(() =>
+      structuredDataPlugin({ siteUrl: 'https://a.com', collections: { products: { type: 'Product', path: () => '/' } } as never })(config),
+    ).toThrow(/if another plugin \(such as ecommercePlugin\) adds this collection, list structuredDataPlugin after it/)
+  })
 
   test('throws when a configured collection already has a structuredData field', () => {
     const withField = { collections: [{ slug: 'posts', fields: [{ name: 'structuredData', type: 'text' }] }] } as never

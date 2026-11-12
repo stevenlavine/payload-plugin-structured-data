@@ -139,6 +139,8 @@ const { graph, warnings } = buildStructuredData({ options, settings, collection:
 const json = graph ? serializeJsonLd(graph) : null
 ```
 
+For a product page, `buildStructuredData` also takes `currency` (the currency the page shows, default `shop.currency`) and `reviews` (`{ rating, items }`, as for the `reviews` prop under Shops).
+
 `getPluginOptions` returns `null` when the plugin is not in your config, so check for that. `settings` is the `structured-data-settings` global, read with `payload.findGlobal`. Put `json` inside a `<script type="application/ld+json">` tag.
 
 ## Events
@@ -303,9 +305,30 @@ plugins: [
 
 Every key in `product` is optional. The `shop` option is the switch for the shop settings. Without it the settings global does not change. A `product` block without `shop` still works, but the node then has no shipping, returns or default condition.
 
+### Product options
+
+Field paths are dotted strings such as `brand.name`, or an array of paths where the first one with a value wins. A mapped value is either a field path or a function of the document.
+
+| Key | What it does |
+| --- | --- |
+| `sku` | Field path for the SKU. On a variant it is read from the variant; with no variant SKU, see Options and variants below. |
+| `gtin`, `mpn` | Field paths for the barcode and the manufacturer part number. A number is output as text. |
+| `brand` | Field path for the brand name, output as a `Brand`. |
+| `color`, `size`, `material`, `pattern` | Field paths, read on a product with no variants. Variants take these from their options instead. |
+| `stock` | Field path for the stock number. Default `inventory`. |
+| `outOfStock` | `'OutOfStock'` (the default) or `'SoldOut'`, used when stock is 0 or less. |
+| `availability` | A field path or `(doc) => value`. See Stock and availability below. |
+| `condition` | A field path or `(doc) => value` giving `new`, `used`, `refurbished` or the Schema.org names. |
+| `price` | `{ amount, currency?, minorUnits? }`. `amount` and `currency` are field paths. With `currency` mapped, a product priced in another currency than the page gets no offer. `minorUnits: true` reads the amount in the smallest unit, such as pence. Not needed with the eCommerce plugin. |
+| `rating` | A field path or `(doc) => rating` giving `{ value, count, best?, worst? }`. The `reviews` prop beats it. |
+| `reviews` | A field path or `(doc) => reviews` giving an array of `{ author, rating, body?, date?, best?, worst? }`. The `reviews` prop beats it. |
+| `variantUrl` | `(doc, variant) => string`, the path or URL of one variant. See Options and variants below. |
+
+The plugin-level `shop` option is `{ currency?, currencies? }`. `currency` is an ISO 4217 code such as `'GBP'`. `currencies` is a list of `{ code, decimals }`, such as `[{ code: 'JPY', decimals: 0 }]`, which beats every other source of decimals.
+
 ### Plugin order
 
-List the eCommerce plugin before this one in `plugins`. This plugin reads each currency's decimals from the eCommerce plugin's price fields when your config loads. If it runs first, it uses the ISO digits for the currency and logs a warning in development.
+List the eCommerce plugin before this one in `plugins`. The eCommerce plugin adds the `products` collection itself, so if this plugin runs first, startup fails with `collection "products" not found in the Payload config`. Listed after it, this plugin also reads each currency's decimals from the eCommerce plugin's price fields when your config loads. A `priceIn<CODE>` field that does not carry the eCommerce plugin's currency settings (and has no `shop.currencies` entry) falls back to the ISO digits for the currency, with a warning in development.
 
 ### Depth
 
@@ -357,7 +380,7 @@ Condition comes from the `condition` mapping, then the default condition in the 
 When a product has variants and at least one published variant arrives populated, the page outputs a `ProductGroup` with a `Product` for each variant. Each variant has its own price, stock, name and URL. Draft variants are skipped, and a variant with no valid offer is dropped with a warning. If none are left, the page outputs a plain `Product`.
 
 - **URL.** Each variant's offer URL has one `<option type>=<option id>` parameter per option, then `variant=<variant id>`, which is what the official eCommerce template uses. Set `variantUrl: (doc, variant) => string` to change it.
-- **SKU.** A variant's mapped SKU, else `<product id>-<variant id>`. The group's `productGroupID` is the product's SKU, else its ID.
+- **SKU.** A variant's mapped SKU, else `<product SKU or id>-<variant id>`. The group's `productGroupID` is the product's SKU, else its ID.
 - **Name.** With the eCommerce plugin, the variant name comes from the plugin's generated variant title. Otherwise it is the product name and the option labels.
 - **`variesBy`.** Option types named colour (or color), size, material or pattern map to Google's properties. A gender option maps to `audience.suggestedGender` for male, female and unisex only. Age options are not mapped, because Google wants a number range for `suggestedAge`, not a label such as "0-3 months". Other option types, such as extras, stay out of `variesBy`. The variant still outputs with its own price.
 - **Mappings apply to every variant.** The `availability` and `condition` mappings run once on the product. A value they return applies to all its variants and beats each variant's stock.
