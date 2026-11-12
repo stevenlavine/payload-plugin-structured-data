@@ -1,6 +1,7 @@
 import type { UIFieldServerProps } from 'payload'
 import React from 'react'
 import { buildStructuredData } from '../build/buildStructuredData.js'
+import { documentTypesFor, PRODUCT_TYPE } from '../constants.js'
 import { serializeJsonLd } from '../build/serialize.js'
 import { getPluginOptions } from '../plugin.js'
 import { getSettings } from './getSettings.js'
@@ -26,13 +27,16 @@ export async function StructuredDataPreview(props: UIFieldServerProps) {
       return <p style={{ fontSize: 12 }}>Save this document to see its structured data.</p>
     }
 
-    // The edit view loads the document at depth 0, so uploads arrive as IDs. Re-read with depth 1.
+    // The edit view loads the document at depth 0, so uploads arrive as IDs. Re-read with depth 1,
+    // or depth 3 for products (gallery rows, variants, their options and option types)
+    const config = Object.hasOwn(options.collections, collectionSlug) ? options.collections[collectionSlug as never] : undefined
+    const depth = config && documentTypesFor(config).includes(PRODUCT_TYPE) ? 3 : 1
     let doc: Record<string, unknown> = data
     try {
       doc = (await payload.findByID({
         collection: collectionSlug as never,
         id: data.id,
-        depth: 1,
+        depth,
         draft: true,
       })) as unknown as Record<string, unknown>
     } catch {

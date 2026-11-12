@@ -1,10 +1,11 @@
 import { DEFAULT_FIELDS, documentTypesFor, EVENT_TYPE, GROUP_NAME, PRODUCT_TYPE } from '../constants.js'
-import type { BuildResult, Doc, DocumentType, JsonLdNode, ListInput, ResolvedOptions, Settings } from '../types.js'
+import type { BuildResult, Doc, DocumentType, JsonLdNode, ListInput, ResolvedOptions, ReviewsInput, Settings } from '../types.js'
 import { breadcrumbTrail, buildBreadcrumbList } from './breadcrumbs.js'
 import { buildEventNodes } from './events.js'
 import { buildFaqPage } from './faq.js'
 import { buildItemList } from './itemList.js'
 import { buildPageNode } from './pageNodes.js'
+import { buildProductNodes } from './products.js'
 import { buildOrganization, buildWebSite } from './siteNodes.js'
 import { absoluteUrl, readText } from './values.js'
 
@@ -14,9 +15,13 @@ export type BuildInput = {
   collection?: string
   doc?: Doc
   list?: ListInput
+  /** The currency a product page shows. Default shop.currency */
+  currency?: string
+  /** Ratings and reviews for a product page, supplied by the site */
+  reviews?: ReviewsInput
 }
 
-export function buildStructuredData({ options, settings, collection, doc, list }: BuildInput): BuildResult {
+export function buildStructuredData({ options, settings, collection, doc, list, currency, reviews }: BuildInput): BuildResult {
   const warnings: string[] = []
   const nodes: JsonLdNode[] = []
   if (options.disabled) return { graph: null, warnings }
@@ -46,7 +51,19 @@ export function buildStructuredData({ options, settings, collection, doc, list }
           warnings.push(`${ref}: ${type} skipped, this collection does not allow it (set type: '${type}' or an event block)`)
         } else if (type === EVENT_TYPE) {
           nodes.push(...buildEventNodes({ doc, url, ref, config, options, hasOrganization: Boolean(organization) }, warnings))
-        } else if (type && type !== PRODUCT_TYPE) {
+        } else if (type === PRODUCT_TYPE && !allowed.includes(type)) {
+          warnings.push(`${ref}: ${type} skipped, this collection does not allow it (set type: '${type}' or a product block)`)
+        } else if (type === PRODUCT_TYPE) {
+          const hasOrganization = Boolean(organization)
+          const product = buildProductNodes({ doc, url, ref, config, options, settings, currency, reviews, hasOrganization }, warnings)
+          if (product.length) {
+            nodes.push(...product)
+          } else {
+            // No usable product: the page still gets a plain WebPage
+            const page = buildPageNode({ type: 'WebPage', doc, url, ref, fields: config.fields, options, settings, hasOrganization }, warnings)
+            if (page) nodes.push(page)
+          }
+        } else if (type) {
           const page = buildPageNode(
             { type, doc, url, ref, fields: config.fields, options, settings, hasOrganization: Boolean(organization) },
             warnings,
