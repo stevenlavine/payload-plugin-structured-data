@@ -9,6 +9,9 @@ const KEEP = [
   'FAQPage', 'Question', 'Answer', 'BreadcrumbList', 'ListItem', 'PostalAddress', 'Person',
   'PropertyValue', 'ImageObject', 'SearchAction', 'EntryPoint',
   'Event', 'Place', 'VirtualLocation', 'Offer', 'PerformingGroup', 'ItemList',
+  'Product', 'ProductGroup', 'Brand', 'AggregateRating', 'Review', 'Rating',
+  'ShippingService', 'ShippingConditions', 'DefinedRegion', 'MonetaryAmount', 'ServicePeriod',
+  'QuantitativeValue', 'MerchantReturnPolicy', 'OfferShippingDetails', 'ShippingDeliveryTime',
 ]
 
 const strip = (id) => id.replace(/^schema:/, '')

@@ -212,4 +212,49 @@ describe('the checker catches a broken node', () => {
     event.eventStatus = 'https://schema.org/EventRescheduled'
     expect(checkGoogle(event, graph)).toContain('Event: recommended "previousStartDate" is missing')
   })
+
+  const alone = (node: Json): JsonLdGraph => ({ '@context': 'https://schema.org', '@graph': [node as never] })
+
+  it('a Product with no offers, review or rating fails the snippet rule', () => {
+    const node = { '@type': 'Product', name: 'Watch', image: 'https://example.com/w.jpg' }
+    expect(checkGoogle(node, alone(node))).toContain('Product: required "offers|review|aggregateRating" is missing')
+  })
+
+  it('an Offer price with no currency fails', () => {
+    const node = { '@type': 'Product', name: 'Watch', image: 'https://example.com/w.jpg', offers: { '@type': 'Offer', price: 20 } }
+    const messages = checkGoogle(node, alone(node))
+    expect(messages).toContain('Product: required "offers.priceCurrency" is missing')
+    expect(messages).not.toContain('Product: required "offers.price" is missing')
+  })
+
+  it('a finite return window needs merchantReturnDays', () => {
+    const policy = {
+      '@type': 'MerchantReturnPolicy',
+      applicableCountry: 'GB',
+      returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+    }
+    expect(checkGoogle(policy, alone(policy))).toContain('MerchantReturnPolicy: recommended "merchantReturnDays" is missing')
+    const unlimited = { ...policy, returnPolicyCategory: 'https://schema.org/MerchantReturnUnlimitedWindow' }
+    expect(checkGoogle(unlimited, alone(unlimited)).join()).not.toContain('merchantReturnDays')
+  })
+
+  it('a flat-fee return needs returnShippingFeesAmount, a free one does not', () => {
+    const policy = { '@type': 'MerchantReturnPolicy', merchantReturnLink: 'https://example.com/returns', returnFees: 'https://schema.org/ReturnShippingFees' }
+    expect(checkGoogle(policy, alone(policy))).toContain('MerchantReturnPolicy: recommended "returnShippingFeesAmount" is missing')
+    const free = { ...policy, returnFees: 'https://schema.org/FreeReturn' }
+    expect(checkGoogle(free, alone(free)).join()).not.toContain('returnShippingFeesAmount')
+  })
+
+  it('a nested variant Product is checked through its group, not as a top-level Product', () => {
+    const variant = { '@type': 'Product', sku: 'W-1' }
+    const group = { '@type': 'ProductGroup', name: 'Watch', hasVariant: [variant] }
+    const graph = alone(group)
+    expect(checkGoogle(variant, graph)).toEqual([])
+    expect(checkGoogle(group, graph)).toContain('ProductGroup: recommended "hasVariant.name" is missing')
+  })
+
+  it('a ShippingService without shippingConditions fails', () => {
+    const node = { '@type': 'ShippingService' }
+    expect(checkGoogle(node, alone(node))).toContain('ShippingService: required "shippingConditions" is missing')
+  })
 })

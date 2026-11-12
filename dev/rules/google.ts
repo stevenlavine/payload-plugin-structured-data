@@ -62,6 +62,9 @@ const FAQ_RETIRED: GoogleRule = {
 
 const EVENT_CHECKED = '2026-10-30'
 const ITEM_LIST_CHECKED = '2026-10-30'
+const SHOPS_CHECKED = '2026-11-12'
+
+const endsWith = (value: unknown, suffix: string): boolean => typeof value === 'string' && value.endsWith(suffix)
 
 export const GOOGLE_RULES: Record<string, GoogleRule> = {
   Organization: {
@@ -216,6 +219,65 @@ export const GOOGLE_RULES: Record<string, GoogleRule> = {
     checked: ITEM_LIST_CHECKED,
     required: [],
     recommended: [],
+  },
+  Product: {
+    // The merchant-listing page (name, image, offers) is the stricter of the two; the snippet page
+    // asks only for name plus one of offers, review or aggregateRating
+    source: `${PAGES}/structured-data/merchant-listing`,
+    checked: SHOPS_CHECKED,
+    topLevelOnly: true,
+    required: ['name', 'image', 'offers|review|aggregateRating', 'offers.price', 'offers.priceCurrency'],
+    recommended: [
+      'aggregateRating',
+      'brand.name',
+      'description',
+      'offers.availability',
+      'offers.hasMerchantReturnPolicy',
+      'offers.itemCondition',
+      'offers.shippingDetails',
+      'offers.url',
+      'review',
+      'sku',
+    ],
+    knownGaps: {
+      'offers.shippingDetails':
+        'shipping is output on the Organization as a ShippingService; an Offer.shippingDetails would need an OfferShippingDetails node',
+    },
+    // The page asks for a rating or review only where the site supplies one
+    onlyWhen: {
+      aggregateRating: (node) => Object.hasOwn(node, 'aggregateRating') || Object.hasOwn(node, 'review'),
+      review: (node) => Object.hasOwn(node, 'aggregateRating') || Object.hasOwn(node, 'review'),
+    },
+  },
+  ProductGroup: {
+    source: `${PAGES}/structured-data/product-variants`,
+    checked: SHOPS_CHECKED,
+    topLevelOnly: true,
+    // The page's table lists only name. A variant must also meet the Product merchant-listing rules,
+    // so its price and currency are required here
+    required: ['name', 'hasVariant.offers.price', 'hasVariant.offers.priceCurrency'],
+    recommended: ['description', 'hasVariant', 'hasVariant.name', 'hasVariant.sku', 'productGroupID', 'url', 'variesBy'],
+  },
+  MerchantReturnPolicy: {
+    source: `${PAGES}/structured-data/return-policy`,
+    checked: SHOPS_CHECKED,
+    required: ['applicableCountry|merchantReturnLink', 'returnPolicyCategory|merchantReturnLink'],
+    recommended: ['merchantReturnDays', 'returnShippingFeesAmount'],
+    onlyWhen: {
+      merchantReturnDays: (node) => endsWith(node.returnPolicyCategory, 'MerchantReturnFiniteReturnWindow'),
+      returnShippingFeesAmount: (node) => endsWith(node.returnFees, 'ReturnShippingFees'),
+    },
+  },
+  ShippingService: {
+    source: `${PAGES}/structured-data/shipping-policy`,
+    checked: SHOPS_CHECKED,
+    // The page requires only shippingConditions; a destination and rate are recommended on it,
+    // and addressCountry / currency are required once those objects exist
+    required: ['shippingConditions'],
+    recommended: [
+      'shippingConditions.shippingDestination.addressCountry',
+      'shippingConditions.shippingRate.currency',
+    ],
   },
   WebSite: {
     source: `${PAGES}/site-names`,
