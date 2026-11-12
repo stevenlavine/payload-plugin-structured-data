@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import type { CollectionOptions, Doc, JsonLdNode, ResolvedOptions, Settings } from '../types.js'
 import { buildStructuredData } from './buildStructuredData.js'
-import { buildProductNodes, pageCurrency, type ProductNodeInput } from './products.js'
+import { buildProductNodes, defaultVariantUrl, pageCurrency, type ProductNodeInput } from './products.js'
 
 const media = (name: string) => ({ id: name, url: `/media/${name}.jpg` })
 const lexical = (text: string) => ({
@@ -222,5 +222,227 @@ describe('buildProductNodes', () => {
     const result = buildStructuredData({ options, settings: { name: 'Acme' }, collection: 'pages', doc: watch })
     expect(result.graph?.['@graph'].map((n) => n['@type'])).toEqual(['Organization', 'WebSite', 'BreadcrumbList'])
     expect(result.warnings[0]).toContain('does not allow it')
+  })
+})
+
+const size = { id: 1, name: 'size', label: 'Size' }
+const extras = { id: 2, name: 'extras', label: 'Extras' }
+const cardigan: Doc = {
+  id: 4433,
+  title: 'Loopy Cardigan',
+  slug: 'loopy-cardigan',
+  enableVariants: true,
+  variantTypes: [size, extras],
+  gallery: [{ image: media('c'), variantOption: null }, { image: media('c-small'), variantOption: { id: 11 } }],
+  variants: {
+    docs: [
+      {
+        id: 12,
+        title: null,
+        _status: 'published',
+        inventory: 3,
+        priceInGBPEnabled: true,
+        priceInGBP: 2000,
+        options: [{ id: 11, label: '0-3 months', value: '0-3m', variantType: size }],
+      },
+      {
+        id: 13,
+        _status: 'published',
+        inventory: 0,
+        priceInGBPEnabled: true,
+        priceInGBP: 2500,
+        options: [
+          { id: 14, label: '3-6 months', value: '3-6m', variantType: size },
+          { id: 15, label: 'Bow', value: 'bow', variantType: extras },
+        ],
+      },
+      { id: 16, _status: 'draft', inventory: 5, priceInGBPEnabled: true, priceInGBP: 2000, options: [] },
+    ],
+  },
+}
+const cardiganUrl = 'https://example.com/products/loopy-cardigan'
+const groupInput = (overrides: Partial<ProductNodeInput> = {}) =>
+  inputFor({ doc: cardigan, url: cardiganUrl, ref: 'products/4433', ...overrides })
+const variantsOf = (nodes: JsonLdNode[]) => (nodes[0]?.hasVariant ?? []) as Record<string, unknown>[]
+const variantOffer = (variant: Record<string, unknown> | undefined) => variant?.offers as Record<string, unknown> | undefined
+const withVariants = (docs: unknown[]): Doc => ({ ...cardigan, variants: { docs } })
+const firstVariant = (cardigan.variants as { docs: Doc[] }).docs[0]
+
+describe('buildProductNodes with variants', () => {
+  test('outputs a ProductGroup with productGroupID 4433, url, variesBy size only, and two variants', () => {
+    const warnings: string[] = []
+    const nodes = buildProductNodes(groupInput(), warnings)
+    expect(warnings).toEqual([])
+    expect(nodes).toHaveLength(1)
+    expect(nodes[0]).toMatchObject({
+      '@type': 'ProductGroup',
+      '@id': `${cardiganUrl}#product`,
+      name: 'Loopy Cardigan',
+      url: cardiganUrl,
+      productGroupID: '4433',
+      variesBy: ['https://schema.org/size'],
+      image: ['https://example.com/media/c.jpg', 'https://example.com/media/c-small.jpg'],
+    })
+    expect(nodes[0]).not.toHaveProperty('offers')
+    expect(variantsOf(nodes)).toHaveLength(2)
+  })
+
+  test('variant name joins option labels; sku falls back to 4433-12; size is the option label', () => {
+    const [first, second] = variantsOf(buildProductNodes(groupInput(), []))
+    expect(first).toMatchObject({ '@type': 'Product', name: 'Loopy Cardigan, 0-3 months', sku: '4433-12', size: '0-3 months' })
+    expect(second).toMatchObject({ name: 'Loopy Cardigan, 3-6 months, Bow', sku: '4433-13', size: '3-6 months' })
+    expect(second).not.toHaveProperty('extras')
+
+    const config: CollectionOptions = { ...productsConfig, product: { sku: 'sku' } }
+    const doc = { ...withVariants([{ ...firstVariant, sku: 'LC-03', title: 'Newborn cardigan' }]), sku: 'LC' }
+    const [group] = buildProductNodes(groupInput({ doc, config }), [])
+    expect(group?.productGroupID).toBe('LC')
+    expect(variantsOf([group])[0]).toMatchObject({ name: 'Newborn cardigan', sku: 'LC-03' })
+  })
+
+  test('variant offer URL copies the template: ?size=11&variant=12', () => {
+    const [first, second] = variantsOf(buildProductNodes(groupInput(), []))
+    expect(variantOffer(first)).toMatchObject({
+      '@type': 'Offer',
+      url: `${cardiganUrl}?size=11&variant=12`,
+      price: 20,
+      priceCurrency: 'GBP',
+      seller: { '@id': 'https://example.com/#organization' },
+    })
+    expect(variantOffer(second)?.url).toBe(`${cardiganUrl}?size=14&extras=15&variant=13`)
+    expect(defaultVariantUrl('/products/loopy-cardigan', { id: 12, options: [{ id: 11, variantType: size }] })).toBe(
+      '/products/loopy-cardigan?size=11&variant=12',
+    )
+  })
+
+  test('variant with ID-only options gets ?variant=<id>', () => {
+    expect(defaultVariantUrl(cardiganUrl, { id: 12, options: [11, 14] })).toBe(`${cardiganUrl}?variant=12`)
+    const doc = withVariants([{ id: 12, _status: 'published', inventory: 1, priceInGBPEnabled: true, priceInGBP: 2000, options: [11] }])
+    const [variant] = variantsOf(buildProductNodes(groupInput({ doc }), []))
+    expect(variantOffer(variant)?.url).toBe(`${cardiganUrl}?variant=12`)
+    expect(variant?.name).toBe('Loopy Cardigan')
+  })
+
+  test('variant images come from gallery rows whose variantOption is one of its options', () => {
+    const [first, second] = variantsOf(buildProductNodes(groupInput(), []))
+    expect(first?.image).toEqual(['https://example.com/media/c-small.jpg'])
+    expect(second?.image).toEqual(['https://example.com/media/c.jpg', 'https://example.com/media/c-small.jpg'])
+  })
+
+  test('variant stock: 3 is InStock, 0 is OutOfStock; draft variant skipped', () => {
+    const variants = variantsOf(buildProductNodes(groupInput(), []))
+    expect(variants.map((v) => variantOffer(v)?.availability)).toEqual(['https://schema.org/InStock', 'https://schema.org/OutOfStock'])
+    expect(variants.map((v) => v.sku)).not.toContain('4433-16')
+  })
+
+  test('a product availability mapping applies to every variant and beats stock', () => {
+    let calls = 0
+    const config: CollectionOptions = {
+      ...productsConfig,
+      product: {
+        availability: () => {
+          calls += 1
+          return 'madeToOrder'
+        },
+        condition: () => 'new',
+      },
+    }
+    const id = 'https://example.com/#return-policy'
+    const variants = variantsOf(buildProductNodes(groupInput({ config, returnPolicyId: id }), []))
+    expect(calls).toBe(1)
+    expect(variants).toHaveLength(2)
+    for (const variant of variants) {
+      expect(variantOffer(variant)).toMatchObject({
+        availability: 'https://schema.org/BackOrder',
+        itemCondition: 'https://schema.org/NewCondition',
+        hasMerchantReturnPolicy: { '@id': id },
+      })
+    }
+  })
+
+  test('no valid variants: plain Product from the product price, else [] (WebPage fallback)', () => {
+    const unpriced = withVariants([{ id: 12, _status: 'published', inventory: 1, priceInGBPEnabled: true, priceInGBP: 0, options: [] }])
+    const priced = { ...unpriced, priceInGBPEnabled: true, priceInGBP: 1800, inventory: 2 }
+    const warnings: string[] = []
+    const nodes = buildProductNodes(groupInput({ doc: priced }), warnings)
+    expect(nodes).toHaveLength(1)
+    expect(nodes[0]).toMatchObject({ '@type': 'Product', '@id': `${cardiganUrl}#product`, offers: { price: 18 } })
+    expect(warnings.some((w) => w.includes('variant 12'))).toBe(true)
+
+    const fallback: string[] = []
+    expect(buildProductNodes(groupInput({ doc: unpriced }), fallback)).toEqual([])
+    expect(fallback.some((w) => w.includes('WebPage'))).toBe(true)
+
+    const disabled = { ...cardigan, enableVariants: false, priceInGBPEnabled: true, priceInGBP: 1800 }
+    expect(buildProductNodes(groupInput({ doc: disabled }), [])[0]?.['@type']).toBe('Product')
+  })
+
+  test('variants.docs holding IDs only: skipped with one warning, nothing throws', () => {
+    const doc = { ...withVariants([12, 13, 16]), priceInGBPEnabled: true, priceInGBP: 1800 }
+    const warnings: string[] = []
+    const nodes = buildProductNodes(groupInput({ doc }), warnings)
+    expect(nodes[0]?.['@type']).toBe('Product')
+    expect(warnings.filter((w) => w.includes('populated'))).toHaveLength(1)
+    expect(() => buildProductNodes(groupInput({ doc: withVariants([null, 'x', []]) }), [])).not.toThrow()
+  })
+
+  test('a throwing variantUrl warns and uses the default', () => {
+    const throwing: CollectionOptions = {
+      ...productsConfig,
+      product: {
+        variantUrl: () => {
+          throw new Error('no slug')
+        },
+      },
+    }
+    const warnings: string[] = []
+    const [first] = variantsOf(buildProductNodes(groupInput({ config: throwing }), warnings))
+    expect(variantOffer(first)?.url).toBe(`${cardiganUrl}?size=11&variant=12`)
+    expect(warnings.some((w) => w.includes('variantUrl') && w.includes('no slug'))).toBe(true)
+
+    const custom: CollectionOptions = { ...productsConfig, product: { variantUrl: (doc, variant) => `/shop/${doc.slug}/${variant.id}` } }
+    const [own] = variantsOf(buildProductNodes(groupInput({ config: custom }), []))
+    expect(variantOffer(own)?.url).toBe('https://example.com/shop/loopy-cardigan/12')
+  })
+
+  test('colour, color, size, material, pattern, age, gender map; age → suggestedAge', () => {
+    const types = [
+      { id: 1, name: 'Colour', label: 'Colour' },
+      { id: 2, name: 'shade', label: 'color' },
+      { id: 3, name: 'SIZE', label: 'Size' },
+      { id: 4, name: 'material', label: 'Material' },
+      { id: 5, name: 'pattern', label: 'Pattern' },
+      { id: 6, name: 'age', label: 'Age' },
+      { id: 7, name: 'gender', label: 'Gender' },
+      { id: 8, name: 'engraving', label: 'Engraving' },
+    ]
+    const options = types.map((variantType, i) => ({ id: 100 + i, label: `L${i}`, value: `v${i}`, variantType }))
+    const doc = withVariants([{ id: 12, _status: 'published', inventory: 1, priceInGBPEnabled: true, priceInGBP: 2000, options }])
+    const [group] = buildProductNodes(groupInput({ doc }), [])
+    expect(group?.variesBy).toEqual([
+      'https://schema.org/color',
+      'https://schema.org/size',
+      'https://schema.org/material',
+      'https://schema.org/pattern',
+      'https://schema.org/suggestedAge',
+      'https://schema.org/suggestedGender',
+    ])
+    // Two colour types: the first label wins
+    expect(variantsOf([group])[0]).toMatchObject({
+      color: 'L0',
+      size: 'L2',
+      material: 'L3',
+      pattern: 'L4',
+      suggestedAge: 'L5',
+      suggestedGender: 'L6',
+    })
+  })
+
+  test('with no page currency set, the first currency a variant enables is used, with one warning', () => {
+    const warnings: string[] = []
+    const nodes = buildProductNodes(groupInput({ options: optionsFor({ currencies: [{ code: 'GBP', decimals: 2 }] }) }), warnings)
+    expect(variantsOf(nodes).map((v) => variantOffer(v)?.priceCurrency)).toEqual(['GBP', 'GBP'])
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toContain('first enabled currency')
   })
 })
