@@ -1,4 +1,4 @@
-import { DEFAULT_FIELDS, documentTypesFor, EVENT_TYPE, GROUP_NAME } from '../constants.js'
+import { DEFAULT_FIELDS, documentTypesFor, EVENT_TYPE, GROUP_NAME, PRODUCT_TYPE } from '../constants.js'
 import type { BuildResult, Doc, DocumentType, JsonLdNode, ListInput, ResolvedOptions, Settings } from '../types.js'
 import { breadcrumbTrail, buildBreadcrumbList } from './breadcrumbs.js'
 import { buildEventNodes } from './events.js'
@@ -46,7 +46,7 @@ export function buildStructuredData({ options, settings, collection, doc, list }
           warnings.push(`${ref}: ${type} skipped, this collection does not allow it (set type: '${type}' or an event block)`)
         } else if (type === EVENT_TYPE) {
           nodes.push(...buildEventNodes({ doc, url, ref, config, options, hasOrganization: Boolean(organization) }, warnings))
-        } else if (type) {
+        } else if (type && type !== PRODUCT_TYPE) {
           const page = buildPageNode(
             { type, doc, url, ref, fields: config.fields, options, settings, hasOrganization: Boolean(organization) },
             warnings,

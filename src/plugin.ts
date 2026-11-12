@@ -1,8 +1,18 @@
 import type { Config } from 'payload'
 import { CUSTOM_KEY, documentTypesFor, GROUP_NAME } from './constants.js'
+import { discoverCurrencies } from './currencies.js'
 import { settingsGlobal } from './fields/settingsGlobal.js'
 import { sidebarGroup } from './fields/sidebarGroup.js'
-import type { ResolvedOptions, StructuredDataPluginOptions } from './types.js'
+import type { ResolvedOptions, ShopOptions, StructuredDataPluginOptions } from './types.js'
+
+function resolveShop(shop: ShopOptions, config: Config): NonNullable<ResolvedOptions['shop']> {
+  const currencies = (shop.currencies ?? []).map((c) => ({ ...c, code: c.code.toUpperCase() }))
+  for (const found of discoverCurrencies(config.collections ?? [])) {
+    if (!currencies.some((c) => c.code === found.code)) currencies.push(found)
+  }
+  const currency = shop.currency?.trim().toUpperCase()
+  return { ...(currency ? { currency } : {}), currencies }
+}
 
 export const structuredDataPlugin =
   (options: StructuredDataPluginOptions) =>
@@ -11,11 +21,12 @@ export const structuredDataPlugin =
       throw new Error('structuredDataPlugin: siteUrl is required (e.g. process.env.NEXT_PUBLIC_SERVER_URL)')
     }
     const urlTemplate = options.search?.urlTemplate?.trim()
-    const { search: _search, ...rest } = options
+    const { search: _search, shop, ...rest } = options
     const resolved: ResolvedOptions = {
       ...rest,
       siteUrl: options.siteUrl.trim().replace(/\/+$/, ''),
       ...(urlTemplate ? { search: { urlTemplate } } : {}),
+      ...(shop ? { shop: resolveShop(shop, config) } : {}),
     }
 
     const collections = (config.collections ?? []).map((collection) => {

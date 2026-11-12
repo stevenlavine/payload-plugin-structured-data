@@ -2,10 +2,37 @@ import type { CollectionSlug } from 'payload'
 
 export type Doc = Record<string, unknown>
 export type PageType = 'Article' | 'BlogPosting' | 'Service' | 'WebPage'
-export type DocumentType = PageType | 'Event'
+export type DocumentType = PageType | 'Event' | 'Product'
 export type FieldPath = string | string[]
 export type PageField = 'headline' | 'description' | 'image' | 'datePublished' | 'dateModified' | 'author'
 export type BreadcrumbItem = { name: string; path: string }
+/** A field path, or a function of the document */
+export type Mapped<T = string> = FieldPath | ((doc: Doc) => T | null | undefined)
+/** ISO 4217 code and its number of minor-unit digits */
+export type CurrencyInfo = { code: string; decimals: number }
+export type ShopOptions = { currency?: string; currencies?: CurrencyInfo[] }
+export type RatingInput = { value: number; count: number; best?: number; worst?: number }
+export type ReviewInput = { author: string; rating: number; body?: string; date?: string; best?: number; worst?: number }
+export type ReviewsInput = { rating?: RatingInput | null; items?: ReviewInput[] | null }
+
+export type ProductOptions = {
+  availability?: Mapped
+  stock?: FieldPath
+  outOfStock?: 'OutOfStock' | 'SoldOut'
+  condition?: Mapped
+  price?: { amount: FieldPath; currency?: FieldPath; minorUnits?: boolean }
+  brand?: FieldPath
+  sku?: FieldPath
+  gtin?: FieldPath
+  mpn?: FieldPath
+  color?: FieldPath
+  size?: FieldPath
+  material?: FieldPath
+  pattern?: FieldPath
+  rating?: Mapped<RatingInput>
+  reviews?: Mapped<ReviewInput[]>
+  variantUrl?: (doc: Doc, variant: Doc) => string
+}
 
 export type FaqOptions = {
   /** Blocks field on the document. Default 'layout' */
@@ -112,6 +139,8 @@ export type CollectionOptions = {
   breadcrumbs?: (doc: Doc) => BreadcrumbItem[]
   /** Event field mapping. Setting it also offers Event in the editor's type select */
   event?: EventOptions
+  /** Product field mapping. Setting it also offers Product in the editor's type select */
+  product?: ProductOptions
 }
 
 export type StructuredDataPluginOptions = {
@@ -125,12 +154,42 @@ export type StructuredDataPluginOptions = {
   timeZone?: string
   /** Adds a SearchAction to WebSite, e.g. 'https://example.com/search?q={search_term_string}' */
   search?: { urlTemplate: string }
+  /** Turns on the shop settings (shipping, returns, condition) and sets the currencies */
+  shop?: ShopOptions
   /** Keeps the fields (so the schema stays stable) but outputs nothing */
   disabled?: boolean
 }
 
 /** Options after the plugin has validated them */
-export type ResolvedOptions = Omit<StructuredDataPluginOptions, 'siteUrl'> & { siteUrl: string }
+export type ResolvedOptions = Omit<StructuredDataPluginOptions, 'siteUrl' | 'shop'> & {
+  siteUrl: string
+  shop?: { currency?: string; currencies: CurrencyInfo[] }
+}
+
+export type ShopSettings = {
+  defaultCondition?: 'new' | 'used' | 'refurbished' | null
+  shipping?:
+    | {
+        name?: string | null
+        countries?: string | null
+        cost?: number | null
+        freeOver?: number | null
+        handlingMin?: number | null
+        handlingMax?: number | null
+        transitMin?: number | null
+        transitMax?: number | null
+      }[]
+    | null
+  returns?: {
+    policy?: 'finite' | 'none' | 'unlimited' | null
+    days?: number | null
+    countries?: string | null
+    fees?: 'free' | 'customer' | 'shipping' | null
+    feeAmount?: number | null
+    methods?: ('mail' | 'store')[] | null
+    link?: string | null
+  } | null
+}
 
 export type Settings = {
   organizationType?: 'Organization' | 'LocalBusiness' | null
@@ -153,6 +212,7 @@ export type Settings = {
   foundingDate?: string | null
   founder?: { name?: string | null; jobTitle?: string | null } | null
   identifiers?: { propertyID?: string | null; value?: string | null }[] | null
+  shop?: ShopSettings | null
 }
 
 /** A listings page: its own path, an optional heading and the rows to list. Generic on purpose. */

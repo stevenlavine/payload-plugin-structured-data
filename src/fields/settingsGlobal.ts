@@ -2,6 +2,7 @@ import type { GlobalConfig } from 'payload'
 import { SETTINGS_SLUG } from '../constants.js'
 import { revalidateSettings } from '../hooks/revalidateSettings.js'
 import type { ResolvedOptions } from '../types.js'
+import { shopFields } from './shopFields.js'
 
 export function settingsGlobal(options: ResolvedOptions): GlobalConfig {
   return {
@@ -65,6 +66,7 @@ export function settingsGlobal(options: ResolvedOptions): GlobalConfig {
           { name: 'value', type: 'text', required: true },
         ],
       },
+      ...(options.shop ? [shopFields()] : []),
     ],
   }
 }
