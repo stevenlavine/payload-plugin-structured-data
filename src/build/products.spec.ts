@@ -463,3 +463,124 @@ describe('buildProductNodes with variants', () => {
     expect(warnings[0]).toContain('first enabled currency')
   })
 })
+
+describe('ratings and reviews', () => {
+  const noPrice = { ...watch, priceInGBP: 0 }
+  const review = (overrides: Record<string, unknown> = {}) => ({ author: 'Ann', rating: 5, body: 'Lovely', ...overrides })
+  const reviewsOf = (nodes: JsonLdNode[]) => (nodes[0]?.review ?? []) as Record<string, unknown>[]
+  const given = (reviews: ProductNodeInput['reviews'], warnings: string[] = [], overrides: Partial<ProductNodeInput> = {}) =>
+    buildProductNodes(inputFor({ reviews, ...overrides }), warnings)
+
+  test('aggregateRating only from the given rating: { ratingValue: 4.8, reviewCount: 12, bestRating: 5, worstRating: 1 }', () => {
+    const [node] = given({ rating: { value: 4.8, count: 12 } })
+    expect(node?.aggregateRating).toEqual({ '@type': 'AggregateRating', ratingValue: 4.8, reviewCount: 12, bestRating: 5, worstRating: 1 })
+    const [custom] = given({ rating: { value: 90, count: 3, best: 100, worst: 0 } })
+    expect(custom?.aggregateRating).toMatchObject({ ratingValue: 90, bestRating: 100, worstRating: 0 })
+  })
+
+  test('items alone never produce an aggregateRating', () => {
+    const nodes = given({ items: [review(), review({ author: 'Bob', rating: 3 })] })
+    expect(nodes[0]).not.toHaveProperty('aggregateRating')
+    expect(reviewsOf(nodes)).toHaveLength(2)
+  })
+
+  test('count 0, or a value outside worst..best, drops the rating with a warning', () => {
+    for (const rating of [{ value: 4, count: 0 }, { value: 6, count: 3 }, { value: 0.5, count: 3 }, { value: 4, count: 3, best: 1, worst: 1 }]) {
+      const warnings: string[] = []
+      const [node] = given({ rating }, warnings)
+      expect(node).not.toHaveProperty('aggregateRating')
+      expect(warnings.some((w) => w.includes('aggregateRating'))).toBe(true)
+    }
+  })
+
+  test('a review needs an author, a rating, and a body or a date; others dropped with a warning', () => {
+    const warnings: string[] = []
+    const nodes = given(
+      {
+        items: [
+          review(),
+          review({ author: '' }),
+          review({ rating: 9 }),
+          review({ body: undefined }),
+          review({ body: undefined, date: '2026-03-01' }),
+        ],
+      },
+      warnings,
+    )
+    expect(reviewsOf(nodes)).toEqual([
+      {
+        '@type': 'Review',
+        author: { '@type': 'Person', name: 'Ann' },
+        reviewRating: { '@type': 'Rating', ratingValue: 5, bestRating: 5, worstRating: 1 },
+        reviewBody: 'Lovely',
+      },
+      {
+        '@type': 'Review',
+        author: { '@type': 'Person', name: 'Ann' },
+        reviewRating: { '@type': 'Rating', ratingValue: 5, bestRating: 5, worstRating: 1 },
+        datePublished: '2026-03-01',
+      },
+    ])
+    expect(warnings).toHaveLength(3)
+  })
+
+  test('a date that is not YYYY-MM-DD or ISO is dropped with a warning, and the review then needs a body', () => {
+    const warnings: string[] = []
+    const nodes = given({ items: [review({ date: '1 March 2026' }), review({ body: undefined, date: 'yesterday' }), review({ date: '2026-03-01T10:00:00Z' })] }, warnings)
+    const out = reviewsOf(nodes)
+    expect(out).toHaveLength(2)
+    expect(out[0]).not.toHaveProperty('datePublished')
+    expect(out[1]?.datePublished).toBe('2026-03-01T10:00:00Z')
+    expect(warnings.filter((w) => w.includes('date dropped'))).toHaveLength(2)
+  })
+
+  test('at most 10 reviews output, in the order given', () => {
+    const items = Array.from({ length: 12 }, (_, i) => review({ author: `Reviewer ${i + 1}` }))
+    const out = reviewsOf(given({ items }))
+    expect(out).toHaveLength(10)
+    expect(out.map((r) => (r.author as { name: string }).name)).toEqual(items.slice(0, 10).map((i) => i.author))
+  })
+
+  test('the prop beats the document mapping, and each of rating and items replaces its own', () => {
+    const config: CollectionOptions = {
+      ...productsConfig,
+      product: { rating: (doc) => ({ value: Number(doc.avg), count: Number(doc.n) }), reviews: () => [review({ author: 'Mapped' })] },
+    }
+    const doc = { ...watch, avg: 3.5, n: 8 }
+    const mappedOnly = buildProductNodes(inputFor({ doc, config }), [])
+    expect(mappedOnly[0]?.aggregateRating).toMatchObject({ ratingValue: 3.5, reviewCount: 8 })
+    expect(reviewsOf(mappedOnly)[0]?.author).toEqual({ '@type': 'Person', name: 'Mapped' })
+
+    const both = buildProductNodes(inputFor({ doc, config, reviews: { rating: { value: 4.8, count: 12 }, items: [review({ author: 'Prop' })] } }), [])
+    expect(both[0]?.aggregateRating).toMatchObject({ ratingValue: 4.8, reviewCount: 12 })
+    expect(reviewsOf(both)[0]?.author).toEqual({ '@type': 'Person', name: 'Prop' })
+
+    const ratingOnly = buildProductNodes(inputFor({ doc, config, reviews: { rating: { value: 4.8, count: 12 } } }), [])
+    expect(reviewsOf(ratingOnly)[0]?.author).toEqual({ '@type': 'Person', name: 'Mapped' })
+  })
+
+  test('a product with no price but a rating still outputs as a product snippet', () => {
+    const nodes = given({ rating: { value: 4.8, count: 12 } }, [], { doc: noPrice })
+    expect(nodes).toHaveLength(1)
+    expect(nodes[0]).toMatchObject({ '@type': 'Product', name: 'Brass Calibre Duplex by Barwise', aggregateRating: { ratingValue: 4.8 } })
+    expect(nodes[0]).not.toHaveProperty('offers')
+  })
+
+  test('a product with no offer whose review data is all invalid falls back to []', () => {
+    const warnings: string[] = []
+    const nodes = given({ rating: { value: 9, count: 0 }, items: [review({ author: '' })] }, warnings, { doc: noPrice })
+    expect(nodes).toEqual([])
+    expect(warnings.some((w) => w.includes('WebPage'))).toBe(true)
+  })
+
+  test('on a ProductGroup the rating and reviews sit on the group, not the variants', () => {
+    const nodes = buildProductNodes(groupInput({ reviews: { rating: { value: 4.8, count: 12 }, items: [review()] } }), [])
+    expect(nodes[0]?.['@type']).toBe('ProductGroup')
+    expect(nodes[0]?.aggregateRating).toMatchObject({ reviewCount: 12 })
+    expect(reviewsOf(nodes)).toHaveLength(1)
+    for (const variant of variantsOf(nodes)) {
+      expect(variant).not.toHaveProperty('aggregateRating')
+      expect(variant).not.toHaveProperty('review')
+    }
+  })
+})

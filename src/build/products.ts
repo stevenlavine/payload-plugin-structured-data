@@ -1,8 +1,8 @@
 import type { OfferLeaf, ProductGroupLeaf, ProductLeaf } from 'schema-dts'
 import { DEFAULT_PRODUCT_FIELDS } from '../constants.js'
 import { currencyDecimals } from '../currencies.js'
-import type { CollectionOptions, Doc, FieldPath, JsonLdNode, ProductOptions, ResolvedOptions, ReviewsInput, Settings } from '../types.js'
-import { readMoney, resolveAvailability, resolveCondition } from './productValues.js'
+import type { CollectionOptions, Doc, FieldPath, JsonLdNode, ProductOptions, RatingInput, ResolvedOptions, ReviewsInput, Settings } from '../types.js'
+import { readMoney, resolveAvailability, resolveCondition, runMapped } from './productValues.js'
 import { compact, organizationId } from './siteNodes.js'
 import { absoluteUrl, mediaUrl, plainText, readFirst, readPath, readText } from './values.js'
 
@@ -17,7 +17,7 @@ export type ProductNodeInput = {
   settings: Settings | null
   /** The currency this page shows, from the StructuredData prop */
   currency: string | undefined
-  /** Ratings and reviews the site supplies. Rating and review nodes are built in a later step */
+  /** Ratings and reviews the site supplies. They beat the product block's rating and reviews mappings */
   reviews?: ReviewsInput
   hasOrganization: boolean
   /** @id of the Organization's return policy, linked from the offer */
@@ -149,12 +149,112 @@ function currencyFor(input: ProductNodeInput, source: Doc, warnings: string[]): 
   return currency
 }
 
-/** Review data the site supplied. Rating and review nodes themselves are built in a later step */
-const hasReviewData = (reviews: ReviewsInput | undefined): boolean => Boolean(reviews?.rating) || Boolean(reviews?.items?.length)
-
 const enablesCurrency = (source: Doc): boolean => Object.keys(source).some((key) => ENABLED_FIELD.test(key) && source[key] === true)
 
 const isObject = (value: unknown): value is Doc => typeof value === 'object' && value !== null && !Array.isArray(value)
+
+/** Most review nodes output per product; the README states it */
+export const REVIEW_CAP = 10
+const DEFAULT_BEST = 5
+const DEFAULT_WORST = 1
+/** YYYY-MM-DD, or an ISO date-time with a zone or none */
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/
+
+const isFiniteNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value)
+const textOf = (value: unknown): string | undefined => (typeof value === 'string' && value.trim() ? value.trim() : undefined)
+
+/** best and worst with their defaults, or undefined when either is not a number or worst is not below best */
+function scale(best: unknown, worst: unknown): { best: number; worst: number } | undefined {
+  const b = best === undefined || best === null ? DEFAULT_BEST : best
+  const w = worst === undefined || worst === null ? DEFAULT_WORST : worst
+  return isFiniteNumber(b) && isFiniteNumber(w) && w < b ? { best: b, worst: w } : undefined
+}
+
+/** An AggregateRating from a rating the site gave, else undefined (with a warning when it was given but invalid) */
+export function buildRating(input: RatingInput | null | undefined, ref: string, warnings: string[]): Record<string, unknown> | undefined {
+  if (input === undefined || input === null) return undefined
+  if (!isObject(input)) {
+    warnings.push(`${ref}: aggregateRating left out, the rating is not an object`)
+    return undefined
+  }
+  const { value, count } = input as Record<string, unknown>
+  const range = scale(input.best, input.worst)
+  if (!range) {
+    warnings.push(`${ref}: aggregateRating left out, best and worst must be numbers with worst below best`)
+    return undefined
+  }
+  if (!isFiniteNumber(count) || count <= 0) {
+    warnings.push(`${ref}: aggregateRating left out, the review count must be above 0`)
+    return undefined
+  }
+  if (!isFiniteNumber(value) || value < range.worst || value > range.best) {
+    warnings.push(`${ref}: aggregateRating left out, the rating value must be a number from ${range.worst} to ${range.best}`)
+    return undefined
+  }
+  return { '@type': 'AggregateRating', ratingValue: value, reviewCount: count, bestRating: range.best, worstRating: range.worst }
+}
+
+/** Up to REVIEW_CAP Review nodes, in the order given. Items without an author, a rating and a body or date are dropped */
+export function buildReviews(items: unknown, ref: string, warnings: string[]): Record<string, unknown>[] | undefined {
+  if (items === undefined || items === null) return undefined
+  if (!Array.isArray(items)) {
+    warnings.push(`${ref}: reviews left out, the review list is not an array`)
+    return undefined
+  }
+  const nodes: Record<string, unknown>[] = []
+  items.forEach((item: unknown, index) => {
+    const label = `${ref} review ${index + 1}`
+    if (!isObject(item)) {
+      warnings.push(`${label}: left out, not an object`)
+      return
+    }
+    const author = textOf(item.author)
+    const range = scale(item.best, item.worst)
+    const rating = item.rating
+    if (!author) {
+      warnings.push(`${label}: left out, no author`)
+      return
+    }
+    if (!range || !isFiniteNumber(rating) || rating < range.worst || rating > range.best) {
+      warnings.push(`${label}: left out, the rating must be a number from ${range?.worst ?? DEFAULT_WORST} to ${range?.best ?? DEFAULT_BEST}`)
+      return
+    }
+    const body = textOf(item.body)
+    let date = textOf(item.date)
+    if (date && (!ISO_DATE.test(date) || Number.isNaN(Date.parse(date)))) {
+      warnings.push(`${label}: date dropped, "${date}" is not YYYY-MM-DD or an ISO date-time`)
+      date = undefined
+    }
+    if (!body && !date) {
+      warnings.push(`${label}: left out, it needs a body or a date`)
+      return
+    }
+    if (nodes.length >= REVIEW_CAP) return
+    nodes.push(
+      compact({
+        '@type': 'Review',
+        author: { '@type': 'Person', name: author },
+        reviewRating: { '@type': 'Rating', ratingValue: rating, bestRating: range.best, worstRating: range.worst },
+        reviewBody: body,
+        datePublished: date,
+      }),
+    )
+  })
+  return nodes.length ? nodes : undefined
+}
+
+type ReviewData = { aggregateRating?: Record<string, unknown>; review?: Record<string, unknown>[] }
+
+/** Rating and review nodes. The prop's rating and items each replace the mapping's when present */
+function buildReviewData(input: ProductNodeInput, product: ProductOptions, warnings: string[]): ReviewData {
+  const { doc, ref, reviews } = input
+  const rating = reviews?.rating ?? (runMapped(doc, product.rating, ref, 'rating', warnings) as RatingInput | null | undefined)
+  const items = reviews?.items ?? runMapped(doc, product.reviews, ref, 'reviews', warnings)
+  return { aggregateRating: buildRating(rating, ref, warnings), review: buildReviews(items, ref, warnings) }
+}
+
+const hasReviewData = (data: ReviewData): boolean => Boolean(data.aggregateRating) || Boolean(data.review?.length)
+
 
 /** The id of a relationship value: the id itself, or a populated document's id. As text, for comparing */
 function idOf(value: unknown): string | undefined {
@@ -245,7 +345,7 @@ function variantImages(doc: Doc, variant: Doc, config: CollectionOptions, option
   return urls.length ? [...new Set(urls)] : undefined
 }
 
-type Common = { name: string; product: ProductOptions; images: string[] | undefined }
+type Common = { name: string; product: ProductOptions; images: string[] | undefined; reviewData: ReviewData }
 
 /**
  * The ProductGroup, or null when no variant has a valid offer (the caller then builds a plain Product).
@@ -253,7 +353,7 @@ type Common = { name: string; product: ProductOptions; images: string[] | undefi
  */
 function buildProductGroup(input: ProductNodeInput, common: Common, docs: unknown[], warnings: string[]): JsonLdNode | null {
   const { doc, url, ref, config, options, settings } = input
-  const { name, product, images } = common
+  const { name, product, images, reviewData } = common
 
   const populated = docs.filter(isObject)
   if (populated.length < docs.length) {
@@ -345,8 +445,8 @@ function buildProductGroup(input: ProductNodeInput, common: Common, docs: unknow
     productGroupID: groupId,
     variesBy: variesBy.length ? variesBy.map((property) => `https://schema.org/${property}`) : undefined,
   }
-  // Rating and review nodes (a later step) go on the group, not the variants
-  return compact({ '@type': 'ProductGroup', '@id': `${url}#product`, ...props, hasVariant })
+  // Rating and review nodes sit on the group, not the variants
+  return compact({ '@type': 'ProductGroup', '@id': `${url}#product`, ...props, ...reviewData, hasVariant })
 }
 
 /** Variants in the eCommerce plugin's shape: enableVariants true and a non-empty variants.docs array */
@@ -361,7 +461,7 @@ function variantDocs(doc: Doc): unknown[] | undefined {
  * when the caller must fall back to a WebPage (no name, or no offer and no review data).
  */
 export function buildProductNodes(input: ProductNodeInput, warnings: string[]): JsonLdNode[] {
-  const { doc, url, ref, config, options, settings, reviews } = input
+  const { doc, url, ref, config, options, settings } = input
   const name = readText(doc, config.fields?.headline ?? DEFAULT_PRODUCT_FIELDS.headline)
   if (!name) {
     warnings.push(`${ref}: Product skipped, no name; output as a WebPage instead`)
@@ -370,10 +470,11 @@ export function buildProductNodes(input: ProductNodeInput, warnings: string[]): 
 
   const product: ProductOptions = { ...config.product, stock: config.product?.stock ?? DEFAULT_PRODUCT_FIELDS.stock }
   const images = imagesOf(doc, config, options)
+  const reviewData = buildReviewData(input, product, warnings)
 
   const docs = variantDocs(doc)
   if (docs) {
-    const group = buildProductGroup(input, { name, product, images }, docs, warnings)
+    const group = buildProductGroup(input, { name, product, images, reviewData }, docs, warnings)
     if (group) return [group]
   }
 
@@ -395,7 +496,7 @@ export function buildProductNodes(input: ProductNodeInput, warnings: string[]): 
         warnings,
       )
     : undefined
-  if (!offer && !hasReviewData(reviews)) {
+  if (!offer && !hasReviewData(reviewData)) {
     warnings.push(`${ref}: Product skipped, no offer and no review data; output as a WebPage instead`)
     return []
   }
@@ -416,6 +517,5 @@ export function buildProductNodes(input: ProductNodeInput, warnings: string[]): 
     pattern: textAt(doc, product.pattern),
   }
   // The offer is a typed OfferLeaf literal (buildOffer); it joins here because compact() widens its type.
-  // Rating and review nodes are not built yet: `reviews` only keeps a priceless product.
-  return [compact({ '@type': 'Product', '@id': `${url}#product`, ...props, offers: offer })]
+  return [compact({ '@type': 'Product', '@id': `${url}#product`, ...props, ...reviewData, offers: offer })]
 }
