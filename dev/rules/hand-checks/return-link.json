@@ -1,0 +1,38 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://www.lavine.dev/#organization",
+      "name": "Example Shop",
+      "url": "https://www.lavine.dev",
+      "hasMerchantReturnPolicy": {
+        "@type": "MerchantReturnPolicy",
+        "@id": "https://www.lavine.dev/#returns",
+        "applicableCountry": "GB",
+        "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+        "merchantReturnDays": 30,
+        "returnFees": "https://schema.org/FreeReturn",
+        "returnMethod": "https://schema.org/ReturnByMail"
+      }
+    },
+    {
+      "@type": "Product",
+      "@id": "https://www.lavine.dev/products/brass-duplex#product",
+      "name": "Brass Calibre Duplex by Barwise",
+      "description": "An early 19th Century English duplex.",
+      "image": "https://www.lavine.dev/api/media/file/home-share-1200x630.jpg",
+      "sku": "A1308",
+      "offers": {
+        "@type": "Offer",
+        "url": "https://www.lavine.dev/products/brass-duplex",
+        "price": 1750,
+        "priceCurrency": "GBP",
+        "availability": "https://schema.org/InStock",
+        "itemCondition": "https://schema.org/UsedCondition",
+        "seller": { "@id": "https://www.lavine.dev/#organization" },
+        "hasMerchantReturnPolicy": { "@id": "https://www.lavine.dev/#returns" }
+      }
+    }
+  ]
+}
