@@ -5,7 +5,7 @@
 **Project:** `@lavinedev/payload-plugin-structured-data`
 **Client:** None. Own product of Lavine Web & AI Solutions; public open-source npm plugin, not client work.
 **Repo:** https://github.com/stevenlavine/payload-plugin-structured-data (public since 0.1.0, 2026-10-23)
-**Description:** Payload CMS 3 plugin that outputs Schema.org JSON-LD (Organization, LocalBusiness, WebSite, Article, BlogPosting, Service, WebPage, FAQPage, BreadcrumbList, Event, ItemList), editable in the admin.
+**Description:** Payload CMS 3 plugin that outputs Schema.org JSON-LD (Organization, LocalBusiness, WebSite, Article, BlogPosting, Service, WebPage, FAQPage, BreadcrumbList, Event, ItemList, Product, ProductGroup), editable in the admin.
 
 ## Workspace links
 
@@ -35,12 +35,22 @@ On Windows, `pnpm build` may need `SWC_NATIVE_BINDING_CACHE` pointing at a direc
 - Output is one `<script type="application/ld+json">` per call, holding `{ "@context": "https://schema.org", "@graph": [...] }`.
 - Serialised JSON escapes every `<` as `\u003c` (six ASCII characters, not a literal `<`; verify bytes).
 - Every URL in the output is absolute.
-- Types: Organization, LocalBusiness, WebSite, Article, BlogPosting, Service, WebPage, FAQPage, BreadcrumbList, Event, ItemList.
-- `@id` values: `<siteUrl>/#organization`, `<siteUrl>/#website`, `<pageUrl>#webpage` / `#article` / `#service` / `#faq` / `#breadcrumb`, plus `<pageUrl>#event`, `#event-<start>` (one per date) and `<listUrl>#itemlist`.
+- Types: Organization, LocalBusiness, WebSite, Article, BlogPosting, Service, WebPage, FAQPage, BreadcrumbList, Event, ItemList, Product, ProductGroup.
+- `@id` values: `<siteUrl>/#organization`, `<siteUrl>/#website`, `<pageUrl>#webpage` / `#article` / `#service` / `#faq` / `#breadcrumb`, plus `<pageUrl>#event`, `#event-<start>` (one per date), `<listUrl>#itemlist`, and for shops `<pageUrl>#product` plus `<siteUrl>/#shipping` and `<siteUrl>/#returns` on the Organization.
 - UK English in README and admin labels.
 - Single site only for now. Keep every settings read inside `getSettings` and every `siteUrl` use behind `ResolvedOptions.siteUrl` so multi-tenant (v2) can swap both.
 - Dev/test database is SQLite. No Playwright e2e.
 - No secrets in the repo.
+
+## Shop types and files (0.4)
+
+- Types in `src/types.ts`: `ShopOptions` (`currency`, `currencies`), `ProductOptions` (per-collection `product` mapping), `ReviewInput` / `ReviewsInput` (the `reviews` prop), `ShopSettings` (settings global shop group), `CurrencyInfo`.
+- `src/build/products.ts` builds `Product` / `ProductGroup`; `productValues.ts` holds price, availability and condition readers; `shopNodes.ts` builds the Organization's `hasShippingService` and `hasMerchantReturnPolicy`.
+- `src/currencies.ts` discovers currency decimals from the eCommerce plugin's `priceIn<CODE>` fields (plugin order matters) and falls back to Intl.
+- `src/categoryBreadcrumbs.ts` is the exported helper for product category trails.
+- `src/fields/shopFields.ts` adds the settings `shop` group only when the `shop` option is set. No `shop` option means no database change.
+- Rules: one currency per page; made to order outputs `BackOrder` (Google rejects `MadeToOrder`); ratings are never computed; at most 10 reviews.
+- Hand-check samples: `dev/rules/hand-checks/`. The dev app uses `@payloadcms/plugin-ecommerce` (dev dependency only).
 
 ## Publishing
 

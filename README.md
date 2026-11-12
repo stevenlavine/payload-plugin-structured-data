@@ -2,7 +2,7 @@
 
 A Payload CMS 3 plugin that outputs Schema.org structured data (JSON-LD) for your pages. Business details live in a settings screen in the admin. You choose a default type per collection in config. Editors can override it or switch it off per document.
 
-It outputs eleven types: `Organization`, `LocalBusiness`, `WebSite`, `Article`, `BlogPosting`, `Service`, `WebPage`, `FAQPage`, `BreadcrumbList`, `Event` and `ItemList`.
+It outputs thirteen types: `Organization`, `LocalBusiness`, `WebSite`, `Article`, `BlogPosting`, `Service`, `WebPage`, `FAQPage`, `BreadcrumbList`, `Event`, `ItemList`, `Product` and `ProductGroup`. Shops also get shipping and returns on the `Organization`. See [Shops](#shops).
 
 Each page gets one `<script type="application/ld+json">` holding a connected `@graph`. Nodes link to each other by `@id`, for example the article's `publisher` points at `<siteUrl>/#organization`.
 
@@ -65,18 +65,20 @@ Commit the updated `importMap.js` if your project tracks it. Without this step t
 | `imageSize` | `string` | Image size name to prefer, such as `og`. Falls back to the original file. |
 | `search` | `{ urlTemplate: string }` | Adds a `SearchAction` to `WebSite`, for example `https://example.com/search?q={search_term_string}`. Google retired the sitelinks search box in November 2024, so this no longer changes Google results. It is still valid Schema.org, and other tools and AI assistants can read it. |
 | `timeZone` | `string` | IANA time zone for event dates, such as `Europe/London`. A zone stored on the document wins. See [Events](#events). |
+| `shop` | `{ currency?, currencies? }` | Turns on the shop settings and sets the page currency. See [Shops](#shops). |
 | `disabled` | `boolean` | Keeps the fields so your schema stays stable, but outputs nothing. |
 
 ### Collection options
 
 | Key | Type | What it does |
 | --- | --- | --- |
-| `type` | `'Article' \| 'BlogPosting' \| 'Service' \| 'WebPage' \| 'Event'`, or `(doc) => type \| null` | The collection's default type. A function lets one collection mix types, for example `Service` under `/services/` and `WebPage` elsewhere. Return `null` to output no page node. |
+| `type` | `'Article' \| 'BlogPosting' \| 'Service' \| 'WebPage' \| 'Event' \| 'Product'`, or `(doc) => type \| null` | The collection's default type. A function lets one collection mix types, for example `Service` under `/services/` and `WebPage` elsewhere. Return `null` to output no page node. |
 | `path` | `(doc) => string` | The document's public path, starting with `/`. Use `/` for the home page. The plugin joins it to `siteUrl`. |
 | `fields` | `Partial<Record<PageField, string \| string[]>>` | Maps Schema.org properties to field paths. Dot paths work. A list means the first non-empty value wins, for example `datePublished: ['completedAt', 'publishedAt', 'createdAt']`. |
 | `faq` | `{ block, items, question, answer, blocksField? }` | Builds a `FAQPage` from a blocks field. `block` is the block slug. `items` is the array field inside the block that holds the rows. `question` and `answer` are the field names in each row. `blocksField` is the blocks field on the document and defaults to `layout`. All matching blocks on a page merge into one `FAQPage`. Answers must be plain text (a text or textarea field). Rich text answers are skipped. Google retired the FAQ rich result (not shown from 7 May 2026, documentation removed 15 June 2026), so this no longer changes Google results. The markup stays valid Schema.org, and other tools and AI assistants still read it. We check it against Schema.org only. |
 | `breadcrumbs` | `(doc) => { name, path }[]` | Builds the breadcrumb trail yourself, for collections outside nested docs. Include Home as the first item. |
 | `event` | `EventOptions` | Maps the document's fields to an `Event`. Setting it also offers Event in the editor's type select. See [Events](#events). |
+| `product` | `ProductOptions` | Maps the document's fields to a `Product`. Setting it also offers Product in the editor's type select. See [Shops](#shops). |
 
 `PageField` is one of `headline`, `description`, `image`, `datePublished`, `dateModified` and `author`.
 
@@ -271,6 +273,140 @@ This outputs one `ItemList` with the id `<listUrl>#itemlist` and one `ListItem` 
 
 Google shows no event result for online-only events or for listing pages. The plugin still outputs the markup for both. It is valid Schema.org that other tools can read. `movedOnline` is not on Google's list of statuses either. It is valid Schema.org, and Google may ignore it.
 
+## Shops
+
+Set `type: 'Product'` on a collection, or add a `product` block so editors can pick Product per document. A product page gets a `Product` node, or a `ProductGroup` when the product has variants. Shops built on Payload's own eCommerce plugin (`@payloadcms/plugin-ecommerce`) need no field mapping, because the plugin reads that plugin's fields.
+
+```ts
+import { categoryBreadcrumbs, structuredDataPlugin } from '@lavinedev/payload-plugin-structured-data'
+
+plugins: [
+  // List the eCommerce plugin first
+  ecommercePlugin({ /* ... */ }),
+  structuredDataPlugin({
+    siteUrl: process.env.NEXT_PUBLIC_SERVER_URL,
+    shop: { currency: 'GBP' },
+    collections: {
+      products: {
+        type: 'Product',
+        path: (doc) => `/products/${doc.slug}`,
+        breadcrumbs: categoryBreadcrumbs({
+          path: (category) => `/shop/${category.slug}`,
+          productPath: (doc) => `/products/${doc.slug}`,
+        }),
+        product: { outOfStock: 'SoldOut', brand: 'brand.name' },
+      },
+    },
+  }),
+]
+```
+
+Every key in `product` is optional. The `shop` option is the switch for the shop settings. Without it the settings global does not change. A `product` block without `shop` still works, but the node then has no shipping, returns or default condition.
+
+### Plugin order
+
+List the eCommerce plugin before this one in `plugins`. This plugin reads each currency's decimals from the eCommerce plugin's price fields when your config loads. If it runs first, it uses the ISO digits for the currency and logs a warning in development.
+
+### Depth
+
+The render path runs no queries, so fetch the product with `depth: 3`. That populates the variants, their options and option types, the gallery images and the categories. A product that arrives with only IDs outputs less: no variants, no extra images, no category trail.
+
+```ts
+const { docs } = await payload.find({
+  collection: 'products',
+  where: { slug: { equals: slug } },
+  depth: 3,
+  limit: 1,
+})
+```
+
+### Currency
+
+A page outputs prices in one currency, because Google wants a separate URL for each currency. The currency is the `currency` prop on `StructuredData` if you pass one, then `shop.currency`. If neither is set, the first enabled currency is used, with a development warning. A product without that currency enabled gets no offer.
+
+```tsx
+<StructuredData config={config} collection="products" doc={product} currency="EUR" />
+```
+
+Prices are stored in each currency's smallest unit and divided by `10 ** decimals`, never a fixed 100. The decimals come from, in order: `shop.currencies` (a list of `{ code, decimals }` that you set), the eCommerce plugin's price fields, then the ISO digits for the currency. A missing price, a price of 0 or one that is not a number drops the offer with a warning.
+
+Shops that map their own price fields instead of using the eCommerce plugin must set `shop.currency` (or pass the `currency` prop). Without one, no offer is output. Mapped prices are read as written, in pounds and not pence, unless you set `minorUnits: true`:
+
+```ts
+product: { price: { amount: 'price', currency: 'currencyCode', minorUnits: false } }
+```
+
+Shipping rates always stay in `shop.currency`, even on a page rendered with a different `currency` prop.
+
+### Stock and availability
+
+The plugin reads, in this order:
+
+1. The `availability` mapping: a field path or `(doc) => value`. It accepts `inStock`, `outOfStock`, `soldOut`, `preOrder`, `backOrder`, `madeToOrder`, `discontinued`, `limitedAvailability` or the Schema.org names, in any case. An unknown value is dropped with a warning.
+2. The stock number (`inventory` by default, or the `stock` mapping). Above 0 is `InStock`. 0 or less is `OutOfStock`, or `SoldOut` if you set `outOfStock: 'SoldOut'`.
+3. Neither: no `availability`.
+
+A mapping beats the stock number, so a made-to-order item with stock 0 does not show as out of stock. With no mapping, stock 0 never outputs an in-stock value.
+
+Made to order outputs `BackOrder`. Google's Rich Results Test rejected `MadeToOrder` as an invalid availability value (checked 2026-11-12), and the stock status was not read. `BackOrder` means you can order it now and it ships later.
+
+Condition comes from the `condition` mapping, then the default condition in the admin settings, then nothing. It accepts `new`, `used`, `refurbished` or the Schema.org names.
+
+### Options and variants
+
+When a product has variants and at least one published variant arrives populated, the page outputs a `ProductGroup` with a `Product` for each variant. Each variant has its own price, stock, name and URL. Draft variants are skipped, and a variant with no valid offer is dropped with a warning. If none are left, the page outputs a plain `Product`.
+
+- **URL.** Each variant's offer URL has one `<option type>=<option id>` parameter per option, then `variant=<variant id>`, which is what the official eCommerce template uses. Set `variantUrl: (doc, variant) => string` to change it.
+- **SKU.** A variant's mapped SKU, else `<product id>-<variant id>`. The group's `productGroupID` is the product's SKU, else its ID.
+- **Name.** With the eCommerce plugin, the variant name comes from the plugin's generated variant title. Otherwise it is the product name and the option labels.
+- **`variesBy`.** Option types named colour (or color), size, material or pattern map to Google's properties. A gender option maps to `audience.suggestedGender` for male, female and unisex only. Age options are not mapped, because Google wants a number range for `suggestedAge`, not a label such as "0-3 months". Other option types, such as extras, stay out of `variesBy`. The variant still outputs with its own price.
+- **Mappings apply to every variant.** The `availability` and `condition` mappings run once on the product. A value they return applies to all its variants and beats each variant's stock.
+
+Variants are read in the eCommerce plugin's shape only. A shop built another way gets a plain `Product`, unless its product has the same shape: `enableVariants`, and a populated `variants.docs` array with `options` and prices.
+
+### Reviews and ratings
+
+Pass ratings and reviews from your own data. The plugin never queries for them and never works out a rating. The reviews you pass are usually one page of many, so their average would be wrong.
+
+```tsx
+<StructuredData
+  config={config}
+  collection="products"
+  doc={product}
+  reviews={{
+    rating: { value: 4.8, count: 12 },
+    items: [{ author: 'Sam', rating: 5, body: 'Lovely.', date: '2026-10-02' }],
+  }}
+/>
+```
+
+`rating` becomes the `aggregateRating`, and only from the `value` and `count` you give. `best` and `worst` are optional. A count of 0, or a value outside the range, is dropped with a warning. Each item needs an author, a rating, and a body or a date. At most 10 reviews are output. You can also map `product.rating` and `product.reviews` to fields on the document instead.
+
+### Shipping and returns
+
+With `shop` set, the Structured data settings gain a Shop group: default condition, shipping options and a returns policy. Shipping is a list of rows, each with countries, a cost (in `shop.currency`, 0 for free), an optional free-over amount, and handling and transit days. The returns policy covers the window in days, countries, fees, methods, and an optional link to your returns page. A link on its own is enough.
+
+Both are output on the `Organization`, which is where Google recommends shop-wide policies sit. Every offer links to the return policy by `@id`, and Google follows that link (checked 2026-11-12). Shipping sits on the `Organization` only, so Google may show "Missing field shippingDetails" as an optional warning.
+
+Handling time is one value per shop. It is output only when all the shipping rows agree. Rows that cannot be valid, such as no country or a minimum above its maximum, are dropped with a warning and the rest still output.
+
+### Category breadcrumbs
+
+`categoryBreadcrumbs` builds the `breadcrumbs` function for a product collection. It takes `path` (the public path of a category) and `productPath` (the public path of the product, required), and returns the whole trail starting at Home: the first category's trail, then the product.
+
+If the category has a nested-docs `breadcrumbs` array, that is the trail. Otherwise the plugin walks a populated `parent` chain, stopping at a repeat or after 10 levels. `field` (default `categories`), `name` and `categoryName` (both default `title`) change which fields it reads.
+
+### What Google shows
+
+- A product page where a shopper can buy the item is eligible for a merchant listing. A sold one-off item gets a product snippet, not a merchant listing.
+- Category pages get no product result. Use the `list` prop for an `ItemList` of product links. The markup is valid, but Google shows nothing for it.
+- Merchant listings need a price above zero. A product with no price outputs a plain `WebPage` instead, with a warning.
+- Check a product page and a variant page in the Rich Results Test before you rely on them.
+
+### Database
+
+Turning on `shop` adds fields to the settings global. Run `payload generate:types`, then `payload migrate:create` and `payload migrate` on Postgres or SQLite. MongoDB needs nothing. A config with no `shop` option adds no settings fields, and a collection with no `product` block and a type other than `Product` keeps its exact type options.
+
 ## Admin
 
 **Settings.** The plugin adds a global with the slug `structured-data-settings`. In the admin it sits under Settings, then Structured data. It holds:
@@ -320,7 +456,7 @@ These checks run in our test suite, not in your site. The `dev/` folder is not p
 
 Google recommends some properties the plugin does not output yet:
 
-- **Organization:** alternate name and number of employees (no settings field). Contact point (settings hold one email and telephone, output at the top level without a contact type). DUNS, GLN, ISO 6523, LEI, NAICS, tax ID and VAT ID (no dedicated field; add them under identifiers and they output as a `PropertyValue`). Return policy, member programme and shipping service (merchant data, out of scope).
+- **Organization:** alternate name and number of employees (no settings field). Contact point (settings hold one email and telephone, output at the top level without a contact type). DUNS, GLN, ISO 6523, LEI, NAICS, tax ID and VAT ID (no dedicated field; add them under identifiers and they output as a `PropertyValue`). Member programme (out of scope).
 - **LocalBusiness:** geo coordinates, opening hours, price range, department, menu, cuisine, reviews and ratings (no settings fields or data).
 - **Article and BlogPosting:** the author's profile URL (authors are read from populated users, which have no URL field).
 - **WebSite:** alternate site name (no settings field).
@@ -338,7 +474,7 @@ MongoDB needs no migration.
 
 ## Not yet supported
 
-- `Product`, `Recipe` and `Review`. Google's rules for these are strict and mistakes can cost you rich results. We will add them on demand.
+- `Recipe`, `Course` and rentals. Google's rules for these are strict and mistakes can cost you rich results. We will add them on demand. Reviews are supported on products only.
 - Multi-tenant setups. There is one settings record and one `siteUrl` per install. Multi-tenant support (`@payloadcms/plugin-multi-tenant`) is planned.
 - Validation against Google's live tools. The tests use Google's published rules, not its tools. Check your pages with the Rich Results Test.
 
