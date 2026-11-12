@@ -14,7 +14,10 @@ const policy = (shop: ShopSettings, currency: string | undefined = 'GBP') => {
 }
 
 const uk = { name: 'UK', countries: 'gb, IE', cost: 4.5, handlingMin: 1, handlingMax: 2, transitMin: 1, transitMax: 3 }
-const days = (minValue: number, maxValue: number) => ({ '@type': 'QuantitativeValue', minValue, maxValue, unitCode: 'DAY' })
+const days = (minValue: number, maxValue: number) => ({
+  '@type': 'ServicePeriod',
+  duration: { '@type': 'QuantitativeValue', minValue, maxValue, unitCode: 'DAY' },
+})
 
 describe('buildShippingService', () => {
   test('one row: ShippingConditions with a DefinedRegion per country, rate, handling and transit in DAY', () => {
@@ -82,6 +85,25 @@ describe('buildShippingService', () => {
     const { node, warnings } = ship({ shipping: [uk] }, '')
     expect(node).toBeUndefined()
     expect(warnings).toEqual(['settings: shipping skipped, no shop.currency is set'])
+  })
+
+  test('a time with only a minimum is left out with a warning; the row stays', () => {
+    const { node, warnings } = ship({ shipping: [{ name: 'Min', countries: 'GB', cost: 3, handlingMin: 1, transitMin: 2 }] })
+    expect(node?.shippingConditions).toMatchObject({ shippingRate: { value: 3 } })
+    expect(node?.shippingConditions).not.toHaveProperty('transitTime')
+    expect(node).not.toHaveProperty('handlingTime')
+    expect(warnings).toEqual([
+      'settings: shipping "Min" handling time left out, it needs a maximum number of days',
+      'settings: shipping "Min" transit time left out, it needs a maximum number of days',
+    ])
+  })
+
+  test('a time with only a maximum is kept', () => {
+    const { node, warnings } = ship({ shipping: [{ countries: 'GB', cost: 3, handlingMax: 1, transitMax: 4 }] })
+    const maxOnly = (maxValue: number) => ({ '@type': 'ServicePeriod', duration: { '@type': 'QuantitativeValue', maxValue, unitCode: 'DAY' } })
+    expect(node?.shippingConditions).toMatchObject({ transitTime: maxOnly(4) })
+    expect(node?.handlingTime).toEqual(maxOnly(1))
+    expect(warnings).toEqual([])
   })
 
   test('rows with different handling days leave handling out with a warning', () => {

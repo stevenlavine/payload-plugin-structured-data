@@ -388,7 +388,7 @@ With `shop` set, the Structured data settings gain a Shop group: default conditi
 
 Both are output on the `Organization`, which is where Google recommends shop-wide policies sit. When a returns policy is set in the settings, every offer links to it by `@id`, and Google follows that link (checked 2026-11-12). Shipping sits on the `Organization` only, so Google may show "Missing field shippingDetails" as an optional warning.
 
-Handling time is one value per shop. It is output only when all the shipping rows agree. Rows that cannot be valid, such as no country or a minimum above its maximum, are dropped with a warning and the rest still output.
+Handling and transit days are output as a `ServicePeriod` and need a maximum: a minimum on its own is left out with a warning (the row itself stays), and a maximum on its own is fine. Handling time is one value per shop. It is output only when all the shipping rows agree. Rows that cannot be valid, such as no country or a minimum above its maximum, are dropped with a warning and the rest still output.
 
 ### Category breadcrumbs
 

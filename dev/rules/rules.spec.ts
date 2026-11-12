@@ -216,6 +216,12 @@ describe('product scenario contents', () => {
     const organization = graphs.shopPolicies?.['@graph'][0] as Json
     expect((organization.hasShippingService as Json)['@id']).toBe('https://example.com/#shipping')
     expect((organization.hasMerchantReturnPolicy as Json)['@id']).toBe('https://example.com/#returns')
+    // The times are present, so the ServicePeriod duration rules above are checked on this scenario
+    const service = organization.hasShippingService as Json
+    expect(service.handlingTime).toMatchObject({ '@type': 'ServicePeriod', duration: { maxValue: 1, unitCode: 'DAY' } })
+    for (const condition of service.shippingConditions as Json[]) {
+      expect(condition.transitTime).toMatchObject({ '@type': 'ServicePeriod', duration: { unitCode: 'DAY' } })
+    }
   })
 
   const currenciesIn = (value: unknown): string[] => {
@@ -365,6 +371,23 @@ describe('the checker catches a broken node', () => {
     expect(checkGoogle(organization, alone(organization)).join()).not.toMatch(/hasShippingService|hasMerchantReturnPolicy/)
     const returnsOnly = { ...organization, hasMerchantReturnPolicy: { '@type': 'MerchantReturnPolicy', merchantReturnLink: 'https://example.com/returns' } }
     expect(checkGoogle(returnsOnly, alone(returnsOnly))).toContain('Organization: recommended "hasShippingService" is missing')
+  })
+
+  it('shipping times need a ServicePeriod with a maximum; a service with no times is not asked for one', () => {
+    const condition = { '@type': 'ShippingConditions', shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'GB' } }
+    const bare = { '@type': 'ShippingService', shippingConditions: condition }
+    expect(checkGoogle(bare, alone(bare)).join()).not.toMatch(/handlingTime|transitTime/)
+    const days = { '@type': 'QuantitativeValue', minValue: 1, maxValue: 2, unitCode: 'DAY' }
+    const flat = { ...bare, handlingTime: days, shippingConditions: { ...condition, transitTime: days } }
+    expect(checkGoogle(flat, alone(flat))).toEqual(
+      expect.arrayContaining([
+        'ShippingService: recommended "handlingTime.duration.maxValue" is missing',
+        'ShippingService: recommended "shippingConditions.transitTime.duration.maxValue" is missing',
+      ]),
+    )
+    const period = { '@type': 'ServicePeriod', duration: days }
+    const good = { ...bare, handlingTime: period, shippingConditions: { ...condition, transitTime: period } }
+    expect(checkGoogle(good, alone(good)).join()).not.toMatch(/handlingTime|transitTime/)
   })
 
   it('a ShippingService without shippingConditions fails', () => {

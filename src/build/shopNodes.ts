@@ -24,17 +24,30 @@ function parseCountries(value: string | null | undefined): string[] {
 
 type DayRange = { min?: number | null; max?: number | null }
 
-/** A whole-number day range as a QuantitativeValue. Undefined when empty; null when invalid */
-function dayRange({ min, max }: DayRange): JsonLdNode | undefined | null {
+/** False when a day range has a value that is not a whole number of days, or a minimum above its maximum */
+function validDays({ min, max }: DayRange): boolean {
   const given = [min, max].filter((v) => v !== null && v !== undefined)
-  if (!given.length) return undefined
-  if (!given.every((v) => isNumber(v) && Number.isInteger(v) && v >= 0)) return null
-  if (isNumber(min) && isNumber(max) && min > max) return null
+  if (!given.every((v) => isNumber(v) && Number.isInteger(v) && v >= 0)) return false
+  return !(isNumber(min) && isNumber(max) && min > max)
+}
+
+/**
+ * A valid day range as Google's ServicePeriod, its duration a QuantitativeValue in DAY.
+ * Google needs a maximum: a range with only a minimum is left out with a warning.
+ */
+function servicePeriod({ min, max }: DayRange, what: string, warnings: string[]): JsonLdNode | undefined {
+  if (!isNumber(max)) {
+    if (isNumber(min)) warnings.push(`${what} left out, it needs a maximum number of days`)
+    return undefined
+  }
   return {
-    '@type': 'QuantitativeValue',
-    ...(isNumber(min) ? { minValue: min } : {}),
-    ...(isNumber(max) ? { maxValue: max } : {}),
-    unitCode: 'DAY',
+    '@type': 'ServicePeriod',
+    duration: {
+      '@type': 'QuantitativeValue',
+      ...(isNumber(min) ? { minValue: min } : {}),
+      maxValue: max,
+      unitCode: 'DAY',
+    },
   }
 }
 
@@ -73,12 +86,14 @@ export function buildShippingService(
       warnings.push(`settings: shipping "${label}" dropped, no cost (use 0 for free)`)
       return
     }
-    const handling = dayRange({ min: row.handlingMin, max: row.handlingMax })
-    const transit = dayRange({ min: row.transitMin, max: row.transitMax })
-    if (handling === null || transit === null) {
+    const handlingDays = { min: row.handlingMin, max: row.handlingMax }
+    const transitDays = { min: row.transitMin, max: row.transitMax }
+    if (!validDays(handlingDays) || !validDays(transitDays)) {
       warnings.push(`settings: shipping "${label}" dropped, handling and transit days must be whole numbers with the minimum not above the maximum`)
       return
     }
+    const handling = servicePeriod(handlingDays, `settings: shipping "${label}" handling time`, warnings)
+    const transit = servicePeriod(transitDays, `settings: shipping "${label}" transit time`, warnings)
 
     const base = {
       '@type': 'ShippingConditions',

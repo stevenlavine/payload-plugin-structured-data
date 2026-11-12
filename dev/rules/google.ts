@@ -68,6 +68,9 @@ const endsWith = (value: unknown, suffix: string): boolean => typeof value === '
 const hasShopData = (node: Record<string, unknown>): boolean =>
   Object.hasOwn(node, 'hasShippingService') || Object.hasOwn(node, 'hasMerchantReturnPolicy')
 
+const isConditionWithTransit = (value: unknown): boolean =>
+  typeof value === 'object' && value !== null && Object.hasOwn(value, 'transitTime')
+
 export const GOOGLE_RULES: Record<string, GoogleRule> = {
   Organization: {
     source: `${PAGES}/structured-data/organization`,
@@ -283,7 +286,16 @@ export const GOOGLE_RULES: Record<string, GoogleRule> = {
     recommended: [
       'shippingConditions.shippingDestination.addressCountry',
       'shippingConditions.shippingRate.currency',
+      // Each time is a ServicePeriod whose duration needs a value or maxValue; the plugin outputs maxValue
+      'handlingTime.duration.maxValue',
+      'shippingConditions.transitTime.duration.maxValue',
     ],
+    // Times are optional: check their shape only when the service has them
+    onlyWhen: {
+      'handlingTime.duration.maxValue': (node) => Object.hasOwn(node, 'handlingTime'),
+      'shippingConditions.transitTime.duration.maxValue': (node) =>
+        [node.shippingConditions].flat().every((c) => isConditionWithTransit(c)),
+    },
   },
   WebSite: {
     source: `${PAGES}/site-names`,
