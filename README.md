@@ -8,6 +8,8 @@ Each page gets one `<script type="application/ld+json">` holding a connected `@g
 
 Requires Payload `^3.82.1`, Next.js 15 or 16, React 19 and Node 20.9 or later.
 
+If the plugin saves you time, you can [buy us a coffee](https://buymeacoffee.com/lavinedev).
+
 ## Install
 
 ```bash
@@ -505,4 +507,4 @@ MongoDB needs no migration.
 
 MIT.
 
-Made by [Lavine Web & AI Solutions](https://www.lavine.dev).
+Made by [Lavine Web & AI Solutions](https://www.lavine.dev). If it helps you, [buy us a coffee](https://buymeacoffee.com/lavinedev).

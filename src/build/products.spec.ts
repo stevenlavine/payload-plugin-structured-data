@@ -105,6 +105,14 @@ describe('buildProductNodes', () => {
     expect(warnings[0]).toContain('ecommercePlugin')
   })
 
+  test('shop options built by hand without currencies work like an empty list', () => {
+    const warnings: string[] = []
+    const nodes = buildProductNodes(inputFor({ options: optionsFor({ currency: 'GBP' }) }), warnings)
+    expect(offerOf(nodes)).toMatchObject({ price: 1750, priceCurrency: 'GBP' })
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toContain('ecommercePlugin')
+  })
+
   test('no offer and no review data: [] and a warning, and buildStructuredData outputs a WebPage', () => {
     const onRequest = { ...watch, priceInGBP: 0 }
     const warnings: string[] = []
