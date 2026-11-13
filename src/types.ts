@@ -161,9 +161,8 @@ export type StructuredDataPluginOptions = {
 }
 
 /** Options after the plugin has validated them */
-export type ResolvedOptions = Omit<StructuredDataPluginOptions, 'siteUrl' | 'shop'> & {
+export type ResolvedOptions = Omit<StructuredDataPluginOptions, 'siteUrl'> & {
   siteUrl: string
-  shop?: { currency?: string; currencies: CurrencyInfo[] }
 }
 
 export type ShopSettings = {
