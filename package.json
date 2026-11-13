@@ -44,36 +44,36 @@
     "prepublishOnly": "node -e \"if(!/^pnpm/.test(process.env.npm_config_user_agent||''))throw new Error('Publish with pnpm publish, not npm')\" && pnpm clean && pnpm build"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.2.0",
-    "@payloadcms/db-sqlite": "3.90.2",
+    "@eslint/eslintrc": "^3.3.7",
+    "@payloadcms/db-sqlite": "3.93.0",
     "@payloadcms/eslint-config": "3.28.0",
-    "@payloadcms/next": "3.90.2",
-    "@payloadcms/plugin-ecommerce": "3.90.2",
-    "@payloadcms/richtext-lexical": "3.90.2",
-    "@payloadcms/ui": "3.90.2",
+    "@payloadcms/next": "3.93.0",
+    "@payloadcms/plugin-ecommerce": "3.93.0",
+    "@payloadcms/richtext-lexical": "3.93.0",
+    "@payloadcms/ui": "3.93.0",
     "@swc-node/register": "1.10.9",
-    "@swc/cli": "0.6.0",
+    "@swc/cli": "0.8.2",
     "@types/node": "24.12.3",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "copyfiles": "2.4.1",
     "cross-env": "10.1.0",
-    "eslint": "^9.23.0",
-    "eslint-config-next": "16.4.0",
-    "graphql": "^16.8.1",
-    "next": "16.4.0",
-    "open": "^10.1.0",
-    "payload": "3.90.2",
-    "prettier": "^3.4.2",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.4.6",
+    "graphql": "^16.15.0",
+    "next": "16.4.6",
+    "open": "^10.2.0",
+    "payload": "3.93.0",
+    "prettier": "^3.10.1",
     "qs-esm": "8.0.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "rimraf": "3.0.2",
     "schema-dts": "^2.1.0",
-    "sort-package-json": "^2.10.0",
+    "sort-package-json": "^2.15.1",
     "typescript": "6.0.3",
     "vite-tsconfig-paths": "6.0.5",
-    "vitest": "5.0.1"
+    "vitest": "5.1.0"
   },
   "peerDependencies": {
     "next": "^15.0.0 || ^16.0.0",
@@ -103,6 +103,9 @@
     "registry": "https://registry.npmjs.org/"
   },
   "pnpm": {
+    "overrides": {
+      "dompurify": "^3.4.17"
+    },
     "onlyBuiltDependencies": [
       "sharp",
       "esbuild",
