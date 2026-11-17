@@ -83,8 +83,10 @@ describe('absoluteUrl', () => {
     expect(absoluteUrl('https://a.com/', '/blog/x')).toBe('https://a.com/blog/x')
     expect(absoluteUrl('https://a.com', 'blog/x')).toBe('https://a.com/blog/x')
   })
-  test('home path is the bare site URL', () => {
-    expect(absoluteUrl('https://a.com', '/')).toBe('https://a.com')
+  test('home path ends in a slash, other paths do not', () => {
+    expect(absoluteUrl('https://example.com', '/')).toBe('https://example.com/')
+    expect(absoluteUrl('https://example.com/', '/')).toBe('https://example.com/')
+    expect(absoluteUrl('https://example.com', '/a')).toBe('https://example.com/a')
   })
   test('leaves absolute URLs alone', () => {
     expect(absoluteUrl('https://a.com', 'https://cdn.b.com/i.png')).toBe('https://cdn.b.com/i.png')

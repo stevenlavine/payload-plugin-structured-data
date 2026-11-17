@@ -49,7 +49,7 @@ describe('buildOrganization', () => {
       '@type': 'Organization',
       '@id': 'https://a.com/#organization',
       name: 'Acme Studio',
-      url: 'https://a.com',
+      url: 'https://a.com/',
       legalName: 'Acme Studio Ltd',
       description: 'We build things.',
       logo: 'https://a.com/media/logo.png',
@@ -101,7 +101,7 @@ describe('buildOrganization', () => {
 
   test('leaves out empty optional properties', () => {
     const node = buildOrganization({ name: 'Acme' }, options, [])
-    expect(node).toEqual({ '@type': 'Organization', '@id': 'https://a.com/#organization', name: 'Acme', url: 'https://a.com' })
+    expect(node).toEqual({ '@type': 'Organization', '@id': 'https://a.com/#organization', name: 'Acme', url: 'https://a.com/' })
   })
 
   test('no settings or no name gives null and a warning', () => {
@@ -132,7 +132,7 @@ describe('buildWebSite', () => {
       '@type': 'WebSite',
       '@id': 'https://a.com/#website',
       name: 'Acme Studio',
-      url: 'https://a.com',
+      url: 'https://a.com/',
       publisher: { '@id': 'https://a.com/#organization' },
       potentialAction: {
         '@type': 'SearchAction',
