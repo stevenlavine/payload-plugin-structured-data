@@ -38,7 +38,7 @@ const shop = ecommercePlugin({
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-if (!process.env.ROOT_DIR) process.env.ROOT_DIR = dirname
+if (!process.env.ROOT_DIR) {process.env.ROOT_DIR = dirname}
 
 export default buildConfig({
   admin: { importMap: { baseDir: path.resolve(dirname) } },
@@ -158,10 +158,10 @@ export default buildConfig({
             performers: { path: 'artists' },
             superEvent: (doc) => {
               const festival = doc.festival
-              if (!festival || typeof festival !== 'object') return null
+              if (!festival || typeof festival !== 'object') {return null}
               const { title, slug, startsAt, endsAt, venue } = festival as Record<string, unknown>
               const place = (venue ?? {}) as Record<string, string | undefined>
-              if (typeof title !== 'string' || typeof slug !== 'string') return null
+              if (typeof title !== 'string' || typeof slug !== 'string') {return null}
               return {
                 name: title,
                 path: `/events/${slug}`,

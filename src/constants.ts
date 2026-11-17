@@ -40,7 +40,7 @@ export const DEFAULT_PRODUCT_FIELDS = {
 /** The types a collection may output, and so the options in its editor select */
 export function documentTypesFor(config: CollectionOptions): readonly DocumentType[] {
   const types: DocumentType[] = [...PAGE_TYPES]
-  if (config.type === EVENT_TYPE || config.event) types.push(EVENT_TYPE)
-  if (config.type === PRODUCT_TYPE || config.product) types.push(PRODUCT_TYPE)
+  if (config.type === EVENT_TYPE || config.event) {types.push(EVENT_TYPE)}
+  if (config.type === PRODUCT_TYPE || config.product) {types.push(PRODUCT_TYPE)}
   return types.length === PAGE_TYPES.length ? PAGE_TYPES : types
 }

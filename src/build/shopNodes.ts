@@ -14,7 +14,7 @@ const isNumber = (value: unknown): value is number => typeof value === 'number' 
 
 /** Two-letter codes from a comma-separated list: trimmed, upper-cased, duplicates and bad entries dropped */
 function parseCountries(value: string | null | undefined): string[] {
-  if (typeof value !== 'string') return []
+  if (typeof value !== 'string') {return []}
   const codes = value
     .split(',')
     .map((code) => code.trim().toUpperCase())
@@ -27,7 +27,7 @@ type DayRange = { min?: number | null; max?: number | null }
 /** False when a day range has a value that is not a whole number of days, or a minimum above its maximum */
 function validDays({ min, max }: DayRange): boolean {
   const given = [min, max].filter((v) => v !== null && v !== undefined)
-  if (!given.every((v) => isNumber(v) && Number.isInteger(v) && v >= 0)) return false
+  if (!given.every((v) => isNumber(v) && Number.isInteger(v) && v >= 0)) {return false}
   return !(isNumber(min) && isNumber(max) && min > max)
 }
 
@@ -37,7 +37,7 @@ function validDays({ min, max }: DayRange): boolean {
  */
 function servicePeriod({ min, max }: DayRange, what: string, warnings: string[]): JsonLdNode | undefined {
   if (!isNumber(max)) {
-    if (isNumber(min)) warnings.push(`${what} left out, it needs a maximum number of days`)
+    if (isNumber(min)) {warnings.push(`${what} left out, it needs a maximum number of days`)}
     return undefined
   }
   return {
@@ -65,7 +65,7 @@ export function buildShippingService(
   warnings: string[],
 ): JsonLdNode | undefined {
   const rows = Array.isArray(shop.shipping) ? shop.shipping : []
-  if (!rows.length) return undefined
+  if (!rows.length) {return undefined}
   const code = currency?.trim().toUpperCase()
   if (!code) {
     warnings.push('settings: shipping skipped, no shop.currency is set')
@@ -122,11 +122,11 @@ export function buildShippingService(
     handlings.push(handling)
   })
 
-  if (!conditions.length) return undefined
+  if (!conditions.length) {return undefined}
 
   const first = JSON.stringify(handlings[0] ?? null)
   const agree = handlings.every((h) => JSON.stringify(h ?? null) === first)
-  if (!agree) warnings.push('settings: shipping rows have different handling days, handling time left out (it can only be set once)')
+  if (!agree) {warnings.push('settings: shipping rows have different handling days, handling time left out (it can only be set once)')}
   const handlingTime = agree ? handlings[0] : undefined
 
   return {
@@ -157,13 +157,13 @@ export function buildReturnPolicy(
   currency?: string,
 ): JsonLdNode | undefined {
   const returns = shop.returns
-  if (!returns) return undefined
+  if (!returns) {return undefined}
   const link = typeof returns.link === 'string' && returns.link.trim() ? absoluteUrl(siteUrl, returns.link.trim()) : undefined
   const id = returnPolicyId(siteUrl)
   const linkOnly = (): JsonLdNode | undefined => (link ? { '@type': 'MerchantReturnPolicy', '@id': id, merchantReturnLink: link } : undefined)
 
   const policy = returns.policy
-  if (!policy) return linkOnly()
+  if (!policy) {return linkOnly()}
   if (!Object.hasOwn(CATEGORIES, policy)) {
     warnings.push(
       link
@@ -198,7 +198,7 @@ export function buildReturnPolicy(
     ...(countries.length ? { applicableCountry: countries.length === 1 ? countries[0] : countries } : {}),
     returnPolicyCategory: schema(CATEGORIES[policy]),
   }
-  if (policy === 'finite') node.merchantReturnDays = returns.days
+  if (policy === 'finite') {node.merchantReturnDays = returns.days}
 
   if (policy !== 'none') {
     if (returns.fees === 'shipping') {
@@ -218,6 +218,6 @@ export function buildReturnPolicy(
       node.returnMethod = terms.length === 1 ? terms[0] : terms
     }
   }
-  if (link) node.merchantReturnLink = link
+  if (link) {node.merchantReturnLink = link}
   return node
 }

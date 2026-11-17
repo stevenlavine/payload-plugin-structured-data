@@ -29,9 +29,9 @@ const pathsOf = (path: FieldPath): string[] => (Array.isArray(path) ? path : [pa
 
 /** Text from a string, or a finite number as text (barcodes are often stored as numbers) */
 function textAt(doc: Doc, path: FieldPath | undefined): string | undefined {
-  if (path === undefined) return undefined
+  if (path === undefined) {return undefined}
   const value = readFirst(doc, path)
-  if (typeof value === 'number' && Number.isFinite(value)) return String(value)
+  if (typeof value === 'number' && Number.isFinite(value)) {return String(value)}
   return typeof value === 'string' && value.trim() ? value.trim() : undefined
 }
 
@@ -46,8 +46,8 @@ export function pageCurrency(
   warnings: string[],
 ): string | undefined {
   const prop = input.currency?.trim().toUpperCase()
-  if (prop) return prop
-  if (input.options.shop?.currency) return input.options.shop.currency
+  if (prop) {return prop}
+  if (input.options.shop?.currency) {return input.options.shop.currency}
   for (const key of Object.keys(product)) {
     const match = ENABLED_FIELD.exec(key)
     if (match && product[key] === true) {
@@ -73,7 +73,7 @@ function descriptionOf(doc: Doc, config: CollectionOptions): string | undefined 
   const paths = [...(config.fields?.description ? pathsOf(config.fields.description) : []), ...pathsOf(DEFAULT_PRODUCT_FIELDS.description)]
   for (const path of paths) {
     const text = plainText(readPath(doc, path))
-    if (text) return text
+    if (text) {return text}
   }
   return undefined
 }
@@ -108,7 +108,7 @@ function priceOf(
     },
     warnings,
   )
-  if (price === undefined && warnings.length === before) warnings.push(`${ref}: offer left out, the product has no ${currency} price`)
+  if (price === undefined && warnings.length === before) {warnings.push(`${ref}: offer left out, the product has no ${currency} price`)}
   return price
 }
 
@@ -127,7 +127,7 @@ function buildOffer(
 ): Record<string, unknown> | undefined {
   const { options, hasOrganization, returnPolicyId } = input
   const price = priceOf(input, product, source, offer.ref, offer.currency, warnings)
-  if (price === undefined) return undefined
+  if (price === undefined) {return undefined}
 
   const props: Omit<Partial<OfferLeaf>, '@type'> = {
     url: offer.url,
@@ -172,7 +172,7 @@ function scale(best: unknown, worst: unknown): { best: number; worst: number } |
 
 /** An AggregateRating from a rating the site gave, else undefined (with a warning when it was given but invalid) */
 export function buildRating(input: RatingInput | null | undefined, ref: string, warnings: string[]): Record<string, unknown> | undefined {
-  if (input === undefined || input === null) return undefined
+  if (input === undefined || input === null) {return undefined}
   if (!isObject(input)) {
     warnings.push(`${ref}: aggregateRating left out, the rating is not an object`)
     return undefined
@@ -196,7 +196,7 @@ export function buildRating(input: RatingInput | null | undefined, ref: string, 
 
 /** Up to REVIEW_CAP Review nodes, in the order given. Items without an author, a rating and a body or date are dropped */
 export function buildReviews(items: unknown, ref: string, warnings: string[]): Record<string, unknown>[] | undefined {
-  if (items === undefined || items === null) return undefined
+  if (items === undefined || items === null) {return undefined}
   if (!Array.isArray(items)) {
     warnings.push(`${ref}: reviews left out, the review list is not an array`)
     return undefined
@@ -229,7 +229,7 @@ export function buildReviews(items: unknown, ref: string, warnings: string[]): R
       warnings.push(`${label}: left out, it needs a body or a date`)
       return
     }
-    if (nodes.length >= REVIEW_CAP) return
+    if (nodes.length >= REVIEW_CAP) {return}
     nodes.push(
       compact({
         '@type': 'Review',
@@ -258,8 +258,8 @@ const hasReviewData = (data: ReviewData): boolean => Boolean(data.aggregateRatin
 
 /** The id of a relationship value: the id itself, or a populated document's id. As text, for comparing */
 function idOf(value: unknown): string | undefined {
-  if (typeof value === 'string' || typeof value === 'number') return String(value)
-  if (isObject(value) && (typeof value.id === 'string' || typeof value.id === 'number')) return String(value.id)
+  if (typeof value === 'string' || typeof value === 'number') {return String(value)}
+  if (isObject(value) && (typeof value.id === 'string' || typeof value.id === 'number')) {return String(value.id)}
   return undefined
 }
 
@@ -271,9 +271,9 @@ const populatedOptions = (variant: Doc): Doc[] => (Array.isArray(variant.options
  * The eCommerce plugin's variants join has maxDepth 2, so an option's variantType arrives as an ID.
  */
 function optionType(option: Doc, productTypes: unknown): Doc | undefined {
-  if (isObject(option.variantType)) return option.variantType
+  if (isObject(option.variantType)) {return option.variantType}
   const id = idOf(option.variantType)
-  if (id === undefined || !Array.isArray(productTypes)) return undefined
+  if (id === undefined || !Array.isArray(productTypes)) {return undefined}
   return productTypes.find((type): type is Doc => isObject(type) && idOf(type) === id)
 }
 
@@ -288,22 +288,22 @@ export function defaultVariantUrl(path: string, variant: Doc, productTypes?: unk
     const type = optionType(option, productTypes)
     const typeName = type ? readText(type, 'name') : undefined
     const id = idOf(option)
-    if (typeName && id !== undefined) params.append(typeName, id)
+    if (typeName && id !== undefined) {params.append(typeName, id)}
   }
   const variantId = idOf(variant)
-  if (variantId !== undefined) params.append('variant', variantId)
+  if (variantId !== undefined) {params.append('variant', variantId)}
   const query = params.toString()
-  if (!query) return path
+  if (!query) {return path}
   return `${path}${path.includes('?') ? '&' : '?'}${query}`
 }
 
 /** The variant's offer URL: the variantUrl option (absolutised), else the template default */
 function variantUrlOf(input: ProductNodeInput, product: ProductOptions, variant: Doc, ref: string, warnings: string[]): string {
   const fallback = defaultVariantUrl(input.url, variant, input.doc.variantTypes)
-  if (!product.variantUrl) return fallback
+  if (!product.variantUrl) {return fallback}
   try {
     const value: unknown = product.variantUrl(input.doc, variant)
-    if (typeof value === 'string' && value.trim()) return absoluteUrl(input.options.siteUrl, value.trim())
+    if (typeof value === 'string' && value.trim()) {return absoluteUrl(input.options.siteUrl, value.trim())}
     warnings.push(`${ref}: variantUrl returned no URL, using the default`)
   } catch (error) {
     warnings.push(`${ref}: variantUrl function failed: ${error instanceof Error ? error.message : String(error)}; using the default`)
@@ -328,26 +328,26 @@ const GENDERS = new Set(['female', 'male', 'unisex'])
 function genderOf(option: Doc): string | undefined {
   for (const key of ['label', 'value']) {
     const text = readText(option, key)?.toLowerCase()
-    if (text && GENDERS.has(text)) return text
+    if (text && GENDERS.has(text)) {return text}
   }
   return undefined
 }
 
 function variesByProperty(variantType: unknown): string | undefined {
-  if (!isObject(variantType)) return undefined
+  if (!isObject(variantType)) {return undefined}
   for (const key of ['name', 'label']) {
     const text = readText(variantType, key)?.toLowerCase()
     const property = text ? lookup(VARIES_BY, text) : undefined
-    if (property) return property
+    if (property) {return property}
   }
   return undefined
 }
 
 /** Images from the gallery rows whose variantOption is one of the variant's options, else undefined */
 function variantImages(doc: Doc, variant: Doc, config: CollectionOptions, options: ResolvedOptions): string[] | undefined {
-  if (config.fields?.image) return undefined
+  if (config.fields?.image) {return undefined}
   const rows = readFirst(doc, DEFAULT_PRODUCT_FIELDS.image)
-  if (!Array.isArray(rows)) return undefined
+  if (!Array.isArray(rows)) {return undefined}
   const optionIds = new Set((Array.isArray(variant.options) ? variant.options : []).map(idOf).filter((id) => id !== undefined))
   const urls = rows
     .filter((row) => {
@@ -374,13 +374,13 @@ function buildProductGroup(input: ProductNodeInput, common: Common, docs: unknow
     warnings.push(`${ref}: ${docs.length - populated.length} variant(s) skipped, not populated (fetch the product with a depth that populates variants)`)
   }
   const published = populated.filter((variant) => variant._status !== 'draft')
-  if (!published.length) return null
+  if (!published.length) {return null}
 
   // With no currency prop or shop.currency, the first enabled currency comes from the product, else
   // the first variant that enables one. No currency: null, and the plain-Product path gives the warning
   const currencySource = [doc, ...published].find(enablesCurrency) ?? doc
   const currency = pageCurrency(input, currencySource, ref, warnings)
-  if (!currency) return null
+  if (!currency) {return null}
 
   // Run once on the product: a mapped value beats every variant's own stock
   const mappedAvailability = resolveAvailability(doc, doc, { ...product, stock: undefined }, ref, warnings)
@@ -419,18 +419,18 @@ function buildProductGroup(input: ProductNodeInput, common: Common, docs: unknow
     const varies: Record<string, unknown> = {}
     for (const option of options_) {
       const property = variesByProperty(optionType(option, doc.variantTypes))
-      if (!property || property in varies) continue
+      if (!property || property in varies) {continue}
       if (property === 'suggestedGender') {
         // On the variant as audience.suggestedGender; an unrecognised gender label adds nothing
         const gender = genderOf(option)
-        if (!gender) continue
+        if (!gender) {continue}
         varies[property] = gender
       } else {
         const label = readText(option, 'label')
-        if (!label) continue
+        if (!label) {continue}
         varies[property] = label
       }
-      if (!variesBy.includes(property)) variesBy.push(property)
+      if (!variesBy.includes(property)) {variesBy.push(property)}
     }
     const { suggestedGender, ...flat } = varies
 
@@ -447,7 +447,7 @@ function buildProductGroup(input: ProductNodeInput, common: Common, docs: unknow
       }),
     )
   }
-  if (!hasVariant.length) return null
+  if (!hasVariant.length) {return null}
 
   const brand = textAt(doc, product.brand)
   const props: Omit<Partial<ProductGroupLeaf>, '@type' | '@id' | 'hasVariant'> = {
@@ -465,7 +465,7 @@ function buildProductGroup(input: ProductNodeInput, common: Common, docs: unknow
 
 /** Variants in the eCommerce plugin's shape: enableVariants true and a non-empty variants.docs array */
 function variantDocs(doc: Doc): unknown[] | undefined {
-  if (doc.enableVariants !== true) return undefined
+  if (doc.enableVariants !== true) {return undefined}
   const docs = readPath(doc, 'variants.docs')
   return Array.isArray(docs) && docs.length ? docs : undefined
 }
@@ -489,7 +489,7 @@ export function buildProductNodes(input: ProductNodeInput, warnings: string[]): 
   const docs = variantDocs(doc)
   if (docs) {
     const group = buildProductGroup(input, { name, product, images, reviewData }, docs, warnings)
-    if (group) return [group]
+    if (group) {return [group]}
   }
 
   const currency = currencyFor(input, doc, warnings)

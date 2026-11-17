@@ -138,7 +138,7 @@ describe('formatEventDate', () => {
         locales?: string | string[],
         options?: Intl.DateTimeFormatOptions,
       ) {
-        if (options?.timeZoneName) throw new RangeError('no offsets')
+        if (options?.timeZoneName) {throw new RangeError('no offsets')}
         return new Real(locales, options)
       } as unknown as typeof Intl.DateTimeFormat)
     }

@@ -41,7 +41,7 @@ export async function StructuredData({ config, collection, doc, list, currency, 
       reviews,
     })
     logWarnings(warnings)
-    if (!graph) return null
+    if (!graph) {return null}
     return (
       <script
         type="application/ld+json"

@@ -312,10 +312,10 @@ const isRecord = (value: unknown): value is Json =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
 const isFilled = (value: unknown): boolean => {
-  if (value === undefined || value === null) return false
-  if (typeof value === 'string') return value.trim() !== ''
-  if (Array.isArray(value)) return value.length > 0 && value.every(isFilled)
-  if (isRecord(value)) return Object.keys(value).length > 0
+  if (value === undefined || value === null) {return false}
+  if (typeof value === 'string') {return value.trim() !== ''}
+  if (Array.isArray(value)) {return value.length > 0 && value.every(isFilled)}
+  if (isRecord(value)) {return Object.keys(value).length > 0}
   return true
 }
 
@@ -329,31 +329,31 @@ const findDefinition = (value: unknown, id: unknown): Json | undefined => {
   if (Array.isArray(value)) {
     for (const item of value) {
       const found = findDefinition(item, id)
-      if (found) return found
+      if (found) {return found}
     }
     return undefined
   }
-  if (!isRecord(value)) return undefined
-  if (value['@id'] === id && !isReference(value)) return value
+  if (!isRecord(value)) {return undefined}
+  if (value['@id'] === id && !isReference(value)) {return value}
   for (const child of Object.values(value)) {
     const found = findDefinition(child, id)
-    if (found) return found
+    if (found) {return found}
   }
   return undefined
 }
 
 /** Follows an `{ '@id' }`-only reference to the node it names in the same graph */
 const deref = (value: unknown, graph: JsonLdGraph): unknown => {
-  if (!isRecord(value) || !isReference(value)) return value
+  if (!isRecord(value) || !isReference(value)) {return value}
   return findDefinition(graph['@graph'], value['@id']) ?? value
 }
 
 const resolvesPath = (value: unknown, keys: string[], graph: JsonLdGraph): boolean => {
   const here = deref(value, graph)
-  if (keys.length === 0) return isFilled(here)
+  if (keys.length === 0) {return isFilled(here)}
   // An array (e.g. several authors) resolves only when every entry does
-  if (Array.isArray(here)) return here.length > 0 && here.every((item) => resolvesPath(item, keys, graph))
-  if (!isRecord(here)) return false
+  if (Array.isArray(here)) {return here.length > 0 && here.every((item) => resolvesPath(item, keys, graph))}
+  if (!isRecord(here)) {return false}
   const [key, ...rest] = keys as [string, ...string[]]
   return Object.hasOwn(here, key) && resolvesPath(here[key], rest, graph)
 }
@@ -368,16 +368,16 @@ export const checkGoogle = (node: Json, graph: JsonLdGraph): string[] => {
   const types = (Array.isArray(raw) ? raw : [raw]).filter((t): t is string => typeof t === 'string')
   const messages: string[] = []
   for (const type of types) {
-    if (!Object.hasOwn(GOOGLE_RULES, type)) continue
+    if (!Object.hasOwn(GOOGLE_RULES, type)) {continue}
     const rule = GOOGLE_RULES[type]
-    if (rule.topLevelOnly && !graph['@graph'].includes(node as never)) continue
+    if (rule.topLevelOnly && !graph['@graph'].includes(node as never)) {continue}
     for (const path of rule.required) {
-      if (!resolvesIn(node, path, graph)) messages.push(`${type}: required "${path}" is missing`)
+      if (!resolvesIn(node, path, graph)) {messages.push(`${type}: required "${path}" is missing`)}
     }
     for (const path of rule.recommended) {
-      if (rule.knownGaps && Object.hasOwn(rule.knownGaps, path)) continue
-      if (rule.onlyWhen && Object.hasOwn(rule.onlyWhen, path) && !rule.onlyWhen[path]?.(node)) continue
-      if (!resolvesIn(node, path, graph)) messages.push(`${type}: recommended "${path}" is missing`)
+      if (rule.knownGaps && Object.hasOwn(rule.knownGaps, path)) {continue}
+      if (rule.onlyWhen && Object.hasOwn(rule.onlyWhen, path) && !rule.onlyWhen[path]?.(node)) {continue}
+      if (!resolvesIn(node, path, graph)) {messages.push(`${type}: recommended "${path}" is missing`)}
     }
   }
   return messages

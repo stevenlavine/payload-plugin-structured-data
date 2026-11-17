@@ -5,7 +5,7 @@ import { absoluteUrl, readText } from './values.js'
 export function buildItemList(list: ListInput, siteUrl: string, warnings: string[]): JsonLdNode | null {
   const path = readText(list, 'path')
   const rows: unknown = (list as { items?: unknown } | null | undefined)?.items
-  if (!path || !Array.isArray(rows) || rows.length === 0) return null
+  if (!path || !Array.isArray(rows) || rows.length === 0) {return null}
 
   const elements: JsonLdNode[] = []
   rows.forEach((row, index) => {
@@ -22,7 +22,7 @@ export function buildItemList(list: ListInput, siteUrl: string, warnings: string
       item: absoluteUrl(siteUrl, itemPath),
     })
   })
-  if (!elements.length) return null
+  if (!elements.length) {return null}
 
   const name = readText(list, 'name')
   return {

@@ -171,7 +171,7 @@ describe('eCommerce plugin products', () => {
       expect(variants.find((v) => v.size === 'Large')?.offers.price).toBe(22.5)
     } finally {
       // Newest first; a delete that throws fails the test
-      while (cleanUp.length) await cleanUp.pop()!()
+      while (cleanUp.length) {await cleanUp.pop()!()}
     }
   })
 })

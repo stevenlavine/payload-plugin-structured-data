@@ -3,7 +3,7 @@ import { plainText, readPath, readText } from './values.js'
 
 export function buildFaqPage(doc: Doc, faq: FaqOptions, url: string): JsonLdNode | null {
   const blocks = doc[faq.blocksField ?? 'layout']
-  if (!Array.isArray(blocks)) return null
+  if (!Array.isArray(blocks)) {return null}
 
   const rows = blocks
     .filter((block) => block && typeof block === 'object' && block.blockType === faq.block)
@@ -15,7 +15,7 @@ export function buildFaqPage(doc: Doc, faq: FaqOptions, url: string): JsonLdNode
     .map((row) => ({ question: readText(row, faq.question), answer: plainText(readPath(row, faq.answer)) }))
     .filter((row): row is { question: string; answer: string } => Boolean(row.question && row.answer))
 
-  if (!rows.length) return null
+  if (!rows.length) {return null}
 
   return {
     '@type': 'FAQPage',
