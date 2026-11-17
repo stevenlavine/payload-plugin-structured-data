@@ -1,7 +1,7 @@
 import type { Payload } from 'payload'
 
 import config from '@payload-config'
-import { getPayload } from 'payload'
+import { getPayload, NotFound } from 'payload'
 import { mkdtemp, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import path from 'path'
@@ -28,7 +28,14 @@ beforeAll(async () => {
 afterEach(async () => {
   while (created.length) {
     const { collection, id } = created.pop()!
-    await payload.delete({ collection, id }).catch(() => undefined)
+    try {
+      await payload.delete({ collection, id })
+    } catch (error: unknown) {
+      // Only "already deleted by the test" is fine; anything else is a real failure.
+      if (!(error instanceof NotFound)) {
+        throw error
+      }
+    }
   }
 })
 
