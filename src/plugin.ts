@@ -1,4 +1,4 @@
-import type { Config } from 'payload'
+import type { Config, Field } from 'payload'
 import { CUSTOM_KEY, documentTypesFor, GROUP_NAME } from './constants.js'
 import { discoverCurrencies } from './currencies.js'
 import { settingsGlobal } from './fields/settingsGlobal.js'
@@ -12,6 +12,19 @@ function resolveShop(shop: ShopOptions, config: Config): NonNullable<ResolvedOpt
   }
   const currency = shop.currency?.trim().toUpperCase()
   return { ...(currency ? { currency } : {}), currencies }
+}
+
+// Rows, collapsibles and unnamed tabs store their children at the top level of the document, so a
+// clash inside them is a real clash. Named groups and named tabs nest their data, so they are skipped.
+function hasTopLevelField(fields: Field[], name: string): boolean {
+  return fields.some((field) => {
+    if ('name' in field && field.name === name) return true
+    if (field.type === 'row' || field.type === 'collapsible') return hasTopLevelField(field.fields, name)
+    if (field.type === 'tabs') {
+      return field.tabs.some((tab) => !('name' in tab && tab.name) && hasTopLevelField(tab.fields, name))
+    }
+    return false
+  })
 }
 
 export const structuredDataPlugin =
@@ -32,7 +45,7 @@ export const structuredDataPlugin =
     const collections = (config.collections ?? []).map((collection) => {
       if (!Object.hasOwn(resolved.collections, collection.slug)) return collection
       const collectionOptions = resolved.collections[collection.slug]
-      if (collection.fields.some((field) => 'name' in field && field.name === GROUP_NAME)) {
+      if (hasTopLevelField(collection.fields, GROUP_NAME)) {
         throw new Error(`structuredDataPlugin: collection "${collection.slug}" already has a field named "${GROUP_NAME}"`)
       }
       return { ...collection, fields: [...collection.fields, sidebarGroup(collectionOptions ? documentTypesFor(collectionOptions) : undefined)] }

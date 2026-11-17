@@ -54,6 +54,34 @@ describe('structuredDataPlugin config checks', () => {
       structuredDataPlugin({ siteUrl: 'https://a.com', collections: { posts: { type: 'WebPage', path: () => '/' } } })(withField),
     ).toThrow('structuredDataPlugin: collection "posts" already has a field named "structuredData"')
   })
+  describe('duplicate guard looks inside presentational fields', () => {
+    const dup = { name: 'structuredData', type: 'text' }
+    const run = (fields: unknown[]) =>
+      structuredDataPlugin({ siteUrl: 'https://a.com', collections: { posts: { type: 'WebPage', path: () => '/' } } })({
+        collections: [{ slug: 'posts', fields }],
+      } as never)
+    const message = 'structuredDataPlugin: collection "posts" already has a field named "structuredData"'
+    test('throws inside a row', () => {
+      expect(() => run([{ type: 'row', fields: [dup] }])).toThrow(message)
+    })
+    test('throws inside a collapsible', () => {
+      expect(() => run([{ type: 'collapsible', label: 'x', fields: [dup] }])).toThrow(message)
+    })
+    test('throws inside an unnamed tab', () => {
+      expect(() => run([{ type: 'tabs', tabs: [{ label: 'x', fields: [dup] }] }])).toThrow(message)
+    })
+    test('throws inside a row nested in an unnamed tab', () => {
+      expect(() =>
+        run([{ type: 'tabs', tabs: [{ label: 'x', fields: [{ type: 'row', fields: [dup] }] }] }]),
+      ).toThrow(message)
+    })
+    test('does not throw inside a named group', () => {
+      expect(() => run([{ type: 'group', name: 'meta', fields: [dup] }])).not.toThrow()
+    })
+    test('does not throw inside a named tab', () => {
+      expect(() => run([{ type: 'tabs', tabs: [{ name: 'seo', label: 'x', fields: [dup] }] }])).not.toThrow()
+    })
+  })
   test('ignores Object.prototype keys', () => {
     const protoConfig = { collections: [{ slug: 'constructor', fields: [] }] } as never
     const result = structuredDataPlugin({ siteUrl: 'https://a.com', collections: {} })(protoConfig)
