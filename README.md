@@ -77,12 +77,28 @@ Commit the updated `importMap.js` if your project tracks it. Without this step t
 | `type` | `'Article' \| 'BlogPosting' \| 'Service' \| 'WebPage' \| 'Event' \| 'Product'`, or `(doc) => type \| null` | The collection's default type. A function lets one collection mix types, for example `Service` under `/services/` and `WebPage` elsewhere. Return `null` to output no page node. |
 | `path` | `(doc) => string` | The document's public path, starting with `/`. Use `/` for the home page. The plugin joins it to `siteUrl`. |
 | `fields` | `Partial<Record<PageField, string \| string[]>>` | Maps Schema.org properties to field paths. Dot paths work. A list means the first non-empty value wins, for example `datePublished: ['completedAt', 'publishedAt', 'createdAt']`. |
-| `faq` | `{ block, items, question, answer, blocksField? }` | Builds a `FAQPage` from a blocks field. `block` is the block slug. `items` is the array field inside the block that holds the rows. `question` and `answer` are the field names in each row. `blocksField` is the blocks field on the document and defaults to `layout`. All matching blocks on a page merge into one `FAQPage`. Answers must be plain text (a text or textarea field). Rich text answers are skipped. Google retired the FAQ rich result (not shown from 7 May 2026, documentation removed 15 June 2026), so this no longer changes Google results. The markup stays valid Schema.org, and other tools and AI assistants still read it. We check it against Schema.org only. |
+| `faq` | `{ block, items, question, answer, enabled?, blocksField? }` | Builds a `FAQPage` from a blocks field. `block` is the block slug. `items` is the array field inside the block that holds the rows. `question` and `answer` are the field names in each row. `blocksField` is the blocks field on the document and defaults to `layout`. All matching blocks on a page merge into one `FAQPage`. Answers can be plain text (a text or textarea field) or rich text (Lexical). Rich text is flattened to plain text. `enabled` is a field path inside the block, for example `'enableSchema'`. Only blocks where that value is `true` count. A missing value counts as off. See [FAQ blocks](#faq-blocks). Google retired the FAQ rich result (not shown from 7 May 2026, documentation removed 15 June 2026), so this no longer changes Google results. The markup stays valid Schema.org, and other tools and AI assistants still read it. We check it against Schema.org only. |
 | `breadcrumbs` | `(doc) => { name, path }[]` | Builds the breadcrumb trail yourself, for collections outside nested docs. Include Home as the first item. |
 | `event` | `EventOptions` | Maps the document's fields to an `Event`. Setting it also offers Event in the editor's type select. See [Events](#events). |
 | `product` | `ProductOptions` | Maps the document's fields to a `Product`. Setting it also offers Product in the editor's type select. See [Shops](#shops). |
 
 `PageField` is one of `headline`, `description`, `image`, `datePublished`, `dateModified` and `author`.
+
+### FAQ blocks
+
+Answers can be a text field, a textarea or a rich text field. If your FAQ block has a checkbox that turns the markup on or off, name it with `enabled`:
+
+```ts
+faq: {
+  block: 'faqBlock',
+  items: 'faqs',
+  question: 'question',
+  answer: 'answer',
+  enabled: 'enableSchema',
+},
+```
+
+Blocks where `enableSchema` is not `true` are left out of the `FAQPage`. Leave `enabled` out to count every matching block.
 
 ### Default field paths
 
@@ -502,6 +518,10 @@ MongoDB needs no migration.
 - `Recipe`, `Course` and rentals. Google's rules for these are strict and mistakes can cost you rich results. We will add them on demand. Reviews are supported on products only.
 - Multi-tenant setups. There is one settings record and one `siteUrl` per install. Multi-tenant support (`@payloadcms/plugin-multi-tenant`) is planned.
 - Validation against Google's live tools. The tests use Google's published rules, not its tools. Check your pages with the Rich Results Test.
+
+## Stability
+
+From 1.0, a breaking change to the plugin options or the JSON-LD output needs a major version.
 
 ## Licence
 
