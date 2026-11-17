@@ -43,6 +43,8 @@ export type FaqOptions = {
   items: string
   question: string
   answer: string
+  /** Checkbox field path inside the block; when set, only blocks where it is true count */
+  enabled?: string
 }
 
 /** The parts of a venue the plugin can output */
