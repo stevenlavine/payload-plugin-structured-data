@@ -10,8 +10,8 @@ export const compact = <T extends Record<string, unknown>>(node: T): T =>
   Object.fromEntries(Object.entries(node).filter(([, v]) => v !== undefined)) as T
 
 const home = (siteUrl: string) => absoluteUrl(siteUrl, '/')
-export const organizationId = (siteUrl: string) => `${home(siteUrl)}/#organization`
-export const websiteId = (siteUrl: string) => `${home(siteUrl)}/#website`
+export const organizationId = (siteUrl: string) => `${home(siteUrl)}#organization`
+export const websiteId = (siteUrl: string) => `${home(siteUrl)}#website`
 
 export function buildOrganization(
   settings: Settings | null,

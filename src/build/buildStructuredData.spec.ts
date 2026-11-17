@@ -60,6 +60,15 @@ describe('buildStructuredData', () => {
     expect(types(buildStructuredData({ options, settings, collection: 'pages', doc: service }))).toContain('Service')
   })
 
+  test('home page WebPage and FAQ ids use the home URL with its slash', () => {
+    const home = { id: 1, slug: 'home', title: 'Home', layout: [{ blockType: 'faq', faqs: [{ question: 'Q', answer: 'A' }] }] }
+    const graph = buildStructuredData({ options, settings, collection: 'pages', doc: home })
+    const ids = JSON.stringify(graph)
+    expect(ids).toContain('"@id":"https://a.com/#webpage"')
+    expect(ids).toContain('"@id":"https://a.com/#faq"')
+    expect(ids).not.toMatch(/https:\/\/a\.com#/)
+  })
+
   test('type function returning null still outputs FAQ and breadcrumbs', () => {
     const noType: ResolvedOptions = {
       ...options,

@@ -53,7 +53,8 @@ export function buildPageNode(input: PageNodeInput, warnings: string[]): JsonLdN
     const props: Omit<Partial<ArticleLeaf>, '@type' | '@id'> = {
       headline,
       description,
-      image,
+      // Google recommends an image on Article results, so a post with none takes the site image
+      image: image ?? mediaUrl(options.siteUrl, settings?.image, options.imageSize),
       datePublished,
       dateModified,
       author: authorOf(readFirst(doc, path('author')), orgRef),

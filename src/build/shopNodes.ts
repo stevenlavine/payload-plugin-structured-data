@@ -5,8 +5,8 @@ import { absoluteUrl } from './values.js'
 const MAX_RETURN_COUNTRIES = 50
 
 const home = (siteUrl: string) => absoluteUrl(siteUrl, '/')
-export const shippingId = (siteUrl: string) => `${home(siteUrl)}/#shipping`
-export const returnPolicyId = (siteUrl: string) => `${home(siteUrl)}/#returns`
+export const shippingId = (siteUrl: string) => `${home(siteUrl)}#shipping`
+export const returnPolicyId = (siteUrl: string) => `${home(siteUrl)}#returns`
 
 const schema = (term: string) => `https://schema.org/${term}`
 

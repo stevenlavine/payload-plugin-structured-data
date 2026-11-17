@@ -5,7 +5,7 @@
       "@type": "Organization",
       "@id": "https://www.lavine.dev/#organization",
       "name": "Example Shop",
-      "url": "https://www.lavine.dev",
+      "url": "https://www.lavine.dev/",
       "hasMerchantReturnPolicy": {
         "@type": "MerchantReturnPolicy",
         "@id": "https://www.lavine.dev/#returns",

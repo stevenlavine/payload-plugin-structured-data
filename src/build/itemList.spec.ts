@@ -60,9 +60,9 @@ describe('buildItemList', () => {
     expect(buildItemList(null as never, site, w)).toBeNull()
   })
 
-  test('home path gives the bare site url in the id', () => {
+  test('home path gives the site url with its slash in the id', () => {
     const node = buildItemList({ path: '/', items: [{ name: 'A', path: '/a' }] }, site, [])
-    expect(node?.['@id']).toBe('https://example.com#itemlist')
+    expect(node?.['@id']).toBe('https://example.com/#itemlist')
   })
 })
 

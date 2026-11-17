@@ -40,7 +40,8 @@ export function absoluteUrl(siteUrl: string, pathOrUrl: string): string {
   if (/^https?:\/\//i.test(pathOrUrl)) {return pathOrUrl}
   const base = siteUrl.replace(/\/+$/, '')
   const path = pathOrUrl.replace(/^\/+/, '')
-  return path ? `${base}/${path}` : base
+  // The home page is `<siteUrl>/`; every other path has no trailing slash added
+  return `${base}/${path}`
 }
 
 export function mediaUrl(siteUrl: string, media: unknown, size?: string): string | undefined {

@@ -34,13 +34,13 @@ describe('buildBreadcrumbList', () => {
       '@type': 'BreadcrumbList',
       '@id': 'https://a.com/about#breadcrumb',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://a.com' },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://a.com/' },
         { '@type': 'ListItem', position: 2, name: 'About', item: 'https://a.com/about' },
       ],
     })
   })
 
   test('home page or one item gives null', () => {
-    expect(buildBreadcrumbList('https://a.com', [{ name: 'Home', path: '/' }], 'https://a.com')).toBeNull()
+    expect(buildBreadcrumbList('https://a.com', [{ name: 'Home', path: '/' }], 'https://a.com/')).toBeNull()
   })
 })

@@ -107,4 +107,25 @@ describe('buildPageNode', () => {
     const node = buildPageNode({ ...base, type: 'Article', doc: { ...post, meta: { image: 7 } } }, [])
     expect(node).not.toHaveProperty('image')
   })
+  describe('settings image fallback', () => {
+    const withImage = { ...settings, image: { url: '/m/site.png', sizes: { og: { url: '/m/site-og.png' } } } }
+    const noImage = { ...post, meta: { description: 'A post' } }
+
+    test('BlogPosting with no image uses the settings image', () => {
+      const node = buildPageNode({ ...base, settings: withImage, type: 'BlogPosting', doc: noImage }, [])
+      expect(node?.image).toBe('https://a.com/m/site-og.png')
+    })
+    test('Article with its own image keeps it', () => {
+      const node = buildPageNode({ ...base, settings: withImage, type: 'Article', doc: post }, [])
+      expect(node?.image).toBe('https://a.com/m/a-og.png')
+    })
+    test('BlogPosting with no image and no settings image has no image', () => {
+      const node = buildPageNode({ ...base, type: 'BlogPosting', doc: noImage }, [])
+      expect(node).not.toHaveProperty('image')
+    })
+    test('WebPage with no image does not take the settings image', () => {
+      const node = buildPageNode({ ...base, settings: withImage, type: 'WebPage', doc: noImage }, [])
+      expect(node).not.toHaveProperty('primaryImageOfPage')
+    })
+  })
 })
