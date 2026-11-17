@@ -25,9 +25,9 @@ function authorOf(value: unknown, orgRef: { '@id': string } | undefined) {
       .map((a) => (a && typeof a === 'object' ? readText(a, 'name') : undefined))
       .filter((n): n is string => Boolean(n))
       .map((name) => ({ '@type': 'Person' as const, name }))
-    if (people.length) return people
+    if (people.length) {return people}
   }
-  if (typeof value === 'string' && value.trim()) return { '@type': 'Person' as const, name: value.trim() }
+  if (typeof value === 'string' && value.trim()) {return { '@type': 'Person' as const, name: value.trim() }}
   return orgRef
 }
 

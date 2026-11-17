@@ -31,4 +31,66 @@ describe('buildFaqPage', () => {
     expect(buildFaqPage({ layout: [] }, faq, 'https://a.com/x')).toBeNull()
     expect(buildFaqPage({}, faq, 'https://a.com/x')).toBeNull()
   })
+
+  const lexical = (...texts: string[]) => ({
+    root: { children: [{ type: 'paragraph', children: texts.map((text) => ({ text })) }] },
+  })
+
+  test('reads a Lexical answer as plain text', () => {
+    const doc = { layout: [{ blockType: 'faq', faqs: [{ question: 'Q', answer: lexical('Yes, ', 'we do.') }] }] }
+    const result = buildFaqPage(doc, faq, 'https://a.com/x') as unknown as { mainEntity: { acceptedAnswer: { text: string } }[] }
+    expect(result.mainEntity[0].acceptedAnswer.text).toBe('Yes, we do.')
+  })
+
+  test('skips a row whose Lexical answer is empty', () => {
+    const doc = {
+      layout: [
+        {
+          blockType: 'faq',
+          faqs: [
+            { question: 'Empty', answer: { root: { children: [{ type: 'paragraph', children: [] }] } } },
+            { question: 'Full', answer: lexical('Hi') },
+          ],
+        },
+      ],
+    }
+    const result = buildFaqPage(doc, faq, 'https://a.com/x') as unknown as { mainEntity: { name: string }[] }
+    expect(result.mainEntity.map((q) => q.name)).toEqual(['Full'])
+    const onlyEmpty = { layout: [{ blockType: 'faq', faqs: [{ question: 'Empty', answer: { root: { children: [{ type: 'paragraph', children: [] }] } } }] }] }
+    expect(buildFaqPage(onlyEmpty, faq, 'https://a.com/x')).toBeNull()
+  })
+
+  test('enabledField: only blocks with the box ticked', () => {
+    const doc = {
+      layout: [
+        { blockType: 'faqBlock', enableSchema: true, faqs: [{ question: 'On', answer: 'A' }] },
+        { blockType: 'faqBlock', enableSchema: false, faqs: [{ question: 'Off', answer: 'A' }] },
+      ],
+    }
+    const opts = { ...faq, block: 'faqBlock', enabledField: 'enableSchema' }
+    const result = buildFaqPage(doc, opts, 'https://a.com/x') as unknown as { mainEntity: { name: string }[] }
+    expect(result.mainEntity.map((q) => q.name)).toEqual(['On'])
+  })
+
+  test('enabledField: a missing field counts as off', () => {
+    const doc = { layout: [{ blockType: 'faqBlock', faqs: [{ question: 'Q', answer: 'A' }] }] }
+    expect(buildFaqPage(doc, { ...faq, block: 'faqBlock', enabledField: 'enableSchema' }, 'https://a.com/x')).toBeNull()
+  })
+  test('enabledField: the string "true" does not count as enabled', () => {
+    const doc = { layout: [{ blockType: 'faqBlock', enableSchema: 'true', faqs: [{ question: 'Q', answer: 'A' }] }] }
+    expect(buildFaqPage(doc, { ...faq, block: 'faqBlock', enabledField: 'enableSchema' }, 'https://a.com/x')).toBeNull()
+  })
+
+  test('enabledField: a non-string value behaves as if no block is enabled and does not throw', () => {
+    const doc = { layout: [{ blockType: 'faqBlock', enableSchema: true, faqs: [{ question: 'Q', answer: 'A' }] }] }
+    const opts = { ...faq, block: 'faqBlock', enabledField: true as unknown as string }
+    expect(() => buildFaqPage(doc, opts, 'https://a.com/x')).not.toThrow()
+    expect(buildFaqPage(doc, opts, 'https://a.com/x')).toBeNull()
+  })
+
+  test('a plain-text answer keeps its inner whitespace exactly', () => {
+    const doc = { layout: [{ blockType: 'faq', faqs: [{ question: 'Q', answer: ' Line one\n\nLine  two ' }] }] }
+    const result = buildFaqPage(doc, faq, 'https://a.com/x') as unknown as { mainEntity: { acceptedAnswer: { text: string } }[] }
+    expect(result.mainEntity[0]?.acceptedAnswer.text).toBe('Line one\n\nLine  two')
+  })
 })

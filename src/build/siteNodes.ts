@@ -91,7 +91,7 @@ export function buildWebSite(
   hasOrganization: boolean,
 ): JsonLdNode | null {
   const name = clean(settings?.name)
-  if (!name) return null
+  if (!name) {return null}
   const props: Omit<Partial<WebSiteLeaf>, '@type' | '@id'> = {
     name,
     url: home(options.siteUrl),

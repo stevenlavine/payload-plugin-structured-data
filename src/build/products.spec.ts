@@ -171,7 +171,7 @@ describe('buildProductNodes', () => {
     })
 
     const [plain] = buildProductNodes(inputFor(), [])
-    for (const key of ['brand', 'sku', 'gtin', 'mpn', 'color', 'size', 'material', 'pattern']) expect(plain).not.toHaveProperty(key)
+    for (const key of ['brand', 'sku', 'gtin', 'mpn', 'color', 'size', 'material', 'pattern']) {expect(plain).not.toHaveProperty(key)}
   })
 
   test('a mapped price currency that is not the page currency drops the offer with a warning', () => {
@@ -460,7 +460,7 @@ describe('buildProductNodes with variants', () => {
     const [variant] = variantsOf([group])
     // Two colour types: the first label wins
     expect(variant).toMatchObject({ color: 'L0', size: 'L2', material: 'L3', pattern: 'L4' })
-    for (const key of ['suggestedAge', 'age', 'engraving', 'audience']) expect(variant).not.toHaveProperty(key)
+    for (const key of ['suggestedAge', 'age', 'engraving', 'audience']) {expect(variant).not.toHaveProperty(key)}
   })
 
   test('option types named after Object.prototype keys are not mapped', () => {
@@ -474,7 +474,7 @@ describe('buildProductNodes with variants', () => {
     const [group] = buildProductNodes(groupInput({ doc }), [])
     expect(group).not.toHaveProperty('variesBy')
     const [variant] = variantsOf([group])
-    for (const key of ['constructor', 'toString', '__proto__']) expect(Object.hasOwn(variant ?? {}, key)).toBe(false)
+    for (const key of ['constructor', 'toString', '__proto__']) {expect(Object.hasOwn(variant ?? {}, key)).toBe(false)}
   })
 
   test('gender maps to audience.suggestedGender only for male, female or unisex', () => {

@@ -9,20 +9,20 @@ export function breadcrumbTrail(
   headline: string | undefined,
   custom?: (doc: Doc) => BreadcrumbItem[],
 ): BreadcrumbItem[] {
-  if (custom) return custom(doc)
+  if (custom) {return custom(doc)}
 
   const nested = Array.isArray(doc.breadcrumbs)
     ? doc.breadcrumbs
         .map((crumb) => ({ name: readText(crumb, 'label'), path: readText(crumb, 'url') }))
         .filter((c): c is BreadcrumbItem => Boolean(c.name && c.path))
     : []
-  if (nested.length) return [HOME, ...nested]
+  if (nested.length) {return [HOME, ...nested]}
 
   return headline ? [HOME, { name: headline, path }] : [HOME]
 }
 
 export function buildBreadcrumbList(siteUrl: string, items: BreadcrumbItem[], url: string): JsonLdNode | null {
-  if (items.length < 2) return null
+  if (items.length < 2) {return null}
   return {
     '@type': 'BreadcrumbList',
     '@id': `${url}#breadcrumb`,

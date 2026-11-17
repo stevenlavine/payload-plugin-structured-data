@@ -18,7 +18,7 @@ const walk = (value: unknown, visit: (key: string, value: unknown) => void, key 
   }
   visit(key, value)
   if (isRecord(value)) {
-    for (const [k, v] of Object.entries(value)) walk(v, visit, k)
+    for (const [k, v] of Object.entries(value)) {walk(v, visit, k)}
   }
 }
 
@@ -45,13 +45,13 @@ for (const scenario of SCENARIOS) {
     const nodes = graph['@graph']
 
     it('every node is valid Schema.org', () => {
-      for (const node of nodes) expect(checkSchemaOrg(node)).toEqual([])
+      for (const node of nodes) {expect(checkSchemaOrg(node)).toEqual([])}
     })
 
     it.skipIf(SCHEMA_ONLY.has(scenario))('every Google rule is met', () => {
       const problems: string[] = []
       walk(nodes, (_key, value) => {
-        if (isRecord(value)) problems.push(...checkGoogle(value, graph))
+        if (isRecord(value)) {problems.push(...checkGoogle(value, graph))}
       })
       expect(problems).toEqual([])
     })
@@ -59,9 +59,9 @@ for (const scenario of SCENARIOS) {
     it('every URL is absolute', () => {
       const bad: string[] = []
       walk(nodes, (key, value) => {
-        if (!URL_KEYS.has(key) || typeof value !== 'string') return
-        if (key === '@id' && value.startsWith('#')) return
-        if (!value.startsWith('https://')) bad.push(`${key}: ${value}`)
+        if (!URL_KEYS.has(key) || typeof value !== 'string') {return}
+        if (key === '@id' && value.startsWith('#')) {return}
+        if (!value.startsWith('https://')) {bad.push(`${key}: ${value}`)}
       })
       expect(bad).toEqual([])
     })
@@ -70,13 +70,13 @@ for (const scenario of SCENARIOS) {
       // A node may be defined nested inside another (the Organization's return policy), and offers link to it
       const ids: string[] = []
       walk(nodes, (_key, value) => {
-        if (!isRecord(value) || typeof value['@id'] !== 'string') return
-        if (Object.keys(value).length > 1) ids.push(value['@id'])
+        if (!isRecord(value) || typeof value['@id'] !== 'string') {return}
+        if (Object.keys(value).length > 1) {ids.push(value['@id'])}
       })
       expect(new Set(ids).size).toBe(ids.length)
       const dangling: string[] = []
       walk(nodes, (_key, value) => {
-        if (!isRecord(value)) return
+        if (!isRecord(value)) {return}
         const keys = Object.keys(value)
         if (keys.length === 1 && keys[0] === '@id' && !ids.includes(String(value['@id']))) {
           dangling.push(String(value['@id']))
@@ -132,10 +132,10 @@ describe('scenario contents', () => {
   it('every startDate in event has an offset', () => {
     const dates: string[] = []
     walk(graphs.event?.['@graph'], (key, value) => {
-      if (key === 'startDate' && typeof value === 'string') dates.push(value)
+      if (key === 'startDate' && typeof value === 'string') {dates.push(value)}
     })
     expect(dates.length).toBeGreaterThan(0)
-    for (const date of dates) expect(date).toMatch(/(?:Z|[+-]\d{2}:\d{2})$/)
+    for (const date of dates) {expect(date).toMatch(/(?:Z|[+-]\d{2}:\d{2})$/)}
     expect(dates[0]).toBe('2027-07-10T19:00:00+01:00')
   })
 
@@ -185,7 +185,7 @@ describe('product scenario contents', () => {
   it('a made-to-order product with variants at stock 0 shows BackOrder on every variant', () => {
     const variants = variantsOf('productMadeToOrderVariants')
     expect(variants).toHaveLength(2)
-    for (const variant of variants) expect((variant.offers as Json).availability).toBe('https://schema.org/BackOrder')
+    for (const variant of variants) {expect((variant.offers as Json).availability).toBe('https://schema.org/BackOrder')}
   })
 
   it('variants: size in variesBy, extras left out, draft skipped, each with its own price, sku, URL and stock', () => {
@@ -203,7 +203,7 @@ describe('product scenario contents', () => {
     ])
     expect((variants[0]?.offers as Json).url).toBe('https://example.com/products/loopy-cardigan?size=11&extras=21&variant=101')
     expect(variants[0]?.image).toEqual(['https://example.com/media/cardigan-small-1200x630.png'])
-    for (const variant of variants) expect((variant.offers as Json).hasMerchantReturnPolicy).toEqual(RETURNS)
+    for (const variant of variants) {expect((variant.offers as Json).hasMerchantReturnPolicy).toEqual(RETURNS)}
   })
 
   it('reviews: the supplied rating and reviews sit on the product as given', () => {
@@ -227,7 +227,7 @@ describe('product scenario contents', () => {
   const currenciesIn = (value: unknown): string[] => {
     const found: string[] = []
     walk(value, (key, v) => {
-      if ((key === 'priceCurrency' || key === 'currency') && typeof v === 'string') found.push(v)
+      if ((key === 'priceCurrency' || key === 'currency') && typeof v === 'string') {found.push(v)}
     })
     return [...new Set(found)]
   }

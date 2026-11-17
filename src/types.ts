@@ -43,6 +43,8 @@ export type FaqOptions = {
   items: string
   question: string
   answer: string
+  /** Field path inside the block; only blocks where that value is exactly `true` count. A missing value counts as off. */
+  enabledField?: string
 }
 
 /** The parts of a venue the plugin can output */

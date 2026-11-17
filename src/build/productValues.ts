@@ -46,8 +46,8 @@ const validDecimals = (decimals: number): boolean => Number.isInteger(decimals) 
 
 /** Whole minor units to major units. Undefined unless a positive integer: 0 is not a shop price */
 export function minorToMajor(amount: unknown, decimals: number): number | undefined {
-  if (typeof amount !== 'number' || !Number.isInteger(amount) || amount <= 0) return undefined
-  if (!validDecimals(decimals)) return undefined
+  if (typeof amount !== 'number' || !Number.isInteger(amount) || amount <= 0) {return undefined}
+  if (!validDecimals(decimals)) {return undefined}
   return Number((amount / 10 ** decimals).toFixed(decimals))
 }
 
@@ -64,7 +64,7 @@ export type MoneyInput = {
 
 /** A positive major-unit price: a number, or a plain decimal string */
 function majorAmount(value: unknown): number | undefined {
-  if (typeof value === 'number') return Number.isFinite(value) && value > 0 ? value : undefined
+  if (typeof value === 'number') {return Number.isFinite(value) && value > 0 ? value : undefined}
   if (typeof value === 'string' && /^\d+(?:\.\d+)?$/.test(value.trim())) {
     const number = Number(value.trim())
     return number > 0 ? number : undefined
@@ -116,24 +116,24 @@ export function readMoney(source: Doc, input: MoneyInput, warnings: string[]): n
   }
 
   const raw = readFirst(source, mapping.amount)
-  if (raw === undefined) return undefined
+  if (raw === undefined) {return undefined}
   if (mapping.minorUnits) {
     if (decimals === undefined) {
       warnings.push(`${ref}: price left out, the number of decimals for ${currency} is not known (add it to shop.currencies)`)
       return undefined
     }
     const price = minorToMajor(raw, decimals)
-    if (price === undefined) warnings.push(`${ref}: price left out, minor units must be a positive whole number`)
+    if (price === undefined) {warnings.push(`${ref}: price left out, minor units must be a positive whole number`)}
     return price
   }
   const price = majorAmount(raw)
-  if (price === undefined) warnings.push(`${ref}: price left out, it must be a number above 0 or a plain decimal`)
+  if (price === undefined) {warnings.push(`${ref}: price left out, it must be a number above 0 or a plain decimal`)}
   return price
 }
 
 /** Reads a mapped path, or calls the mapped function. A throw becomes a warning and undefined */
 export function runMapped<T>(doc: Doc, mapped: Mapped<T> | undefined, ref: string, label: string, warnings: string[]): unknown {
-  if (mapped === undefined) return undefined
+  if (mapped === undefined) {return undefined}
   if (typeof mapped === 'function') {
     try {
       return mapped(doc) ?? undefined
@@ -156,18 +156,18 @@ export function resolveAvailability(
   const mapped = runMapped(source, product?.availability, ref, 'availability', warnings)
   if (mapped !== undefined) {
     const known = typeof mapped === 'string' ? lookup(PRODUCT_AVAILABILITY_MAP, mapped.trim().replace(STATUS_PREFIX, '').toLowerCase()) : undefined
-    if (known) return known
+    if (known) {return known}
     warnings.push(`${ref}: availability mapping ignored, "${typeof mapped === 'string' ? mapped : typeof mapped}" is not a known availability`)
   }
 
-  if (product?.stock === undefined) return undefined
+  if (product?.stock === undefined) {return undefined}
   const stock = readFirst(stockSource, product.stock)
-  if (stock === undefined) return undefined
+  if (stock === undefined) {return undefined}
   if (typeof stock !== 'number' || !Number.isFinite(stock)) {
     warnings.push(`${ref}: stock ignored, it is not a number`)
     return undefined
   }
-  if (stock > 0) return 'https://schema.org/InStock'
+  if (stock > 0) {return 'https://schema.org/InStock'}
   return product.outOfStock === 'SoldOut' ? 'https://schema.org/SoldOut' : 'https://schema.org/OutOfStock'
 }
 
@@ -182,7 +182,7 @@ export function resolveCondition(
   const mapped = runMapped(doc, product?.condition, ref, 'condition', warnings)
   if (mapped !== undefined) {
     const known = typeof mapped === 'string' ? lookup(CONDITION_MAP, mapped.trim().replace(STATUS_PREFIX, '').toLowerCase()) : undefined
-    if (known) return known
+    if (known) {return known}
     warnings.push(`${ref}: condition mapping ignored, "${typeof mapped === 'string' ? mapped : typeof mapped}" is not new, used or refurbished`)
   }
   return shopDefault ? lookup(CONDITION_MAP, shopDefault.trim().toLowerCase()) : undefined

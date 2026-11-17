@@ -1,4 +1,4 @@
-import type { Config } from 'payload'
+import type { Config, Field } from 'payload'
 import { CUSTOM_KEY, documentTypesFor, GROUP_NAME } from './constants.js'
 import { discoverCurrencies } from './currencies.js'
 import { settingsGlobal } from './fields/settingsGlobal.js'
@@ -8,10 +8,24 @@ import type { ResolvedOptions, ShopOptions, StructuredDataPluginOptions } from '
 function resolveShop(shop: ShopOptions, config: Config): NonNullable<ResolvedOptions['shop']> {
   const currencies = (shop.currencies ?? []).map((c) => ({ ...c, code: c.code.toUpperCase() }))
   for (const found of discoverCurrencies(config.collections ?? [])) {
-    if (!currencies.some((c) => c.code === found.code)) currencies.push(found)
+    if (!currencies.some((c) => c.code === found.code)) {currencies.push(found)}
   }
   const currency = shop.currency?.trim().toUpperCase()
   return { ...(currency ? { currency } : {}), currencies }
+}
+
+// Rows, collapsibles and unnamed tabs store their children at the top level of the document, so a
+// clash inside them is a real clash. Named groups and named tabs nest their data, so they are skipped.
+function hasTopLevelField(fields: Field[], name: string): boolean {
+  return fields.some((field) => {
+    if ('name' in field && field.name === name) {return true}
+    if (field.type === 'row' || field.type === 'collapsible') {return hasTopLevelField(field.fields, name)}
+    if (field.type === 'group' && !('name' in field && field.name)) {return hasTopLevelField(field.fields, name)}
+    if (field.type === 'tabs') {
+      return field.tabs.some((tab) => !('name' in tab && tab.name) && hasTopLevelField(tab.fields, name))
+    }
+    return false
+  })
 }
 
 export const structuredDataPlugin =
@@ -30,9 +44,13 @@ export const structuredDataPlugin =
     }
 
     const collections = (config.collections ?? []).map((collection) => {
-      if (!Object.hasOwn(resolved.collections, collection.slug)) return collection
+      if (!Object.hasOwn(resolved.collections, collection.slug)) {return collection}
       const collectionOptions = resolved.collections[collection.slug]
-      if (collection.fields.some((field) => 'name' in field && field.name === GROUP_NAME)) {
+      const enabledField: unknown = collectionOptions?.faq?.enabledField
+      if (enabledField !== undefined && (typeof enabledField !== 'string' || !enabledField.trim())) {
+        throw new Error(`structuredDataPlugin: collection "${collection.slug}" faq.enabledField must be a field path string`)
+      }
+      if (hasTopLevelField(collection.fields, GROUP_NAME)) {
         throw new Error(`structuredDataPlugin: collection "${collection.slug}" already has a field named "${GROUP_NAME}"`)
       }
       return { ...collection, fields: [...collection.fields, sidebarGroup(collectionOptions ? documentTypesFor(collectionOptions) : undefined)] }

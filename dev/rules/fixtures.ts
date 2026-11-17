@@ -98,7 +98,7 @@ const options: ResolvedOptions = {
         performances: { path: 'performances' },
         superEvent: (doc) => {
           const festival = doc.festival as { name: string; slug: string } | undefined
-          if (!festival) return null
+          if (!festival) {return null}
           return {
             name: festival.name,
             path: `/festivals/${festival.slug}`,
@@ -395,8 +395,8 @@ const reviews = {
 
 const build = (input: Partial<Parameters<typeof buildStructuredData>[0]>): JsonLdGraph => {
   const result = buildStructuredData({ options, settings, ...input })
-  if (!result.graph) throw new Error(`No graph built: ${result.warnings.join('; ')}`)
-  if (result.warnings.length) throw new Error(`Fixture produced warnings: ${result.warnings.join('; ')}`)
+  if (!result.graph) {throw new Error(`No graph built: ${result.warnings.join('; ')}`)}
+  if (result.warnings.length) {throw new Error(`Fixture produced warnings: ${result.warnings.join('; ')}`)}
   return result.graph
 }
 

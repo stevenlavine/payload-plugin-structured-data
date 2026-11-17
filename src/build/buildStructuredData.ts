@@ -25,14 +25,14 @@ export type BuildInput = {
 export function buildStructuredData({ options, settings, collection, doc, list, currency, reviews }: BuildInput): BuildResult {
   const warnings: string[] = []
   const nodes: JsonLdNode[] = []
-  if (options.disabled) return { graph: null, warnings }
+  if (options.disabled) {return { graph: null, warnings }}
 
   let ref = 'site'
   try {
     const organization = buildOrganization(settings, options, warnings)
-    if (organization) nodes.push(organization)
+    if (organization) {nodes.push(organization)}
     const website = buildWebSite(settings, options, Boolean(organization))
-    if (website) nodes.push(website)
+    if (website) {nodes.push(website)}
 
     if (collection && doc) {
       ref = `${collection}/${doc.id ?? '?'}`
@@ -67,26 +67,26 @@ export function buildStructuredData({ options, settings, collection, doc, list, 
           } else {
             // No usable product: the page still gets a plain WebPage
             const page = buildPageNode({ type: 'WebPage', doc, url, ref, fields: config.fields, options, settings, hasOrganization }, warnings)
-            if (page) nodes.push(page)
+            if (page) {nodes.push(page)}
           }
         } else if (type) {
           const page = buildPageNode(
             { type, doc, url, ref, fields: config.fields, options, settings, hasOrganization: Boolean(organization) },
             warnings,
           )
-          if (page) nodes.push(page)
+          if (page) {nodes.push(page)}
         }
 
         if (config.faq) {
           const faq = buildFaqPage(doc, config.faq, url)
-          if (faq) nodes.push(faq)
+          if (faq) {nodes.push(faq)}
         }
 
         if (path !== '/') {
           const headline = readText(doc, config.fields?.headline ?? [DEFAULT_FIELDS.headline])
           const trail = breadcrumbTrail(doc, path, headline, config.breadcrumbs)
           const breadcrumbs = buildBreadcrumbList(options.siteUrl, trail, url)
-          if (breadcrumbs) nodes.push(breadcrumbs)
+          if (breadcrumbs) {nodes.push(breadcrumbs)}
         }
       }
     }
@@ -94,7 +94,7 @@ export function buildStructuredData({ options, settings, collection, doc, list, 
     if (list) {
       ref = 'list'
       const itemList = buildItemList(list, options.siteUrl, warnings)
-      if (itemList) nodes.push(itemList)
+      if (itemList) {nodes.push(itemList)}
     }
   } catch (error) {
     warnings.push(`${ref}: structured data failed: ${error instanceof Error ? error.message : String(error)}`)
