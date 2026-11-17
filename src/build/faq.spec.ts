@@ -60,20 +60,37 @@ describe('buildFaqPage', () => {
     expect(buildFaqPage(onlyEmpty, faq, 'https://a.com/x')).toBeNull()
   })
 
-  test('enabled: only blocks with the box ticked', () => {
+  test('enabledField: only blocks with the box ticked', () => {
     const doc = {
       layout: [
         { blockType: 'faqBlock', enableSchema: true, faqs: [{ question: 'On', answer: 'A' }] },
         { blockType: 'faqBlock', enableSchema: false, faqs: [{ question: 'Off', answer: 'A' }] },
       ],
     }
-    const opts = { ...faq, block: 'faqBlock', enabled: 'enableSchema' }
+    const opts = { ...faq, block: 'faqBlock', enabledField: 'enableSchema' }
     const result = buildFaqPage(doc, opts, 'https://a.com/x') as unknown as { mainEntity: { name: string }[] }
     expect(result.mainEntity.map((q) => q.name)).toEqual(['On'])
   })
 
-  test('enabled: a missing field counts as off', () => {
+  test('enabledField: a missing field counts as off', () => {
     const doc = { layout: [{ blockType: 'faqBlock', faqs: [{ question: 'Q', answer: 'A' }] }] }
-    expect(buildFaqPage(doc, { ...faq, block: 'faqBlock', enabled: 'enableSchema' }, 'https://a.com/x')).toBeNull()
+    expect(buildFaqPage(doc, { ...faq, block: 'faqBlock', enabledField: 'enableSchema' }, 'https://a.com/x')).toBeNull()
+  })
+  test('enabledField: the string "true" does not count as enabled', () => {
+    const doc = { layout: [{ blockType: 'faqBlock', enableSchema: 'true', faqs: [{ question: 'Q', answer: 'A' }] }] }
+    expect(buildFaqPage(doc, { ...faq, block: 'faqBlock', enabledField: 'enableSchema' }, 'https://a.com/x')).toBeNull()
+  })
+
+  test('enabledField: a non-string value behaves as if no block is enabled and does not throw', () => {
+    const doc = { layout: [{ blockType: 'faqBlock', enableSchema: true, faqs: [{ question: 'Q', answer: 'A' }] }] }
+    const opts = { ...faq, block: 'faqBlock', enabledField: true as unknown as string }
+    expect(() => buildFaqPage(doc, opts, 'https://a.com/x')).not.toThrow()
+    expect(buildFaqPage(doc, opts, 'https://a.com/x')).toBeNull()
+  })
+
+  test('a plain-text answer keeps its inner whitespace exactly', () => {
+    const doc = { layout: [{ blockType: 'faq', faqs: [{ question: 'Q', answer: ' Line one\n\nLine  two ' }] }] }
+    const result = buildFaqPage(doc, faq, 'https://a.com/x') as unknown as { mainEntity: { acceptedAnswer: { text: string } }[] }
+    expect(result.mainEntity[0]?.acceptedAnswer.text).toBe('Line one\n\nLine  two')
   })
 })

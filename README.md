@@ -77,7 +77,7 @@ Commit the updated `importMap.js` if your project tracks it. Without this step t
 | `type` | `'Article' \| 'BlogPosting' \| 'Service' \| 'WebPage' \| 'Event' \| 'Product'`, or `(doc) => type \| null` | The collection's default type. A function lets one collection mix types, for example `Service` under `/services/` and `WebPage` elsewhere. Return `null` to output no page node. |
 | `path` | `(doc) => string` | The document's public path, starting with `/`. Use `/` for the home page. The plugin joins it to `siteUrl`. |
 | `fields` | `Partial<Record<PageField, string \| string[]>>` | Maps Schema.org properties to field paths. Dot paths work. A list means the first non-empty value wins, for example `datePublished: ['completedAt', 'publishedAt', 'createdAt']`. |
-| `faq` | `{ block, items, question, answer, enabled?, blocksField? }` | Builds a `FAQPage` from a blocks field. `block` is the block slug. `items` is the array field inside the block that holds the rows. `question` and `answer` are the field names in each row. `blocksField` is the blocks field on the document and defaults to `layout`. All matching blocks on a page merge into one `FAQPage`. Answers can be plain text (a text or textarea field) or rich text (Lexical). Rich text is flattened to plain text. `enabled` is a field path inside the block, for example `'enableSchema'`. Only blocks where that value is `true` count. A missing value counts as off. See [FAQ blocks](#faq-blocks). Google retired the FAQ rich result (not shown from 7 May 2026, documentation removed 15 June 2026), so this no longer changes Google results. The markup stays valid Schema.org, and other tools and AI assistants still read it. We check it against Schema.org only. |
+| `faq` | `{ block, items, question, answer, enabledField?, blocksField? }` | Builds a `FAQPage` from a blocks field. `block` is the block slug. `items` is the array field inside the block that holds the rows. `question` and `answer` are the field names in each row. `blocksField` is the blocks field on the document and defaults to `layout`. All matching blocks on a page merge into one `FAQPage`. Answers can be plain text (a text or textarea field) or rich text (Lexical). Rich text is flattened to plain text. `enabledField` is a field path inside the block, for example `'enableSchema'`. Only blocks where that value is `true` count. A missing value counts as off. See [FAQ blocks](#faq-blocks). Google retired the FAQ rich result (not shown from 7 May 2026, documentation removed 15 June 2026), so this no longer changes Google results. The markup stays valid Schema.org, and other tools and AI assistants still read it. We check it against Schema.org only. |
 | `breadcrumbs` | `(doc) => { name, path }[]` | Builds the breadcrumb trail yourself, for collections outside nested docs. Include Home as the first item. |
 | `event` | `EventOptions` | Maps the document's fields to an `Event`. Setting it also offers Event in the editor's type select. See [Events](#events). |
 | `product` | `ProductOptions` | Maps the document's fields to a `Product`. Setting it also offers Product in the editor's type select. See [Shops](#shops). |
@@ -86,7 +86,7 @@ Commit the updated `importMap.js` if your project tracks it. Without this step t
 
 ### FAQ blocks
 
-Answers can be a text field, a textarea or a rich text field. If your FAQ block has a checkbox that turns the markup on or off, name it with `enabled`:
+Answers can be a text field, a textarea or a rich text field. If your FAQ block has a checkbox that turns the markup on or off, name it with `enabledField`:
 
 ```ts
 faq: {
@@ -94,11 +94,11 @@ faq: {
   items: 'faqs',
   question: 'question',
   answer: 'answer',
-  enabled: 'enableSchema',
+  enabledField: 'enableSchema',
 },
 ```
 
-Blocks where `enableSchema` is not `true` are left out of the `FAQPage`. Leave `enabled` out to count every matching block.
+Blocks where `enableSchema` is not `true` are left out of the `FAQPage`. Leave `enabledField` out to count every matching block.
 
 ### Default field paths
 
@@ -521,7 +521,7 @@ MongoDB needs no migration.
 
 ## Stability
 
-From 1.0, a breaking change to the plugin options or the JSON-LD output needs a major version.
+From 1.0, a breaking change needs a major version. That covers the plugin options, the JSON-LD output, the exported components, helpers and types, and the admin fields and database schema the plugin adds.
 
 ## Licence
 

@@ -20,6 +20,7 @@ function hasTopLevelField(fields: Field[], name: string): boolean {
   return fields.some((field) => {
     if ('name' in field && field.name === name) {return true}
     if (field.type === 'row' || field.type === 'collapsible') {return hasTopLevelField(field.fields, name)}
+    if (field.type === 'group' && !('name' in field && field.name)) {return hasTopLevelField(field.fields, name)}
     if (field.type === 'tabs') {
       return field.tabs.some((tab) => !('name' in tab && tab.name) && hasTopLevelField(tab.fields, name))
     }
@@ -45,6 +46,10 @@ export const structuredDataPlugin =
     const collections = (config.collections ?? []).map((collection) => {
       if (!Object.hasOwn(resolved.collections, collection.slug)) {return collection}
       const collectionOptions = resolved.collections[collection.slug]
+      const enabledField: unknown = collectionOptions?.faq?.enabledField
+      if (enabledField !== undefined && (typeof enabledField !== 'string' || !enabledField.trim())) {
+        throw new Error(`structuredDataPlugin: collection "${collection.slug}" faq.enabledField must be a field path string`)
+      }
       if (hasTopLevelField(collection.fields, GROUP_NAME)) {
         throw new Error(`structuredDataPlugin: collection "${collection.slug}" already has a field named "${GROUP_NAME}"`)
       }

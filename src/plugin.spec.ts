@@ -54,6 +54,19 @@ describe('structuredDataPlugin config checks', () => {
       structuredDataPlugin({ siteUrl: 'https://a.com', collections: { posts: { type: 'WebPage', path: () => '/' } } })(withField),
     ).toThrow('structuredDataPlugin: collection "posts" already has a field named "structuredData"')
   })
+  test('throws when faq.enabledField is not a field path string', () => {
+    const cfg = { collections: [{ slug: 'posts', fields: [] }] } as never
+    const make = (enabledField: unknown) =>
+      structuredDataPlugin({
+        siteUrl: 'https://a.com',
+        collections: {
+          posts: { type: 'WebPage', path: () => '/', faq: { block: 'f', items: 'i', question: 'q', answer: 'a', enabledField: enabledField as string } },
+        },
+      })(cfg)
+    expect(() => make(true)).toThrow('structuredDataPlugin: collection "posts" faq.enabledField must be a field path string')
+    expect(() => make('')).toThrow('faq.enabledField must be a field path string')
+    expect(() => make('enableSchema')).not.toThrow()
+  })
   describe('duplicate guard looks inside presentational fields', () => {
     const dup = { name: 'structuredData', type: 'text' }
     const run = (fields: unknown[]) =>
@@ -61,6 +74,9 @@ describe('structuredDataPlugin config checks', () => {
         collections: [{ slug: 'posts', fields }],
       } as never)
     const message = 'structuredDataPlugin: collection "posts" already has a field named "structuredData"'
+    test('throws inside an unnamed group', () => {
+      expect(() => run([{ type: 'group', fields: [dup] }])).toThrow(message)
+    })
     test('throws inside a row', () => {
       expect(() => run([{ type: 'row', fields: [dup] }])).toThrow(message)
     })
